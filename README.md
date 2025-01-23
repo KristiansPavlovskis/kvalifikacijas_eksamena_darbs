@@ -1,2 +1,2 @@
-# kvalifik-cijas_eks-mena_darbs
+# kvalifikacijas_eksamena_darbs
 Tīmekļa vietnes "GymVerse" izstrādes process
