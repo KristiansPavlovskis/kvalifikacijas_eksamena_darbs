@@ -1,0 +1,653 @@
+ 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Koulen', sans-serif;
+}
+
+body {
+    background-color: #0A0A0A;
+    color: white;
+}
+
+/* Loading Screen */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0A0A0A;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.loading-text {
+    color: #ff4d4d;
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.loading-subtext {
+    color: white;
+    font-size: 1.2rem;
+}
+
+/* Header */
+header {
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(10, 10, 10, 0.9);
+}
+
+.logo {
+    color: #ff4d4d;
+    font-size: 2rem;
+    text-decoration: none;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 2rem;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #ff4d4d;
+}
+
+/* Hero Section */
+.hero {
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 2rem;
+}
+
+.hero h1 {
+    font-size: 5rem;
+    color: #ff4d4d;
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    font-size: 1.5rem;
+    color: white;
+    max-width: 800px;
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0) translateX(-50%);
+    }
+    40% {
+        transform: translateY(-30px) translateX(-50%);
+    }
+    60% {
+        transform: translateY(-15px) translateX(-50%);
+    }
+} 
+/* //////////////////// */
+
+
+
+ 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Koulen', sans-serif;
+}
+
+body {
+    background-color: #0A0A0A;
+    color: white;
+}
+
+/* Loading Screen Styles (keeping previous styles) */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0A0A0A;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.loading-text {
+    color: #ff4d4d;
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.loading-subtext {
+    color: white;
+    font-size: 1.2rem;
+}
+
+/* Header and Hero Styles (keeping previous styles) */
+/* ... Previous header and hero styles remain the same ... */
+
+/* New Feature Cards Section */
+
+.feature-cards {
+max-width: 1200px;
+margin: 4rem auto;
+padding: 0 2rem;
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 2rem;
+}
+
+.welcome-text {
+grid-column: 1 / -1;
+text-align: center;
+color: white;
+font-size: 1.2rem;
+margin-bottom: 2rem;
+}
+
+.feature-card {
+position: relative;
+height: 400px;
+border-radius: 20px;
+overflow: hidden;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.feature-card::before {
+content: '';
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background: rgba(0, 0, 0, 0.6);
+transition: background 0.3s ease;
+}
+
+.feature-card:hover {
+transform: scale(1.02);
+}
+
+.feature-card:hover::before {
+background: rgba(0, 0, 0, 0.4);
+}
+
+.feature-card img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.card-content {
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+text-align: center;
+width: 100%;
+padding: 0 1rem;
+z-index: 1;
+}
+
+.card-content h2 {
+color: white;
+font-size: 2.5rem;
+margin-bottom: 1rem;
+}
+
+.card-content p {
+color: white;
+font-size: 1.2rem;
+line-height: 1.5;
+}
+/* Workout Types Section */
+.workout-types {
+    background-color: #1a1a1a;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.workout-categories {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.workout-category {
+    color: #ff4d4d;
+    font-size: 1.5rem;
+}
+
+/* Stats Section */
+.stats-section {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.stats-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.stat-bar {
+    width: 200px;
+    height: 200px;
+    background-color: #1a1a1a;
+    position: relative;
+}
+
+/* Meals Section */
+.meals-section {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.meal-cards {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.meal-card {
+    width: 300px;
+    height: 200px;
+    background-color: #1a1a1a;
+    border-radius: 10px;
+}
+
+/* About Section */
+.about-section {
+    padding: 4rem 2rem;
+    background-color: #1a1a1a;
+    text-align: center;
+}
+
+.about-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.contact-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.contact-button {
+    background-color: #333;
+    padding: 1rem;
+    border-radius: 5px;
+    color: white;
+    text-decoration: none;
+}
+
+/* Footer */
+footer {
+    background-color: #1a1a1a;
+    padding: 4rem 2rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-sections {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-section h4 {
+    color: #ff4d4d;
+    margin-bottom: 1rem;
+}
+
+.footer-section a {
+    color: white;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.partners {
+    text-align: center;
+    padding: 2rem 0;
+    border-top: 1px solid #333;
+    border-bottom: 1px solid #333;
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 2rem;
+}
+
+.subscribe-form {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.subscribe-form input {
+    padding: 1rem;
+    border: none;
+    border-radius: 25px 0 0 25px;
+    width: 300px;
+}
+
+.subscribe-form button {
+    padding: 1rem 2rem;
+    border: none;
+    background-color: #ff4d4d;
+    color: white;
+    border-radius: 0 25px 25px 0;
+    cursor: pointer;
+}
+ .workout-types {
+background-color: #18181b;
+padding: 4rem 0;
+text-align: center;
+}
+
+.workout-buttons {
+display: flex;
+justify-content: center;
+gap: 1rem;
+margin-bottom: 2rem;
+}
+
+.workout-button {
+background: #dc2626;
+border: none;
+color: white;
+font-size: 2.25rem;
+font-weight: bold;
+padding: 3rem 4rem;
+cursor: pointer;
+transition: background-color 0.3s;
+}
+
+.workout-button:hover {
+background: #b91c1c;
+}
+
+.workout-button.skewed {
+transform: skew(-20deg);
+}
+
+.workout-button.skewed span {
+display: block;
+transform: skew(20deg);
+}
+
+.see-all {
+background: none;
+border: none;
+color: white;
+font-size: 1.5rem;
+font-weight: bold;
+cursor: pointer;
+transition: color 0.3s;
+}
+
+.see-all:hover {
+color: #dc2626;
+}
+
+/* Stats Section */
+.stats-section {
+background-color: black;
+padding: 4rem 0;
+text-align: center;
+}
+
+.stats-title {
+color: white;
+font-size: 2rem;
+font-weight: bold;
+margin-bottom: 2rem;
+}
+
+.leaderboard {
+display: flex;
+justify-content: center;
+align-items: flex-end;
+gap: 1rem;
+height: 16rem;
+margin-bottom: 2rem;
+}
+
+.podium {
+width: 16rem;
+position: relative;
+transition: transform 0.3s;
+}
+
+.podium:hover {
+transform: translateY(-0.5rem);
+}
+
+.podium-1 {
+height: 130px;
+background: linear-gradient(to top, #eab308, #fcd34d);
+}
+
+.podium-2 {
+height: 100px;
+background: linear-gradient(to top, #9ca3af, #d1d5db);
+}
+
+.podium-3 {
+height: 75px;
+background: linear-gradient(to top, #b45309, #fb923c);
+}
+
+.podium-name {
+position: absolute;
+top: -2rem;
+width: 100%;
+color: white;
+text-align: center;
+}
+
+.podium-name h3 {
+font-size: 1.25rem;
+margin: 0;
+}
+
+.podium-name p {
+font-size: 1rem;
+margin: 0;
+}
+
+/* Meals Section */
+.meals-section {
+background-color: #18181b;
+padding: 4rem 0;
+text-align: center;
+}
+
+.meal-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 2rem;
+max-width: 1200px;
+margin: 0 auto 2rem;
+padding: 0 1rem;
+}
+
+.meal-card {
+position: relative;
+aspect-ratio: 16/9;
+border-radius: 0.5rem;
+overflow: hidden;
+}
+
+.meal-card img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+opacity: 0.75;
+transition: opacity 0.3s;
+}
+
+.meal-card:hover img {
+opacity: 1;
+}
+
+.meal-overlay {
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+padding: 1rem;
+background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+color: white;
+text-align: left;
+}
+
+.meal-overlay h3 {
+font-size: 1.5rem;
+margin: 0;
+}
+
+.meal-overlay p {
+margin: 0.5rem 0 0;
+color: #e5e7eb;
+}
+
+/* Membership Section */
+.membership-section {
+background-color: black;
+padding: 4rem 0;
+}
+
+.membership-container {
+max-width: 1200px;
+margin: 0 auto;
+padding: 0 1rem;
+}
+
+.membership-card {
+background: linear-gradient(to right, #dc2626, #991b1b);
+padding: 1px;
+border-radius: 1rem;
+}
+
+.membership-content {
+background-color: #18181b;
+border-radius: 0.9rem;
+padding: 2rem;
+text-align: center;
+}
+
+.membership-title {
+color: white;
+font-size: 2.5rem;
+margin-bottom: 1rem;
+}
+
+.membership-price {
+color: #dc2626;
+font-size: 1.5rem;
+margin-bottom: 2rem;
+}
+
+.membership-tiers {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 1.5rem;
+margin-bottom: 2rem;
+}
+
+.tier-card {
+background-color: black;
+border-radius: 0.5rem;
+padding: 1.5rem;
+transition: transform 0.3s;
+}
+
+.tier-card:hover {
+transform: translateY(-0.5rem);
+}
+
+.tier-title {
+color: white;
+font-size: 1.25rem;
+margin-bottom: 1rem;
+}
+
+.tier-features {
+color: #9ca3af;
+list-style: none;
+padding: 0;
+margin: 0 0 1.5rem;
+}
+
+.tier-features li {
+margin-bottom: 0.5rem;
+}
+
+.tier-button {
+background-color: #dc2626;
+color: white;
+border: none;
+padding: 0.5rem 1.5rem;
+border-radius: 9999px;
+cursor: pointer;
+transition: background-color 0.3s;
+}
+
+.tier-button:hover {
+background-color: #b91c1c;
+}
+
+.view-all-memberships {
+background-color: #dc2626;
+color: white;
+border: none;
+padding: 1rem 3rem;
+border-radius: 9999px;
+font-size: 1.25rem;
+font-weight: bold;
+cursor: pointer;
+transition: background-color 0.3s;
+}
+
+.view-all-memberships:hover {
+background-color: #b91c1c;
+}
