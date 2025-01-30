@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excercises</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: black;
+            color: white;
+        }
+
+        nav {
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            color: #ff4444;
+        }
+
+        .title {
+            font-size: 4rem;
+            padding: 40px 20px;
+            color: #ff4444;
+        }
+
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #333333, #222222);
+            padding: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+            min-height: 200px;
+            text-decoration: none;
+            color: white;
+            display: block;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+        .card h2 {
+            color: #ff4444;
+            margin-bottom: 15px;
+        }
+
+        .card .tagline {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+        }
+
+        .card:hover .tagline {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#">HOME</a>
+        <a href="#">WORKOUTS</a>
+        <a href="#">MEMBERSHIP</a>
+        <a href="#">LEADERBOARD</a>
+        <a href="#">NUTRITION</a>
+        <a href="#">ABOUT US</a>
+        <a href="#">CONTACT US</a>
+    </nav>
+
+    <h1 class="title">EXCERCISES</h1>
+
+    <div class="card-container">
+        <a href="excerciseType.html" class="card">
+            <h2>STRENGTH TRAINING</h2>
+            <p class="tagline">Build muscle and gain power</p>
+        </a>
+        <a href="excerciseType.html" class="card">
+            <h2>CARDIO</h2>
+            <p class="tagline">Improve endurance and heart health</p>
+        </a>
+        <a href="excerciseType.html" class="card">
+            <h2>HIIT</h2>
+            <p class="tagline">Burn calories fast with short bursts of effort</p>
+        </a>
+        <a href="excerciseType.html" class="card">
+            <h2>BODYWEIGHT</h2>
+            <p class="tagline">Master control of your body</p>
+        </a>
+        <a href="excerciseType.html" class="card">
+            <h2>STRETCHING</h2>
+            <p class="tagline">Enhance flexibility and recovery</p>
+        </a>
+    </div>
+</body>
+</html>

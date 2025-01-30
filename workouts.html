@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GYMVERSE - Workouts</title>
+    <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Koulen', sans-serif;
+        }
+
+        body {
+            background-color: #0A0A0A;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: flex-start;
+            gap: 2rem;
+            background-color: rgba(10, 10, 10, 0.9);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #ff4d4d;
+        }
+
+        nav a.active {
+            color: #ff4d4d;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .title {
+            color: #ff4d4d;
+            font-size: 5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .options-container {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .option-card {
+            width: 400px;
+            height: 500px;
+            background-color: #1a1a1a;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .option-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.2);
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255, 77, 77, 0.1) 0%, rgba(10, 10, 10, 0.8) 100%);
+            z-index: 1;
+        }
+
+        .option-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+        }
+
+        .option-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .option-title {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .option-description {
+            color: #cccccc;
+            font-size: 1.2rem;
+        }
+
+        /* Search Bar */
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: none;
+            background-color: #1a1a1a;
+            color: #ff4d4d;
+            font-size: 1.2rem;
+            outline: none;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .search-bar:focus {
+            box-shadow: 0 0 0 2px #ff4d4d;
+        }
+
+        .search-bar::placeholder {
+            color: #666666;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#">HOME</a>
+        <a href="#" class="active">WORKOUTS</a>
+        <a href="#">MEMBERSHIP</a>
+        <a href="#">LEADERBOARD</a>
+        <a href="#">NUTRITION</a>
+        <a href="#">ABOUT US</a>
+        <a href="#">CONTACT US</a>
+    </nav>
+
+    <div class="main-content">
+        <h1 class="title">WORKOUTS</h1>
+        <a href="equipment.html">
+        <div class="options-container">
+            <div class="option-card">
+                <img src="images/pexels-ivan-samkov-4164766.jpg" alt="Gym Equipment">
+                <div class="option-content">
+                    <h2 class="option-title">GYM EQUIPMENT</h2>
+                    <p class="option-description">Explore our complete guide to gym equipment and proper usage techniques</p>
+                </div>
+            </div>
+        </a>
+            <a href="excercises.html">
+            <div class="option-card">
+                <img src="images/pexels-mikhail-nilov-6975759.jpg" alt="Exercises">
+                <div class="option-content">
+                    <h2 class="option-title">EXERCISES</h2>
+                    <p class="option-description">Discover a wide range of exercises for every muscle group</p>
+                </div>
+            </div>
+            </a>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-bar" placeholder="SEARCH EQUIPMENT OR EXERCISES">
+        </div>
+    </div>
+</body>
+</html>
