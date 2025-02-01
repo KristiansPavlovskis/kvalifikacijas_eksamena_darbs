@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GYMVERSE - Detailed Leaderboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Koulen', sans-serif;
+        }
+
+        body {
+            background-color: #0A0A0A;
+            color: white;
+            min-height: 100vh;
+        }
+
+        nav {
+            padding: 1.5rem 2rem;
+            display: flex;
+            gap: 2rem;
+            background-color: rgba(10, 10, 10, 0.9);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            color: #ff4d4d;
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .back-button {
+            padding: 0.8rem 1.5rem;
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #ff3333;
+        }
+
+        .leaderboard-title {
+            color: #ff4d4d;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .category-info {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #888;
+            margin-bottom: 3rem;
+        }
+
+        .leaderboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .player-card {
+            background-color: #1a1a1a;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .rank-badge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+
+        .rank-badge.gold {
+            background-color: #ffd700;
+            color: #000;
+        }
+
+        .rank-badge.silver {
+            background-color: #c0c0c0;
+            color: #000;
+        }
+
+        .rank-badge.bronze {
+            background-color: #cd7f32;
+            color: #000;
+        }
+
+        .player-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            background-color: #333;
+            overflow: hidden;
+        }
+
+        .player-name {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .player-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background-color: #222;
+            border-radius: 5px;
+        }
+
+        .stat-label {
+            color: #888;
+        }
+
+        .stat-value {
+            color: #ff4d4d;
+        }
+
+        .time-period {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #ff4d4d;
+            border-radius: 25px;
+            font-size: 0.9rem;
+        }
+        .player-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 1140px;
+        }
+
+        .player-row {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background-color: #333;
+            border-radius: 5px;
+        }
+
+        .rank {
+            width: 50px;
+            font-size: 1.2rem;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#">HOME</a>
+        <a href="#">WORKOUTS</a>
+        <a href="#">MEMBERSHIP</a>
+        <a href="#" class="active">LEADERBOARD</a>
+        <a href="#">NUTRITION</a>
+        <a href="#">ABOUT US</a>
+        <a href="#">CONTACT US</a>
+    </nav>
+
+    <div class="time-period">
+        WEEKLY STATS
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <button class="back-button" onclick="window.location.href='index.html'">← BACK TO CATEGORIES</button>
+        </div>
+
+        <h1 class="leaderboard-title">CALORIES BURNED</h1>
+        <div class="category-info">TOP 10 PERFORMERS THIS WEEK</div>
+
+        <div class="leaderboard-grid">
+            <!-- Top 3 Players -->
+            <div class="player-card">
+                <div class="rank-badge gold">#1</div>
+                <div class="player-avatar"></div>
+                <div class="player-name">KRISTIANS PAVLOVSKIS</div>
+                <div class="player-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">CALORIES</span>
+                        <span class="stat-value">15,420</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">WORKOUTS</span>
+                        <span class="stat-value">12</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">STREAK</span>
+                        <span class="stat-value">7 DAYS</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="player-card">
+                <div class="rank-badge silver">#2</div>
+                <div class="player-avatar"></div>
+                <div class="player-name">EDDIE HALL</div>
+                <div class="player-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">CALORIES</span>
+                        <span class="stat-value">14,850</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">WORKOUTS</span>
+                        <span class="stat-value">10</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">STREAK</span>
+                        <span class="stat-value">5 DAYS</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="player-card">
+                <div class="rank-badge bronze">#3</div>
+                <div class="player-avatar"></div>
+                <div class="player-name">DAVID GOGGINS</div>
+                <div class="player-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">CALORIES</span>
+                        <span class="stat-value">13,920</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">WORKOUTS</span>
+                        <span class="stat-value">11</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">STREAK</span>
+                        <span class="stat-value">6 DAYS</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Players 4-10 -->
+            <div class="player-list">
+                <div class="player-row">
+                    <div class="rank">#4</div>
+                    <div class="player-info">INSERT NAME HERE</div>
+                </div>
+                <div class="player-row">
+                    <div class="rank">#5</div>
+                    <div class="player-info">INSERT NAME HERE</div>
+                </div>
+                <div class="player-row">
+                    <div class="rank">#6</div>
+                    <div class="player-info">INSERT NAME HERE</div>
+                </div>
+                <div class="player-row">
+                    <div class="rank">#7</div>
+                    <div class="player-info">INSERT NAME HERE</div>
+                </div>
+                <div class="player-row">
+                    <div class="rank">#8</div>
+                    <div class="player-info">INSERT NAME HERE</div>
+                </div>
+                <div class="player-row">
+                    <div class="rank">#9</div>
+                    <div class="player-info">INSERT NAME HERE</div>
+                </div>
+            </div>
+            <!-- Add more player cards here with similar structure but without special rank badges -->
+        </div>
+    </div>
+</body>
+</html>
