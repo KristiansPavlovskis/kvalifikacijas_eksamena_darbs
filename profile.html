@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Profile Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #0A0A0A;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .top-header {
+            background-color: #0A0A0A;
+            border-bottom: 1px solid rgba(255, 77, 77, 0.2);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: #A9A9A9;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #FF4D4D;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+            animation: slideFadeIn 0.6s ease-out;
+        }
+
+        @keyframes slideFadeIn {
+            0% { opacity: 0; transform: translateY(50px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            color: #FF4D4D;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, #FF4D4D 0%, rgba(255,77,77,0.1) 100%);
+            margin-left: 1rem;
+        }
+
+        .tile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tile {
+            background: linear-gradient(135deg, #1E1E1E 0%, #252525 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(255, 77, 77, 0.2);
+            border-color: rgba(255, 77, 77, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: #292929;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            color: #FF4D4D;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #A9A9A9;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            height: 200px;
+            position: relative;
+        }
+
+        .body-visual {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .body-image {
+            flex: 1;
+            background: #1E1E1E;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .pie-chart {
+            flex: 1;
+            background: #1E1E1E;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .achievement-card {
+            background: #1E1E1E;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 12px rgba(255, 77, 77, 0.5);
+        }
+
+        .progress-bars {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .progress-bar {
+            background: #1E1E1E;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .progress-fill {
+            height: 8px;
+            background: #FF4D4D;
+            border-radius: 4px;
+            transition: width 1.2s ease-in-out;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .tile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .body-visual {
+                flex-direction: column;
+            }
+
+            .progress-bars {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="top-header">
+        <div class="logo-section">
+            <div class="profile-pic">
+                <i class="fas fa-user"></i>
+            </div>
+            <span>USERNAME</span>
+        </div>
+        <nav class="nav-links">
+            <a href="workout-analytics.html" class="nav-link">Total Workouts</a>
+            <a href="#" class="nav-link">Calories Burned</a>
+            <a href="#" class="nav-link">Current Goal</a>
+            <a href="#" class="nav-link">Plan</a>
+        </nav>
+    </header>
+
+    <main class="dashboard">
+        <section class="section">
+            <h2 class="section-title">
+                <i class="fas fa-dumbbell"></i>
+                Workout Analytics – "Your Training at a Glance"
+            </h2>
+            <div class="body-visual">
+                <div class="body-image">
+                    <!-- Body outline would go here -->
+                    <canvas id="bodyCanvas"></canvas>
+                </div>
+                <div class="pie-chart">
+                    <canvas id="workoutTypesChart"></canvas>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value">100KG</div>
+                    <div class="stat-label">BENCH</div>
+                    <div class="stat-extra">TOP 0.7%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">250KG</div>
+                    <div class="stat-label">SQUAT</div>
+                    <div class="stat-extra">TOP 0.3%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">150KG</div>
+                    <div class="stat-label">DEADLIFT</div>
+                    <div class="stat-extra">TOP 1.7%</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <i class="fas fa-utensils"></i>
+                Nutrition & Meal Tracker – "Fuel Your Progress"
+            </h2>
+            <div class="tile-grid">
+                <div class="tile">
+                    <canvas id="macrosChart"></canvas>
+                </div>
+                <div class="tile">
+                    <div class="nutrition-stats">
+                        <h3>Nutrition Activity Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-label">Calories Burned</div>
+                                <div class="stat-value">2,500</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Calories Consumed</div>
+                                <div class="stat-value">2,200</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <i class="fas fa-trophy"></i>
+                Achievements – "Celebrate Your Wins"
+            </h2>
+            <div class="achievements-grid">
+                <div class="achievement-card">
+                    <i class="fas fa-medal fa-2x"></i>
+                    <h3>First Mile</h3>
+                    <p>Complete your first mile run</p>
+                </div>
+                <div class="achievement-card">
+                    <i class="fas fa-fire fa-2x"></i>
+                    <h3>Calorie Crusher</h3>
+                    <p>Burn 1000 calories in a day</p>
+                </div>
+                <div class="achievement-card">
+                    <i class="fas fa-dumbbell fa-2x"></i>
+                    <h3>Strength Master</h3>
+                    <p>Lift 100kg in any exercise</p>
+                </div>
+                <div class="achievement-card">
+                    <i class="fas fa-clock fa-2x"></i>
+                    <h3>Early Bird</h3>
+                    <p>Complete 5 morning workouts</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Progress Tracker – "Your Goals, Your Journey"
+            </h2>
+            <div class="progress-bars">
+                <div class="progress-bar">
+                    <h3>Weight Goal</h3>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: 65%;"></div>
+                    </div>
+                    <p>65% Complete</p>
+                </div>
+                <div class="progress-bar">
+                    <h3>Strength Goal</h3>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: 80%;"></div>
+                    </div>
+                    <p>80% Complete</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Initialize charts
+        const workoutTypes = {
+            labels: ['Cardio', 'Strength', 'HIIT', 'Other'],
+            datasets: [{
+                data: [30, 40, 20, 10],
+                backgroundColor: ['#FF4D4D', '#FF6B6B', '#FF8787', '#FFA5A5']
+            }]
+        };
+
+        const macros = {
+            labels: ['Protein', 'Carbs', 'Fats'],
+            datasets: [{
+                data: [35, 45, 20],
+                backgroundColor: ['#FF4D4D', '#FF6B6B', '#FF8787']
+            }]
+        };
+
+        // Add workout types pie chart
+        const workoutCtx = document.getElementById('workoutTypesChart').getContext('2d');
+        new Chart(workoutCtx, {
+            type: 'pie',
+            data: workoutTypes,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Add macros pie chart
+        const macrosCtx = document.getElementById('macrosChart').getContext('2d');
+        new Chart(macrosCtx, {
+            type: 'pie',
+            data: macros,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Add animations for achievements
+        document.querySelectorAll('.achievement-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'scale(1.05)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
