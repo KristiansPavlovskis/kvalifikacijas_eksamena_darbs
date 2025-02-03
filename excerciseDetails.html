@@ -4,127 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bench Press - Exercise Details</title>
-    <style>
-        /* Include base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            background-color: black;
-            color: white;
-        }
-
-        nav {
-            padding: 20px;
-            display: flex;
-            gap: 30px;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        nav a:hover {
-            color: #ff4444;
-        }
-
-        .exercise-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .exercise-header {
-            display: flex;
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .exercise-image {
-            width: 500px;
-            height: 300px;
-            background: #333;
-            border-radius: 8px;
-        }
-
-        .exercise-info h1 {
-            color: #ff4444;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 40px;
-        }
-
-        .stat-card {
-            background: #222;
-            padding: 20px;
-            border-radius: 8px;
-        }
-
-        .stat-card h3 {
-            color: #ff4444;
-            margin-bottom: 10px;
-        }
-
-        .instructions {
-            margin-top: 40px;
-        }
-
-        .instructions h2 {
-            color: #ff4444;
-            margin-bottom: 20px;
-        }
-
-        .instructions ol {
-            list-style-position: inside;
-            margin-left: 20px;
-        }
-
-        .instructions li {
-            margin-bottom: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="lietotaja-view.css">
+    <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav>
-        <a href="index.html">HOME</a>
-        <a href="strength.html">STRENGTH</a>
-        <a href="#">WORKOUTS</a>
-        <a href="#">MEMBERSHIP</a>
-        <a href="#">LEADERBOARD</a>
-        <a href="#">NUTRITION</a>
-        <a href="#">ABOUT US</a>
-        <a href="#">CONTACT US</a>
-    </nav>
+    <header>
+        <a href="profile.html" class="logo">GYMVERSE</a>
+        <nav>
+            <a href="#">HOME</a>
+            <a href="#">ABOUT</a>
+            <a href="membership.html">MEMBERSHIP</a>
+            <a href="leaderboard.html">LEADERBOARD</a>
+            <a href="nutrition.html">NUTRITION</a>
+            <a href="#">CONTACT</a>
+        </nav>
+    </header>
 
-    <div class="exercise-container">
-        <div class="exercise-header">
-            <div class="exercise-image"></div>
-            <div class="exercise-info">
+    <div class="exerciseDetail-container">
+        <div class="exerciseDetail-header">
+            <div class="exerciseDetail-image"></div>
+            <div class="exerciseDetail-info">
                 <h1>Bench Press</h1>
                 <p>The bench press is a compound exercise that targets your chest, shoulders, and triceps.</p>
                 
-                <div class="stats-grid">
-                    <div class="stat-card">
+                <div class="exerciseDetail-stats-grid">
+                    <div class="exerciseDetail-stat-card">
                         <h3>Difficulty</h3>
                         <p>Intermediate</p>
                     </div>
-                    <div class="stat-card">
+                    <div class="exerciseDetail-stat-card">
                         <h3>Target Muscles</h3>
                         <p>Chest, Shoulders, Triceps</p>
                     </div>
-                    <div class="stat-card">
+                    <div class="exerciseDetail-stat-card">
                         <h3>Equipment</h3>
                         <p>Barbell, Bench</p>
                     </div>
@@ -132,7 +44,7 @@
             </div>
         </div>
 
-        <div class="instructions">
+        <div class="exerciseDetail-instructions">
             <h2>Instructions</h2>
             <ol>
                 <li>Lie on the bench with your feet flat on the ground</li>

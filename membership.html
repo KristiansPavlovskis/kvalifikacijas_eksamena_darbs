@@ -6,141 +6,20 @@
     <title>GYMVERSE - Membership</title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <script src="https://js.stripe.com/v3/"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Koulen', sans-serif;
-        }
-
-        body {
-            background-color: #0A0A0A;
-            color: white;
-            min-height: 100vh;
-        }
-
-        .membership-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
-        }
-
-        .membership-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .membership-header h1 {
-            color: #ff4d4d;
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-
-        .membership-header p {
-            color: #ffffff;
-            font-size: 1.2rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .pricing-cards {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .pricing-card {
-            background: linear-gradient(145deg, #1a1a1a, #262626);
-            border-radius: 20px;
-            padding: 2rem;
-            width: 300px;
-            position: relative;
-            transition: transform 0.3s ease;
-        }
-
-        .pricing-card:hover {
-            transform: translateY(-10px);
-        }
-
-        .pricing-card.basic {
-            background: linear-gradient(145deg, #333333, #404040);
-        }
-
-        .pricing-card.standard {
-            background: linear-gradient(145deg, #ff4d4d, #ff6666);
-        }
-
-        .pricing-card.advanced {
-            background: linear-gradient(145deg, #800000, #990000);
-        }
-
-        .best-offer {
-            position: absolute;
-            top: -12px;
-            right: -12px;
-            background: #ffffff;
-            color: #ff4d4d;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            transform: rotate(15deg);
-        }
-
-        .plan-name {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            color: #ffffff;
-        }
-
-        .plan-price {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            color: #ff4d4d;
-        }
-
-        .plan-price span {
-            font-size: 1rem;
-            color: #ffffff;
-        }
-
-        .features {
-            margin-bottom: 2rem;
-        }
-
-        .feature {
-            margin-bottom: 0.8rem;
-            color: #ffffff;
-        }
-
-        .feature.disabled {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .join-button {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            border-radius: 10px;
-            background-color: #ff4d4d;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .join-button:hover {
-            background-color: #ff3333;
-        }
-
-        .join-button.disabled {
-            background-color: #666666;
-            cursor: not-allowed;
-        }
-    </style>
+    <link rel="stylesheet" href="lietotaja-view.css"> 
 </head>
 <body>
+    <header>
+        <a href="profile.html" class="logo">GYMVERSE</a>
+        <nav>
+            <a href="#">HOME</a>
+            <a href="#">ABOUT</a>
+            <a href="membership.html">MEMBERSHIP</a>
+            <a href="leaderboard.html">LEADERBOARD</a>
+            <a href="nutrition.html">NUTRITION</a>
+            <a href="#">CONTACT</a>
+        </nav>
+    </header>
     <div class="membership-container">
         <div class="membership-header">
             <h1>MEMBERSHIP</h1>
