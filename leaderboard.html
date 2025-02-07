@@ -4,300 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GYMVERSE - Leaderboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Koulen', sans-serif;
-        }
-
-        body {
-            background-color: #0A0A0A;
-            color: white;
-            min-height: 100vh;
-        }
-
-        /* Navigation */
-        nav {
-            padding: 1.5rem 2rem;
-            display: flex;
-            gap: 2rem;
-            background-color: rgba(10, 10, 10, 0.9);
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-size: 1.2rem;
-            transition: color 0.3s;
-        }
-
-        nav a:hover, nav a.active {
-            color: #ff4d4d;
-        }
-
-        /* Main Content */
-        .main-content {
-            padding: 2rem;
-        }
-
-        .title-section {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .title {
-            color: #ff4d4d;
-            font-size: 5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .subtitle {
-            color: white;
-            font-size: 1.5rem;
-        }
-
-        /* Search and Filters */
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-            gap: 2rem;
-        }
-
-        .search-bar {
-            flex: 0 0 300px;
-            padding: 0.8rem 1.5rem;
-            border-radius: 25px;
-            border: none;
-            background-color: #1a1a1a;
-            color: white;
-            font-size: 1rem;
-        }
-
-        .time-filters {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .time-filter {
-            padding: 0.8rem 1.5rem;
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: color 0.3s;
-        }
-
-        .time-filter:hover, .time-filter.active {
-            color: #ff4d4d;
-        }
-
-        /* Category Filters */
-        .category-filters {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            width: 200px;
-            position: absolute;
-            left: 2rem;
-        }
-
-        .category-filter {
-            padding: 1rem;
-            background: none;
-            border: none;
-            color: white;
-            text-align: left;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: color 0.3s;
-            border-left: 3px solid transparent;
-        }
-
-        .category-filter:hover, .category-filter.active {
-            color: #ff4d4d;
-            border-left-color: #ff4d4d;
-        }
-
-        /* Stats Display */
-        .stats-container {
-            margin-left: 220px;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .stat-card {
-            background-color: #1a1a1a;
-            padding: 1.5rem;
-            border-radius: 10px;
-        }
-
-        .stat-title {
-            color: white;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .stat-graph {
-            height: 200px;
-            display: flex;
-            align-items: flex-end;
-            gap: 1rem;
-            padding: 1rem 0;
-        }
-
-        .stat-bar {
-            flex: 1;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .bar {
-            width: 100%;
-            background-color: #333;
-            transition: height 0.3s;
-        }
-
-        .bar.highlight {
-            background-color: #ffeb3b;
-        }
-
-        .bar.bronze {
-            background-color: #cd7f32;
-        }
-
-        .player-name {
-            position: absolute;
-            top: -25px;
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
-
-        /* Top Players Section */
-        .top-players {
-            margin-top: 3rem;
-            padding: 2rem;
-            background-color: #1a1a1a;
-            border-radius: 10px;
-        }
-
-        .podium {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            gap: 2rem;
-            margin-bottom: 3rem;
-            height: 300px;
-        }
-
-        .podium-place {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 200px;
-        }
-
-        .podium-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: #ffeb3b;
-            margin-bottom: 1rem;
-        }
-
-        .podium-avatar.silver {
-            background-color: #c0c0c0;
-        }
-
-        .podium-avatar.bronze {
-            background-color: #cd7f32;
-        }
-
-        .rank-number {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-      
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="lietotaja-view.css"> 
 </head>
 <body>
-    <nav>
-        <a href="#">HOME</a>
-        <a href="#">WORKOUTS</a>
-        <a href="#">MEMBERSHIP</a>
-        <a href="#" class="active">LEADERBOARD</a>
-        <a href="#">NUTRITION</a>
-        <a href="#">ABOUT US</a>
-        <a href="#">CONTACT US</a>
-    </nav>
+    <header>
+        <a href="profile.html" class="logo">GYMVERSE</a>
+        <nav>
+            <a href="#">HOME</a>
+            <a href="#">ABOUT</a>
+            <a href="membership.html">MEMBERSHIP</a>
+            <a href="leaderboard.html">LEADERBOARD</a>
+            <a href="nutrition.html">NUTRITION</a>
+            <a href="#">CONTACT</a>
+        </nav>
+    </header>
 
-    <div class="main-content">
-        <div class="title-section">
-            <h1 class="title">LEADERBOARD</h1>
-            <h2 class="subtitle">YOUR FITNESS COMMUNITY</h2>
+    <div >
+        <div class="leaderboard-title-section">
+            <h1 class="leaderboard-title">LEADERBOARD</h1>
+            <h2 class="leaderboard-subtitle">YOUR FITNESS COMMUNITY</h2>
         </div>
 
-        <div class="controls">
-            <input type="text" class="search-bar" placeholder="SEARCH USERS...">
-            <div class="time-filters">
-                <button class="time-filter active">DAILY</button>
-                <button class="time-filter">WEEKLY</button>
-                <button class="time-filter">MONTHLY</button>
-                <button class="time-filter">ALL-TIME</button>
+        <div class="leaderboard-controls">
+            <input type="text" class="leaderboard-search-bar" placeholder="SEARCH USERS...">
+            <div class="leaderboard-time-filters">
+                <button class="leaderboard-time-filter active">DAILY</button>
+                <button class="leaderboard-time-filter">WEEKLY</button>
+                <button class="leaderboard-time-filter">MONTHLY</button>
+                <button class="leaderboard-time-filter">ALL-TIME</button>
             </div>
         </div>
 
-        <div class="category-filters">
-            <button class="category-filter active">STRENGTH</button>
-            <button class="category-filter">CARDIO</button>
-            <button class="category-filter">HIIT</button>
-            <button class="category-filter">BODYWEIGHT</button>
+        <div class="leaderboard-category-filters">
+            <button class="leaderboard-category-filter active">STRENGTH</button>
+            <button class="leaderboard-category-filter">CARDIO</button>
+            <button class="leaderboard-category-filter">HIIT</button>
+            <button class="leaderboard-category-filter">BODYWEIGHT</button>
         </div>
 
-        <div class="stats-container">
-            <div class="stat-card">
-                <h3 class="stat-title">CALORIES BURNED THIS WEEK</h3>
-                <div class="stat-graph">
-                    <div class="stat-bar">
-                        <span class="player-name">DAVID GOGGINS</span>
-                        <div class="bar bronze" style="height: 60%"></div>
+        <div class="leaderboard-stats-container">
+            <a href="detailed-leaderboard.html">
+            <div class="leaderboard-stat-card">
+                <h3 class="leaderboard-stat-title">CALORIES BURNED THIS WEEK</h3>
+                <div class="leaderboard-stat-graph">
+                    <div class="leaderboard-stat-bar">
+                        <span class="leaderboard-player-name">DAVID GOGGINS</span>
+                        <div class="leaderboard-bar bronze" style="height: 60% !important"></div>
                     </div>
-                    <div class="stat-bar">
-                        <span class="player-name">KRISTIANS PAVLOVSKIS</span>
-                        <div class="bar highlight" style="height: 90%"></div>
+                    <div class="leaderboard-stat-bar">
+                        <span class="leaderboard-player-name">KRISTIANS PAVLOVSKIS</span>
+                        <div class="leaderboard-bar highlight" style="height: 90% !important"></div>
                     </div>
-                    <div class="stat-bar">
-                        <span class="player-name">EDDIE HALL</span>
-                        <div class="bar" style="height: 75%"></div>
+                    <div class="leaderboard-stat-bar">
+                        <span class="leaderboard-player-name">EDDIE HALL</span>
+                        <div class="leaderboard-bar" style="height: 75% !important"></div>
                     </div>
                 </div>
             </div>
-
-            <div class="stat-card">
-                <h3 class="stat-title">AMOUNT RAN THIS WEEK</h3>
-                <div class="stat-graph">
-                    <div class="stat-bar">
-                        <span class="player-name">DAVID GOGGINS</span>
-                        <div class="bar bronze" style="height: 65%"></div>
+            </a>
+            <a href="detailed-leaderboard.html">
+            <div class="leaderboard-stat-card">
+                <h3 class="leaderboard-stat-title">AMOUNT RAN THIS WEEK</h3>
+                <div class="leaderboard-stat-graph">
+                    <div class="leaderboard-stat-bar">
+                        <span class="leaderboard-player-name">DAVID GOGGINS</span>
+                        <div class="leaderboard-bar bronze" style="height: 65%"></div>
                     </div>
-                    <div class="stat-bar">
-                        <span class="player-name">KRISTIANS PAVLOVSKIS</span>
-                        <div class="bar highlight" style="height: 85%"></div>
+                    <div class="leaderboard-stat-bar">
+                        <span class="leaderboard-player-name">KRISTIANS PAVLOVSKIS</span>
+                        <div class="leaderboard-bar highlight" style="height: 85%"></div>
                     </div>
-                    <div class="stat-bar">
-                        <span class="player-name">EDDIE HALL</span>
-                        <div class="bar" style="height: 70%"></div>
+                    <div class="leaderboard-stat-bar">
+                        <span class="leaderboard-player-name">EDDIE HALL</span>
+                        <div class="leaderboard-bar" style="height: 70%"></div>
                     </div>
                 </div>
             </div>
+            </a>
  
         </div>
     </div>

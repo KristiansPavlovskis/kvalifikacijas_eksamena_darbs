@@ -51,11 +51,48 @@ body {
 
 /* Header */
 header {
-    padding: 1rem 2rem;
+    padding: 1.5rem 2rem;
     display: flex;
+    gap: 2rem;
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 20px rgba(255, 77, 77, 0.1);
     justify-content: space-between;
     align-items: center;
-    background-color: rgba(10, 10, 10, 0.9);
+}
+
+header a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    position: relative;
+}
+
+header a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: #ff4d4d;
+    transition: width 0.3s;
+}
+
+header a:hover::after {
+    width: 100%;
+}
+
+header a.active {
+    color: #ff4d4d;
+    background: rgba(255, 77, 77, 0.1);
 }
 
 .logo {
@@ -84,18 +121,46 @@ nav a:hover {
     align-items: center;
     text-align: center;
     padding: 0 2rem;
+    position: relative;
+    overflow: hidden;
 }
 
 .hero h1 {
-    font-size: 5rem;
+    font-size: 10rem;
     color: #ff4d4d;
     margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.hero h1::before {
+    content: 'GYMVERSE';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -48%) scale(1.2);
+    color: rgba(255, 77, 77, 0.1);
+    z-index: -1;
+    white-space: nowrap;
 }
 
 .hero p {
     font-size: 1.5rem;
     color: white;
     max-width: 800px;
+    position: relative;
+    z-index: 2;
+}
+
+.hero p::before {
+    content: 'EXPLORE THE VAST UNIVERSE OF FITNESS';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1.1);
+    color: rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+    z-index: -1;
 }
 
 .scroll-indicator {
@@ -104,6 +169,7 @@ nav a:hover {
     left: 50%;
     transform: translateX(-50%);
     animation: bounce 2s infinite;
+    z-index: 2;
 }
 
 @keyframes bounce {
@@ -116,7 +182,7 @@ nav a:hover {
     60% {
         transform: translateY(-15px) translateX(-50%);
     }
-} 
+}
 /* //////////////////// */
  
 /* Loading Screen Styles (keeping previous styles) */
@@ -1402,3 +1468,416 @@ background: #ff4444;
 }
 
 /* nutrition.html END */
+
+/* leaderboard.html START */
+
+/* Enhanced Title Section */
+.leaderboard-title-section {
+    text-align: center;
+    margin: 4rem 0;
+    position: relative;
+}
+
+.leaderboard-title {
+    color: #ff4d4d;
+    font-size: 5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+    position: relative;
+}
+
+.leaderboard-title::before {
+    content: 'LEADERBOARD';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1.2);
+    color: rgba(255, 77, 77, 0.1);
+    z-index: -1;
+    white-space: nowrap;
+}
+
+.leaderboard-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+}
+
+/* Enhanced leaderboard-controls */
+.leaderboard-controls {
+    display: flex;
+    justify-content: space-between;
+    margin: 2rem 4rem;
+    gap: 2rem;
+}
+
+.leaderboard-search-bar {
+    flex: 0 0 300px;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    border: 2px solid rgba(255, 77, 77, 0.3);
+    background: rgba(26, 26, 26, 0.8);
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.leaderboard-search-bar:focus {
+    outline: none;
+    border-color: #ff4d4d;
+    box-shadow: 0 0 15px rgba(255, 77, 77, 0.2);
+}
+
+.leaderboard-time-filters {
+    display: flex;
+    gap: 1rem;
+    background: rgba(26, 26, 26, 0.8);
+    padding: 0.5rem;
+    border-radius: 25px;
+}
+
+.leaderboard-time-filter {
+    padding: 0.8rem 1.5rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s;
+    border-radius: 20px;
+}
+
+.leaderboard-time-filter:hover {
+    color: #ff4d4d;
+    background: rgba(255, 77, 77, 0.1);
+}
+
+.leaderboard-time-filter.active {
+    color: white;
+    background: #ff4d4d;
+}
+
+/* Enhanced Category Filters */
+.leaderboard-category-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 250px;
+    position: fixed;
+    left: 2rem;
+    padding: 2rem;
+    background: rgba(26, 26, 26, 0.8);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.leaderboard-category-filter {
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    color: white;
+    text-align: left;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.leaderboard-category-filter::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: #ff4d4d;
+    transform: scaleY(0);
+    transition: transform 0.3s;
+}
+
+.leaderboard-category-filter:hover::before,
+.leaderboard-category-filter.active::before {
+    transform: scaleY(1);
+}
+
+.leaderboard-category-filter:hover,
+.leaderboard-category-filter.active {
+    color: #ff4d4d;
+    background: rgba(255, 77, 77, 0.1);
+}
+
+/* Enhanced Stats Display */
+.leaderboard-stats-container {
+    margin-left: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.leaderboard-stat-card {
+    background: rgba(26, 26, 26, 0.8);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s;
+}
+
+.leaderboard-stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.leaderboard-stat-title {
+    color: white;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    position: relative;
+    padding-left: 1rem;
+}
+
+.leaderboard-stat-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 80%;
+    background: #ff4d4d;
+    border-radius: 2px;
+}
+
+.leaderboard-stat-graph {
+    height: 300px;
+    display: flex;
+    align-items: flex-end; /* Align bars to the bottom */
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+.leaderboard-stat-bar {
+    height: 100%; /* Ensure the bar container takes full height */
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Align content to the bottom */
+    align-items: center; /* Center horizontally */
+}
+
+.leaderboard-bar {
+    width: 100%;
+    background: linear-gradient(180deg, rgba(51, 51, 51, 0.8) 0%, rgba(51, 51, 51, 0.4) 100%);
+    border-radius: 8px 8px 0 0;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+
+.leaderboard-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    animation: shine 2s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.leaderboard-bar.highlight {
+    background: linear-gradient(180deg, #ff4d4d 0%, rgba(255, 77, 77, 0.6) 100%);
+    box-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+}
+
+.leaderboard-bar.bronze {
+    background: linear-gradient(180deg, #cd7f32 0%, rgba(205, 127, 50, 0.6) 100%);
+}
+a{
+    color: inherit; /* This will make the link color inherit from its parent element */
+    text-decoration: none;
+}
+/* .leaderboard-player-name {
+    position: absolute;
+    top: -35px;
+    font-size: 1rem;
+    white-space: nowrap;
+    background: rgba(26, 26, 26, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 15px;
+    transform: translateY(10px);
+    opacity: 0;
+    transition: all 0.3s;
+}
+
+.leaderboard-stat-bar:hover .leaderboard-player-name {
+    transform: translateY(0);
+    opacity: 1;
+} */
+      
+
+/* leaderboard.html END */
+
+/* detailed-leaderboard.html START */
+.detailed-leaderboard-main-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.detailed-leaderboard-back-button {
+    padding: 0.8rem 1.5rem;
+    background-color: #ff4d4d;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 25px;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.detailed-leaderboard-back-button:hover {
+    background-color: #ff3333;
+}
+
+.detailed-leaderboard-title {
+    color: #ff4d4d;
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.detailed-leaderboard-category-info {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #888;
+    margin-bottom: 3rem;
+}
+
+.detailed-leaderboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.detailed-leaderboard-player-card {
+    background-color: #1a1a1a;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.detailed-leaderboard-player-card:hover {
+    transform: translateY(-5px);
+}
+
+.detailed-leaderboard-rank-badge {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto 1rem;
+}
+
+.detailed-leaderboard-rank-badge.gold {
+    background-color: #ffd700;
+    color: #000;
+}
+
+.detailed-leaderboard-rank-badge.silver {
+    background-color: #c0c0c0;
+    color: #000;
+}
+
+.detailed-leaderboard-rank-badge.bronze {
+    background-color: #cd7f32;
+    color: #000;
+}
+
+.detailed-leaderboard-player-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    background-color: #333;
+    overflow: hidden;
+}
+
+.detailed-leaderboard-player-name {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.detailed-leaderboard-player-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detailed-leaderboard-stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background-color: #222;
+    border-radius: 5px;
+}
+
+.detailed-leaderboard-stat-label {
+    color: #888;
+}
+
+.detailed-leaderboard-stat-value {
+    color: #ff4d4d;
+}
+
+.detailed-leaderboard-time-period {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #ff4d4d;
+    border-radius: 25px;
+    font-size: 0.9rem;
+}
+
+.detailed-leaderboard-player-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 1140px;
+}
+
+.detailed-leaderboard-player-row {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: #333;
+    border-radius: 5px;
+}
+
+.detailed-leaderboard-rank {
+    width: 50px;
+    font-size: 1.2rem;
+}
+
+.detailed-leaderboard-player-info {
+    flex: 1;
+}
+
+/* detailed-leaderboard.html END */
