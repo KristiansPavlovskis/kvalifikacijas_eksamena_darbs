@@ -1,66 +1,95 @@
+<?php
+include 'assets/connect_db.php';
+
+// Get equipment ID from URL parameter
+$equipment_id = isset($_GET['id']) ? $_GET['id'] : 1; // Default to 1 if not provided
+
+// Get equipment details
+$sql_equipment = "SELECT * FROM equipment WHERE id = $equipment_id";
+$result_equipment = mysqli_query($savienojums, $sql_equipment);
+
+if (mysqli_num_rows($result_equipment) > 0) {
+    $equipment = mysqli_fetch_assoc($result_equipment);
+} else {
+    // Redirect to equipment list if equipment not found
+    header("Location: equipment.php");
+    exit();
+}
+
+// Get equipment features
+$sql_features = "SELECT * FROM equipment_features WHERE equipment_id = $equipment_id";
+$result_features = mysqli_query($savienojums, $sql_features);
+
+// Get safety tips
+$sql_safety = "SELECT * FROM equipment_safety WHERE equipment_id = $equipment_id";
+$result_safety = mysqli_query($savienojums, $sql_safety);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treadmill - Equipment Details</title>
+    <title><?php echo $equipment['name']; ?> - Equipment Details</title>
     <link rel="stylesheet" href="lietotaja-view.css">
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet"> 
 </head>
 <body>
     <header>
-        <a href="profile.html" class="logo">GYMVERSE</a>
+        <a href="profile.php" class="logo">GYMVERSE</a>
         <nav>
-            <a href="#">HOME</a>
-            <a href="#">ABOUT</a>
-            <a href="membership.html">MEMBERSHIP</a>
-            <a href="leaderboard.html">LEADERBOARD</a>
-            <a href="nutrition.html">NUTRITION</a>
-            <a href="#">CONTACT</a>
+            <a href="index.php">HOME</a>
+            <a href="about.php">ABOUT</a>
+            <a href="membership.php">MEMBERSHIP</a>
+            <a href="leaderboard.php">LEADERBOARD</a>
+            <a href="nutrition.php">NUTRITION</a>
+            <a href="contact.php">CONTACT</a>
         </nav>
     </header>
 
     <div class="container">
-        <h1 class="equipment-title">TREADMILL</h1>
+        <h1 class="equipment-title"><?php echo $equipment['name']; ?></h1>
 
         <div class="equipment-content">
-            <img src="images/image 3.png" alt="Treadmill" class="equipment-image">
+            <img src="<?php echo $equipment['image_path']; ?>" alt="<?php echo $equipment['name']; ?>" class="equipment-image">
             
             <div class="equipment-info">
-                <span class="equipmentDetail-experience-tag">Beginner-Friendly</span>
+                <span class="equipmentDetail-experience-tag"><?php echo $equipment['experience_level']; ?></span>
 
                 <div class="info-section">
                     <h2>Overview</h2>
-                    <p>The treadmill is a versatile cardio machine used for full body conditioning and cardiovascular health improvement. Perfect for both beginners and advanced users, it offers customizable workouts through speed and incline adjustments.</p>
+                    <p><?php echo $equipment['overview']; ?></p>
                 </div>
 
                 <div class="info-section">
                     <h2>Key Features</h2>
                     <div class="features-list">
-                        <div class="equipmentDetail-feature-card">
-                            <h3>Speed Range</h3>
-                            <p>1-12 mph</p>
-                        </div>
-                        <div class="equipmentDetail-feature-card">
-                            <h3>Incline</h3>
-                            <p>0-15%</p>
-                        </div>
-                        <div class="equipmentDetail-feature-card">
-                            <h3>Display</h3>
-                            <p>LCD Screen</p>
-                        </div>
+                        <?php
+                        if (mysqli_num_rows($result_features) > 0) {
+                            while($feature = mysqli_fetch_assoc($result_features)) {
+                                echo '<div class="equipmentDetail-feature-card">';
+                                echo '<h3>' . $feature['feature_name'] . '</h3>';
+                                echo '<p>' . $feature['feature_value'] . '</p>';
+                                echo '</div>';
+                            }
+                        } else {
+                            echo '<p>No features available.</p>';
+                        }
+                        ?>
                     </div>
                 </div>
 
                 <div class="safety-tips">
                     <h2>Correct Usage & Safety</h2>
                     <ul class="safety-list">
-                        <li>Stay in the middle of the belt while running</li>
-                        <li>Maintain proper distance from handlebars</li>
-                        <li>Avoid moving too far back on the treadmill</li>
-                        <li>Always attach the safety chord to your clothing</li>
-                        <li>Start slow and gradually increase speed</li>
-                        <li>Use the handrails when adjusting speed or incline</li>
+                        <?php
+                        if (mysqli_num_rows($result_safety) > 0) {
+                            while($tip = mysqli_fetch_assoc($result_safety)) {
+                                echo '<li>' . $tip['safety_tip'] . '</li>';
+                            }
+                        } else {
+                            echo '<li>No safety tips available.</li>';
+                        }
+                        ?>
                     </ul>
                 </div>
             </div>
@@ -148,22 +177,22 @@
 </div>
     <script>
         function toggleView(view) {
-    const frontView = document.getElementById('human-front');
-    const backView = document.getElementById('human-back');
-    const buttons = document.querySelectorAll('.view-button');
-    
-    if (view === 'front') {
-        frontView.style.display = 'block';
-        backView.style.display = 'none';
-        buttons[0].classList.add('active');
-        buttons[1].classList.remove('active');
-    } else {
-        frontView.style.display = 'none';
-        backView.style.display = 'block';
-        buttons[0].classList.remove('active');
-        buttons[1].classList.add('active');
-    }
-}
+            const frontView = document.getElementById('human-front');
+            const backView = document.getElementById('human-back');
+            const buttons = document.querySelectorAll('.view-button');
+            
+            if (view === 'front') {
+                frontView.style.display = 'block';
+                backView.style.display = 'none';
+                buttons[0].classList.add('active');
+                buttons[1].classList.remove('active');
+            } else {
+                frontView.style.display = 'none';
+                backView.style.display = 'block';
+                buttons[0].classList.remove('active');
+                buttons[1].classList.add('active');
+            }
+        }
     </script>
 </body>
 </html>
