@@ -1,3 +1,39 @@
+<?php
+// Initialize the session
+session_start();
+
+// Check if the user is not logged in, if not redirect to login page
+if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("location: login.php");
+    exit;
+}
+
+// Include database connection
+require_once 'config/db_connect.php';
+
+// Fetch additional user information 
+$user_id = $_SESSION["user_id"];
+$username = $_SESSION["username"];
+$email = $_SESSION["email"];
+$join_date = "";
+
+try {
+    $sql = "SELECT created_at FROM users WHERE id = :id";
+    if($stmt = $conn->prepare($sql)) {
+        $stmt->bindParam(":id", $user_id, PDO::PARAM_INT);
+        if($stmt->execute()) {
+            if($row = $stmt->fetch()) {
+                $join_date = date("M d, Y", strtotime($row["created_at"]));
+            }
+        }
+    }
+} catch(PDOException $e) {
+    // In production, you should log this error instead of displaying it
+    // echo "Error: " . $e->getMessage();
+}
+
+// PHP file converted from HTML
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -236,17 +272,70 @@
             <div class="profile-pic">
                 <i class="fas fa-user"></i>
             </div>
-            <span>USERNAME</span>
+            <span><?php echo htmlspecialchars($_SESSION["username"]); ?></span>
         </div>
         <nav class="nav-links">
-            <a href="workout-analytics.html" class="nav-link">Total Workouts</a>
+            <a href="workout-analytics.php" class="nav-link">Total Workouts</a>
             <a href="#" class="nav-link">Calories Burned</a>
             <a href="#" class="nav-link">Current Goal</a>
-            <a href="workout-planer.html" class="nav-link">Plan</a>
+            <a href="workout-planer.php" class="nav-link">Plan</a>
+            <a href="logout.php" class="nav-link" style="margin-left: 20px; background-color: #ff4d4d; color: white; padding: 8px 15px; border-radius: 5px;">Logout</a>
         </nav>
     </header>
 
     <main class="dashboard">
+        <!-- Welcome Section -->
+        <section class="section welcome-section" style="background: linear-gradient(45deg, #333, #1a1a1a); border-radius: 15px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h1 style="font-size: 28px; margin-bottom: 10px; color: #fff;">Welcome back, <?php echo htmlspecialchars($_SESSION["username"]); ?>!</h1>
+                <p style="color: #ccc; margin-bottom: 0;">Ready to crush your fitness goals today?</p>
+            </div>
+            <div style="text-align: right;">
+                <a href="workout-planer.php" style="display: inline-block; background-color: #ff4d4d; color: white; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: all 0.3s ease;">START WORKOUT</a>
+            </div>
+        </section>
+
+        <!-- Account Information Section -->
+        <section class="section" style="background: linear-gradient(45deg, #222, #0f0f0f); border-radius: 15px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+            <h2 class="section-title" style="display: flex; align-items: center; margin-bottom: 25px; color: #fff;">
+                <i class="fas fa-user-circle" style="margin-right: 10px; color: #ff4d4d;"></i>
+                Account Information
+            </h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;">
+                    <h3 style="font-size: 18px; color: #ff4d4d; margin-bottom: 15px;">Profile Details</h3>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; color: #999; font-size: 14px; margin-bottom: 5px;">Username</label>
+                        <p style="margin: 0; color: #fff; font-weight: bold;"><?php echo htmlspecialchars($username); ?></p>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; color: #999; font-size: 14px; margin-bottom: 5px;">Email</label>
+                        <p style="margin: 0; color: #fff;"><?php echo htmlspecialchars($email); ?></p>
+                    </div>
+                    <div>
+                        <label style="display: block; color: #999; font-size: 14px; margin-bottom: 5px;">Member Since</label>
+                        <p style="margin: 0; color: #fff;"><?php echo !empty($join_date) ? $join_date : "N/A"; ?></p>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;">
+                    <h3 style="font-size: 18px; color: #ff4d4d; margin-bottom: 15px;">Account Settings</h3>
+                    <div style="margin-bottom: 15px;">
+                        <a href="#" style="display: block; padding: 10px; background: rgba(255,77,77,0.1); color: #fff; border-radius: 5px; text-decoration: none; margin-bottom: 10px; transition: all 0.3s ease;">
+                            <i class="fas fa-key" style="margin-right: 10px; color: #ff4d4d;"></i> Change Password
+                        </a>
+                        <a href="#" style="display: block; padding: 10px; background: rgba(255,77,77,0.1); color: #fff; border-radius: 5px; text-decoration: none; margin-bottom: 10px; transition: all 0.3s ease;">
+                            <i class="fas fa-cog" style="margin-right: 10px; color: #ff4d4d;"></i> Edit Profile
+                        </a>
+                        <a href="#" style="display: block; padding: 10px; background: rgba(255,77,77,0.1); color: #fff; border-radius: 5px; text-decoration: none; transition: all 0.3s ease;">
+                            <i class="fas fa-bell" style="margin-right: 10px; color: #ff4d4d;"></i> Notification Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="section">
             <h2 class="section-title">
                 <i class="fas fa-dumbbell"></i>

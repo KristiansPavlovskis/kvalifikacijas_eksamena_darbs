@@ -1,3 +1,6 @@
+<?php
+// PHP file converted from HTML
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,20 +13,20 @@
 </head>
 <body>
     <header>
-        <a href="profile.html" class="logo">GYMVERSE</a>
+        <a href="profile.php" class="logo">GYMVERSE</a>
         <nav>
             <a href="#">HOME</a>
             <a href="#">ABOUT</a>
-            <a href="membership.html">MEMBERSHIP</a>
-            <a href="leaderboard.html">LEADERBOARD</a>
-            <a href="nutrition.html">NUTRITION</a>
+            <a href="membership.php">MEMBERSHIP</a>
+            <a href="leaderboard.php">LEADERBOARD</a>
+            <a href="nutrition.php">NUTRITION</a>
             <a href="#">CONTACT</a>
         </nav>
     </header>
 
     <div class="main-content">
         <h1 class="title">WORKOUTS</h1>
-        <a href="equipment.html">
+        <a href="equipment.php">
         <div class="options-container">
             <div class="option-card">
                 <img src="images/pexels-ivan-samkov-4164766.jpg" alt="Gym Equipment">
@@ -33,7 +36,7 @@
                 </div>
             </div>
         </a>
-            <a href="excercises.html">
+            <a href="excercises.php">
             <div class="option-card">
                 <img src="images/pexels-mikhail-nilov-6975759.jpg" alt="Exercises">
                 <div class="option-content">
@@ -49,4 +52,4 @@
         </div>
     </div>
 </body>
-</html>
+</html> 

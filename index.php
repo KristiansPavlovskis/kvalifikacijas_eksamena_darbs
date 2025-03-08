@@ -1,3 +1,9 @@
+<?php
+// Start session
+session_start();
+
+// PHP file converted from HTML
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,14 +23,21 @@
 
     <!-- Main Content -->
     <header>
-        <a href="profile.html" class="logo">GYMVERSE</a>
+        <a href="<?php echo isset($_SESSION["loggedin"]) ? 'profile.php' : 'index.php'; ?>" class="logo">GYMVERSE</a>
         <nav>
             <a href="#">HOME</a>
             <a href="#">ABOUT</a>
-            <a href="membership.html">MEMBERSHIP</a>
-            <a href="leaderboard.html">LEADERBOARD</a>
-            <a href="nutrition.html">NUTRITION</a>
+            <a href="membership.php">MEMBERSHIP</a>
+            <a href="leaderboard.php">LEADERBOARD</a>
+            <a href="nutrition.php">NUTRITION</a>
             <a href="#">CONTACT</a>
+            <?php if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true): ?>
+                <a href="profile.php" style="margin-left: 15px;">PROFILE</a>
+                <a href="logout.php" style="margin-left: 10px; background-color: #ff4d4d; color: white; padding: 8px 15px; border-radius: 5px;">LOGOUT</a>
+            <?php else: ?>
+                <a href="login.php" style="margin-left: 15px; background-color: #333; color: white; padding: 8px 15px; border-radius: 5px;">LOGIN</a>
+                <a href="register.php" style="margin-left: 10px; background-color: #ff4d4d; color: white; padding: 8px 15px; border-radius: 5px;">REGISTER</a>
+            <?php endif; ?>
         </nav>
     </header>
 
@@ -43,7 +56,7 @@
             OR DIVE INTO TRAINING PLANS TAILORED JUST FOR YOU.
         </div>
         
-        <a href="workouts.html" class="feature-card">
+        <a href="workouts.php" class="feature-card">
             <img src="images/image 8.png" alt="Workouts">
             <div class="card-content">
                 <h2>WORKOUTS</h2>
@@ -51,7 +64,7 @@
             </div>
         </a>
         
-        <a href="nutrition.html" class="feature-card">
+        <a href="nutrition.php" class="feature-card">
             <img src="images/image (1).png" alt="Nutrition">
             <div class="card-content">
                 <h2>NUTRITION</h2>
@@ -59,7 +72,7 @@
             </div>
         </a>
         
-        <a href="leaderboard.html" class="feature-card">
+        <a href="leaderboard.php" class="feature-card">
             <img src="images/image (2).png" alt="Leaderboard">
             <div class="card-content">
                 <h2>LEADERBOARD</h2>
@@ -67,7 +80,7 @@
             </div>
         </a>
         
-        <a href="membership.html" class="feature-card">
+        <a href="membership.php" class="feature-card">
             <img src="images/image (3).png" alt="Membership">
             <div class="card-content">
                 <h2>MEMBERSHIP</h2>
@@ -79,13 +92,13 @@
         <!-- Workout Types Section -->
     <section class="workout-types">
         <div class="workout-buttons">
-            <a href="excerciseType.html">
+            <a href="excerciseType.php">
             <button class="workout-button skewed"><span>STRENGTH TRAINING</span></button>
         </a>
-            <a href="excerciseType.html">
+            <a href="excerciseType.php">
             <button class="workout-button skewed"><span>HIIT</span></button>
         </a>
-            <a href="excerciseType.html">
+            <a href="excerciseType.php">
             <button class="workout-button skewed"><span>FAT BURN</span></button>
         </a>
         </div>
@@ -118,7 +131,7 @@
                 </div>
             </div>
         </div>
-        <a href="leaderboard.html"><button class="see-all">SEE LEADERBOARD</button></a>
+        <a href="leaderboard.php"><button class="see-all">SEE LEADERBOARD</button></a>
     </section>
 
     <!-- Meals Section -->
@@ -146,7 +159,7 @@
                 </div>
             </div>
         </div>
-       <a href="nutrition.html"><button class="see-all">SEE THE BEST MEALS</button></a>
+       <a href="nutrition.php"><button class="see-all">SEE THE BEST MEALS</button></a>
     </section>
 
     <!-- Membership Section -->
@@ -185,7 +198,7 @@
                             <button class="tier-button">SELECT PLAN</button>
                         </div>
                     </div>
-                    <a href="membership.html"><button class="view-all-memberships">VIEW ALL MEMBERSHIPS</button></a>
+                    <a href="membership.php"><button class="view-all-memberships">VIEW ALL MEMBERSHIPS</button></a>
                 </div>
             </div>
         </div>
@@ -281,4 +294,4 @@
         });
     </script>
 </body>
-</html>
+</html> 

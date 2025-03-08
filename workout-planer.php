@@ -1,3 +1,6 @@
+<?php
+// PHP file converted from HTML
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -1,3 +1,6 @@
+<?php
+// PHP file converted from HTML
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,13 +12,13 @@
 </head>
 <body>
     <header>
-        <a href="profile.html" class="logo">GYMVERSE</a>
+        <a href="profile.php" class="logo">GYMVERSE</a>
         <nav>
             <a href="#">HOME</a>
             <a href="#">ABOUT</a>
-            <a href="membership.html">MEMBERSHIP</a>
-            <a href="leaderboard.html">LEADERBOARD</a>
-            <a href="nutrition.html">NUTRITION</a>
+            <a href="membership.php">MEMBERSHIP</a>
+            <a href="leaderboard.php">LEADERBOARD</a>
+            <a href="nutrition.php">NUTRITION</a>
             <a href="#">CONTACT</a>
         </nav>
     </header>
@@ -44,7 +47,7 @@
         </div>
 
         <div class="leaderboard-stats-container">
-            <a href="detailed-leaderboard.html">
+            <a href="detailed-leaderboard.php">
             <div class="leaderboard-stat-card">
                 <h3 class="leaderboard-stat-title">CALORIES BURNED THIS WEEK</h3>
                 <div class="leaderboard-stat-graph">
@@ -63,7 +66,7 @@
                 </div>
             </div>
             </a>
-            <a href="detailed-leaderboard.html">
+            <a href="detailed-leaderboard.php">
             <div class="leaderboard-stat-card">
                 <h3 class="leaderboard-stat-title">AMOUNT RAN THIS WEEK</h3>
                 <div class="leaderboard-stat-graph">
@@ -86,4 +89,4 @@
         </div>
     </div>
 </body>
-</html>
+</html> 

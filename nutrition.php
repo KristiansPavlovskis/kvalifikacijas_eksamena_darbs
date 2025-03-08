@@ -1,3 +1,6 @@
+<?php
+// PHP file converted from HTML
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,13 +14,13 @@
 </head>
 <body style="background-color: #f5f5f5; color: #0A0A0A;">
     <header>
-        <a href="profile.html" class="logo">GYMVERSE</a>
+        <a href="profile.php" class="logo">GYMVERSE</a>
         <nav>
             <a href="#">HOME</a>
             <a href="#">ABOUT</a>
-            <a href="membership.html">MEMBERSHIP</a>
-            <a href="leaderboard.html">LEADERBOARD</a>
-            <a href="nutrition.html">NUTRITION</a>
+            <a href="membership.php">MEMBERSHIP</a>
+            <a href="leaderboard.php">LEADERBOARD</a>
+            <a href="nutrition.php">NUTRITION</a>
             <a href="#">CONTACT</a>
         </nav>
     </header>
@@ -138,4 +141,4 @@
         updateProgress();
     </script>
 </body>
-</html>
+</html> 
