@@ -3,11 +3,11 @@ session_start();
 
 // Check if user is logged in
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    header("location: login.php?redirect=workout-summary.php");
+    header("location: ../login.php?redirect=profile/workout-summary.php");
     exit;
 }
 
-require_once 'assets/db_connection.php';
+require_once '../assets/db_connection.php';
 
 // Get workout ID from URL
 $workout_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -21,7 +21,7 @@ mysqli_stmt_execute($stmt);
 $workout = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 
 if (!$workout) {
-    header("location: profile/profile.php");
+    header("location: profile.php");
     exit;
 }
 

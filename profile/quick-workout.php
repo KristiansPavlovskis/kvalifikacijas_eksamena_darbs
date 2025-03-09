@@ -3,11 +3,11 @@ session_start();
 
 // Check if user is logged in
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    header("location: login.php?redirect=quick-workout.php");
+    header("location: ../login.php?redirect=profile/quick-workout.php");
     exit;
 }
 
-require_once 'assets/db_connection.php';
+require_once '../assets/db_connection.php';
 
 // Get user ID
 $user_id = $_SESSION["user_id"];

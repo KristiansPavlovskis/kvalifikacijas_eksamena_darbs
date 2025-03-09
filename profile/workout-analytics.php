@@ -4,9 +4,15 @@ session_start();
 
 // Check if the user is not logged in, if not redirect to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    header("location: login.php");
+    header("location: ../login.php?redirect=profile/workout-analytics.php");
     exit;
 }
+
+// Include database connection
+require_once '../assets/db_connection.php';
+
+// Get user ID
+$user_id = $_SESSION["user_id"];
 
 // PHP file converted from HTML
 ?>

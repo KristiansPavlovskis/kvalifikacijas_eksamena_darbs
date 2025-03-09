@@ -23,6 +23,14 @@ $body_weight = 0;
 $height = 0;
 $fitness_level = "Beginner";
 $activity_streak = 0;
+$active_goals_count = 0;
+$completed_goals_count = 0;
+
+// Function to check if table exists
+function tableExists($conn, $tableName) {
+    $result = mysqli_query($conn, "SHOW TABLES LIKE '$tableName'");
+    return mysqli_num_rows($result) > 0;
+}
 
 // Get basic user info
 try {
@@ -45,15 +53,17 @@ try {
 
 // Get workout statistics
 try {
-    $query = "SELECT COUNT(*) as workout_count, MAX(created_at) as last_workout FROM workouts WHERE user_id = ?";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    if ($workout_data = mysqli_fetch_assoc($result)) {
-        $total_workouts = $workout_data["workout_count"];
-        $last_workout_date = $workout_data["last_workout"] ? date("M d, Y", strtotime($workout_data["last_workout"])) : "Never";
+    if (tableExists($conn, 'workouts')) {
+        $query = "SELECT COUNT(*) as workout_count, MAX(created_at) as last_workout FROM workouts WHERE user_id = ?";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        if ($workout_data = mysqli_fetch_assoc($result)) {
+            $total_workouts = $workout_data["workout_count"];
+            $last_workout_date = $workout_data["last_workout"] ? date("M d, Y", strtotime($workout_data["last_workout"])) : "Never";
+        }
     }
 } catch (Exception $e) {
     // Handle error
@@ -61,14 +71,16 @@ try {
 
 // Get workout volume
 try {
-    $query = "SELECT SUM(total_volume) as total_volume FROM workouts WHERE user_id = ?";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    if ($volume_data = mysqli_fetch_assoc($result)) {
-        $total_volume = round($volume_data["total_volume"] ?: 0);
+    if (tableExists($conn, 'workouts')) {
+        $query = "SELECT SUM(total_volume) as total_volume FROM workouts WHERE user_id = ?";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        if ($volume_data = mysqli_fetch_assoc($result)) {
+            $total_volume = round($volume_data["total_volume"] ?: 0);
+        }
     }
 } catch (Exception $e) {
     // Handle error
@@ -76,38 +88,40 @@ try {
 
 // Calculate activity streak
 try {
-    $query = "SELECT created_at FROM workouts WHERE user_id = ? ORDER BY created_at DESC";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    $workout_dates = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $workout_dates[] = date('Y-m-d', strtotime($row['created_at']));
-    }
-    
-    if (!empty($workout_dates)) {
-        $today = new DateTime();
-        $yesterday = new DateTime();
-        $yesterday->modify('-1 day');
+    if (tableExists($conn, 'workouts')) {
+        $query = "SELECT created_at FROM workouts WHERE user_id = ? ORDER BY created_at DESC";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
         
-        // Check if worked out today or yesterday
-        $today_str = $today->format('Y-m-d');
-        $yesterday_str = $yesterday->format('Y-m-d');
+        $workout_dates = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $workout_dates[] = date('Y-m-d', strtotime($row['created_at']));
+        }
         
-        if (in_array($today_str, $workout_dates) || in_array($yesterday_str, $workout_dates)) {
-            $activity_streak = 1;
-            $date_to_check = clone $yesterday;
-            $date_to_check->modify('-1 day');
+        if (!empty($workout_dates)) {
+            $today = new DateTime();
+            $yesterday = new DateTime();
+            $yesterday->modify('-1 day');
             
-            while (true) {
-                $date_str = $date_to_check->format('Y-m-d');
-                if (in_array($date_str, $workout_dates)) {
-                    $activity_streak++;
-                    $date_to_check->modify('-1 day');
-                } else {
-                    break;
+            // Check if worked out today or yesterday
+            $today_str = $today->format('Y-m-d');
+            $yesterday_str = $yesterday->format('Y-m-d');
+            
+            if (in_array($today_str, $workout_dates) || in_array($yesterday_str, $workout_dates)) {
+                $activity_streak = 1;
+                $date_to_check = clone $yesterday;
+                $date_to_check->modify('-1 day');
+                
+                while (true) {
+                    $date_str = $date_to_check->format('Y-m-d');
+                    if (in_array($date_str, $workout_dates)) {
+                        $activity_streak++;
+                        $date_to_check->modify('-1 day');
+                    } else {
+                        break;
+                    }
                 }
             }
         }
@@ -127,16 +141,21 @@ try {
 }
 
 // Get active goals count
-$active_goals = 0;
 try {
-    $query = "SELECT COUNT(*) as goal_count FROM goals WHERE user_id = ? AND completed = 0";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    if ($goal_data = mysqli_fetch_assoc($result)) {
-        $active_goals = $goal_data["goal_count"];
+    if (tableExists($conn, 'goals')) {
+        $query = "SELECT 
+                    SUM(CASE WHEN completed = 0 THEN 1 ELSE 0 END) as active_count,
+                    SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed_count
+                  FROM goals WHERE user_id = ?";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        if ($goal_data = mysqli_fetch_assoc($result)) {
+            $active_goals_count = $goal_data["active_count"] ?: 0;
+            $completed_goals_count = $goal_data["completed_count"] ?: 0;
+        }
     }
 } catch (Exception $e) {
     // Handle error
@@ -145,19 +164,21 @@ try {
 // Get favorite exercises
 $favorite_exercises = [];
 try {
-    $query = "SELECT el.exercise_name 
-              FROM user_favorite_exercises uf 
-              JOIN exercise_library el ON uf.exercise_id = el.id 
-              WHERE uf.user_id = ? 
-              ORDER BY uf.created_at DESC 
-              LIMIT 5";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        $favorite_exercises[] = $row["exercise_name"];
+    if (tableExists($conn, 'user_favorite_exercises') && tableExists($conn, 'exercise_library')) {
+        $query = "SELECT el.exercise_name 
+                FROM user_favorite_exercises uf 
+                JOIN exercise_library el ON uf.exercise_id = el.id 
+                WHERE uf.user_id = ? 
+                ORDER BY uf.created_at DESC 
+                LIMIT 5";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        while ($row = mysqli_fetch_assoc($result)) {
+            $favorite_exercises[] = $row["exercise_name"];
+        }
     }
 } catch (Exception $e) {
     // Handle error
@@ -166,18 +187,35 @@ try {
 // Get most recent workouts
 $recent_workouts = [];
 try {
-    $query = "SELECT id, workout_name, start_time, duration_seconds, total_volume 
-              FROM workouts 
-              WHERE user_id = ? 
-              ORDER BY created_at DESC 
-              LIMIT 3";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        $recent_workouts[] = $row;
+    if (tableExists($conn, 'workouts')) {
+        $query = "SELECT id, name as workout_name, created_at, duration_minutes as duration, calories_burned, total_volume 
+                FROM workouts 
+                WHERE user_id = ? 
+                ORDER BY created_at DESC 
+                LIMIT 3";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $recent_workouts = mysqli_stmt_get_result($stmt);
+    }
+} catch (Exception $e) {
+    // Handle error
+}
+
+// Get active goals for display
+$goals = false;
+try {
+    if (tableExists($conn, 'goals')) {
+        $query = "SELECT id, title, description, target_value, current_value, unit, goal_type, deadline as end_date, 
+                         DATE(created_at) as start_date 
+                  FROM goals 
+                  WHERE user_id = ? AND completed = 0 
+                  ORDER BY deadline ASC 
+                  LIMIT 4";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $goals = mysqli_stmt_get_result($stmt);
     }
 } catch (Exception $e) {
     // Handle error
@@ -634,11 +672,11 @@ try {
             <a href="nutrition.php" class="prof-nav-item">
                 <i class="fas fa-apple-alt"></i> Nutrition
             </a>
-            <a href="#" class="prof-nav-item">
-                <i class="fas fa-chart-line"></i> Progress
+            <a href="workout-analytics.php" class="prof-nav-item">
+                <i class="fas fa-chart-line"></i> Analytics
             </a>
-            <a href="#" class="prof-nav-item">
-                <i class="fas fa-cog"></i> Settings
+            <a href="quick-workout.php" class="prof-nav-item">
+                <i class="fas fa-stopwatch"></i> Quick Workout
             </a>
         </div>
 
@@ -693,7 +731,7 @@ try {
                                 <div>
                                     <div class="prof-card-title"><?= htmlspecialchars($workout['workout_name']) ?></div>
                                     <div class="prof-card-subtitle">
-                                        <?= date("M d, Y", strtotime($workout['start_time'])) ?>
+                                        <?= date("M d, Y", strtotime($workout['created_at'])) ?>
                                     </div>
                                 </div>
                                 <div class="prof-card-icon">
@@ -701,11 +739,12 @@ try {
                                 </div>
                             </div>
                             <div>
-                                <p><i class="fas fa-stopwatch"></i> Duration: <?= floor($workout['duration_seconds'] / 60) ?> min</p>
-                                <p><i class="fas fa-fire"></i> Calories: <?= $workout['total_volume'] ?> kg</p>
+                                <p><i class="fas fa-stopwatch"></i> Duration: <?= $workout['duration'] ?? 0 ?> min</p>
+                                <p><i class="fas fa-fire"></i> Calories: <?= $workout['calories_burned'] ?? 0 ?></p>
+                                <p><i class="fas fa-cubes"></i> Volume: <?= number_format($workout['total_volume'] ?? 0) ?> kg</p>
                             </div>
                             <div style="margin-top: 15px;">
-                                <a href="../workout-summary.php?id=<?= $workout['id'] ?>" class="prof-button secondary" style="width: 100%;">
+                                <a href="workout-summary.php?id=<?= $workout['id'] ?>" class="prof-button secondary" style="width: 100%;">
                                     View Details <i class="fas fa-arrow-right"></i>
                                 </a>
                             </div>
@@ -717,7 +756,7 @@ try {
                     <i class="fas fa-dumbbell" style="font-size: 48px; opacity: 0.2; margin-bottom: 15px;"></i>
                     <h3>No Workouts Yet</h3>
                     <p style="margin-bottom: 20px;">Start tracking your fitness journey by recording your workouts.</p>
-                    <a href="../quick-workout.php" class="prof-button">
+                    <a href="quick-workout.php" class="prof-button">
                         <i class="fas fa-plus-circle"></i> Start a Workout
                     </a>
                 </div>
@@ -728,10 +767,10 @@ try {
         <div class="prof-section">
             <div class="prof-section-header">
                 <div class="prof-section-title">
-                    <i class="fas fa-chart-line"></i> Fitness Progress
+                    <i class="fas fa-chart-line"></i> Fitness Goals
                 </div>
-                <a href="#" class="prof-section-action">
-                    View Details <i class="fas fa-chevron-right"></i>
+                <a href="current-goal.php" class="prof-section-action">
+                    View All <i class="fas fa-chevron-right"></i>
                 </a>
             </div>
             
