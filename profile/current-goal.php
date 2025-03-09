@@ -889,26 +889,7 @@ try {
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <header class="navbar">
-        <div class="logo">
-            <a href="../index.php">
-                <i class="fas fa-dumbbell"></i>
-                <span>GYMVERSE</span>
-            </a>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="../index.php"><i class="fas fa-home"></i> Home</a></li>
-                <li><a href="../workouts.php"><i class="fas fa-dumbbell"></i> Workouts</a></li>
-                <li><a href="../excercises.php"><i class="fas fa-running"></i> Exercises</a></li>
-                <li><a href="../quick-workout.php"><i class="fas fa-stopwatch"></i> Quick Workout</a></li>
-                <li><a class="active" href="profile.php"><i class="fas fa-user"></i> Profile</a></li>
-                <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </nav>
-    </header>
-
+    
     <div class="prof-container">
         <!-- Profile Header -->
         <div class="prof-header">

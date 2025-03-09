@@ -598,26 +598,7 @@ $workout_type_chart_data = json_encode([
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <header class="navbar">
-        <div class="logo">
-            <a href="../index.php">
-                <i class="fas fa-dumbbell"></i>
-                <span>GYMVERSE</span>
-            </a>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="../index.php"><i class="fas fa-home"></i> Home</a></li>
-                <li><a href="../workouts.php"><i class="fas fa-dumbbell"></i> Workouts</a></li>
-                <li><a href="../excercises.php"><i class="fas fa-running"></i> Exercises</a></li>
-                <li><a href="../quick-workout.php"><i class="fas fa-stopwatch"></i> Quick Workout</a></li>
-                <li><a class="active" href="profile.php"><i class="fas fa-user"></i> Profile</a></li>
-                <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        </nav>
-    </header>
-
+  
     <div class="prof-container">
         <!-- Profile Header -->
         <div class="prof-header">
@@ -629,7 +610,7 @@ $workout_type_chart_data = json_encode([
                 <div class="prof-stat-item">
                     <div class="prof-stat-value"><?= number_format($total_calories) ?></div>
                     <div class="prof-stat-label">Total Calories</div>
-                </div>
+                </div> 
                 <div class="prof-stat-item">
                     <div class="prof-stat-value"><?= number_format($avg_calories) ?></div>
                     <div class="prof-stat-label">Avg per Workout</div>
