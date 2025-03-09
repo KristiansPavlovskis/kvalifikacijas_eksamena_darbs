@@ -4,7 +4,7 @@ session_start();
 
 // Check if the user is not logged in, if not redirect to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    header("location: login.php");
+    header("location: login.php?redirect=calories-burned.php");
     exit;
 }
 
@@ -44,37 +44,32 @@ mysqli_stmt_execute($daily_stmt);
 $daily_result = mysqli_stmt_get_result($daily_stmt);
 $daily_calories = [];
 $daily_dates = [];
+
+// Get 7 days, fill in missing days with 0 calories
+$one_week_ago = new DateTime();
+$one_week_ago->modify('-6 days');
+$dates_with_calories = [];
+
+// Fill the dataset with dates from the database
 while ($row = mysqli_fetch_assoc($daily_result)) {
-    $daily_calories[] = $row['calories'];
-    $daily_dates[] = date('D', strtotime($row['workout_date']));
+    $dates_with_calories[date('Y-m-d', strtotime($row['workout_date']))] = $row['calories'];
 }
 
-// Fill in missing days with zeros
-$past_days = 7;
-$all_dates = [];
-$all_calories = [];
-for ($i = $past_days - 1; $i >= 0; $i--) {
-    $date = date('Y-m-d', strtotime("-$i days"));
-    $day = date('D', strtotime($date));
-    $all_dates[] = $day;
-    
-    $found = false;
-    foreach ($daily_dates as $index => $daily_date) {
-        if ($daily_date == $day) {
-            $all_calories[] = (int)$daily_calories[$index];
-            $found = true;
-            break;
-        }
-    }
-    
-    if (!$found) {
-        $all_calories[] = 0;
-    }
+// Create arrays for chart.js with all 7 days
+for ($i = 0; $i < 7; $i++) {
+    $date = clone $one_week_ago;
+    $date->modify("+$i days");
+    $date_str = $date->format('Y-m-d');
+    $daily_dates[] = $date->format('D');
+    $daily_calories[] = isset($dates_with_calories[$date_str]) ? $dates_with_calories[$date_str] : 0;
 }
 
-// Fetch recent workouts with calories data
-$recent_workouts_query = "SELECT id, workout_name, workout_type, duration_minutes, calories_burned, completed_at, notes
-                         FROM workouts WHERE user_id = ? ORDER BY completed_at DESC LIMIT 5";
+// Get week total
+$week_total = array_sum($daily_calories);
+
+// Fetch recent workouts
+$recent_workouts_query = "SELECT workout_name, workout_type, duration_minutes, calories_burned, completed_at 
+                          FROM workouts WHERE user_id = ? ORDER BY completed_at DESC LIMIT 5";
 $recent_workouts_stmt = mysqli_prepare($conn, $recent_workouts_query);
 mysqli_stmt_bind_param($recent_workouts_stmt, "i", $user_id);
 mysqli_stmt_execute($recent_workouts_stmt);
@@ -84,35 +79,57 @@ while ($row = mysqli_fetch_assoc($recent_workouts_result)) {
     $recent_workouts[] = $row;
 }
 
-// Calculate average calories burned per workout
-$avg_query = "SELECT AVG(calories_burned) as avg_calories FROM workouts WHERE user_id = ?";
-$avg_stmt = mysqli_prepare($conn, $avg_query);
-mysqli_stmt_bind_param($avg_stmt, "i", $user_id);
-mysqli_stmt_execute($avg_stmt);
-$avg_result = mysqli_stmt_get_result($avg_stmt);
-$avg_calories = round(mysqli_fetch_assoc($avg_result)['avg_calories'] ?? 0);
+// Calculate average and max calories per workout
+$avg_max_query = "SELECT AVG(calories_burned) as avg_calories, MAX(calories_burned) as max_calories 
+                  FROM workouts WHERE user_id = ?";
+$avg_max_stmt = mysqli_prepare($conn, $avg_max_query);
+mysqli_stmt_bind_param($avg_max_stmt, "i", $user_id);
+mysqli_stmt_execute($avg_max_stmt);
+$avg_max_result = mysqli_stmt_get_result($avg_max_stmt);
+$avg_max = mysqli_fetch_assoc($avg_max_result);
+$avg_calories = round($avg_max['avg_calories'] ?? 0);
+$max_calories = $avg_max['max_calories'] ?? 0;
 
-// Calculate most calories burned in a single workout
-$max_query = "SELECT MAX(calories_burned) as max_calories FROM workouts WHERE user_id = ?";
-$max_stmt = mysqli_prepare($conn, $max_query);
-mysqli_stmt_bind_param($max_stmt, "i", $user_id);
-mysqli_stmt_execute($max_stmt);
-$max_result = mysqli_stmt_get_result($max_stmt);
-$max_calories = mysqli_fetch_assoc($max_result)['max_calories'] ?? 0;
+// Prepare data for charts
+$daily_colors = array_fill(0, 7, 'rgba(255, 77, 77, 0.5)');
+$workout_type_names = [];
+$workout_type_calories = [];
+$workout_type_colors = [];
 
-// Get the JSON data for charts
-$daily_data_json = json_encode($all_calories);
-$daily_labels_json = json_encode($all_dates);
+$color_palette = [
+    'rgba(255, 77, 77, 0.7)',
+    'rgba(255, 167, 0, 0.7)',
+    'rgba(0, 204, 102, 0.7)',
+    'rgba(0, 153, 255, 0.7)',
+    'rgba(153, 51, 255, 0.7)'
+];
 
-// Get JSON data for workout type pie chart
-$workout_type_labels = [];
-$workout_type_data = [];
-foreach ($workout_types as $type) {
-    $workout_type_labels[] = $type['workout_type'];
-    $workout_type_data[] = (int)$type['calories'];
+foreach ($workout_types as $index => $type) {
+    $workout_type_names[] = $type['workout_type'];
+    $workout_type_calories[] = $type['calories'];
+    $workout_type_colors[] = $color_palette[$index % count($color_palette)];
 }
-$workout_type_labels_json = json_encode($workout_type_labels);
-$workout_type_data_json = json_encode($workout_type_data);
+
+// JSON for chart data
+$daily_chart_data = json_encode([
+    'labels' => $daily_dates,
+    'datasets' => [[
+        'label' => 'Calories Burned',
+        'data' => $daily_calories,
+        'backgroundColor' => $daily_colors,
+        'borderWidth' => 1
+    ]]
+]);
+
+$workout_type_chart_data = json_encode([
+    'labels' => $workout_type_names,
+    'datasets' => [[
+        'label' => 'Calories by Workout Type',
+        'data' => $workout_type_calories,
+        'backgroundColor' => $workout_type_colors,
+        'borderWidth' => 1
+    ]]
+]);
 ?>
 
 <!DOCTYPE html>
@@ -120,219 +137,463 @@ $workout_type_data_json = json_encode($workout_type_data);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYMVERSE - Calories Burned Dashboard</title>
+    <title>GYMVERSE - Calories Burned</title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="lietotaja-view.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Calories Burned Page Styles with unique cal- prefix */
+        :root {
+            --cal-primary: #ff4d4d;
+            --cal-secondary: #333;
+            --cal-dark: #0A0A0A;
+            --cal-light: #f5f5f5;
+            --cal-success: #00cc66;
+            --cal-warning: #ffa700;
+            --cal-info: #0099ff;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--cal-dark);
+            color: var(--cal-light);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .cal-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .cal-logo {
+            font-family: 'Koulen', sans-serif;
+            font-size: 2.5rem;
+            color: var(--cal-primary);
+            text-shadow: 0 0 15px rgba(255, 77, 77, 0.3);
+            letter-spacing: 2px;
+            margin: 0;
+        }
+        
+        .cal-nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .cal-nav-link {
+            color: var(--cal-light);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+        
+        .cal-nav-link:hover {
+            background: rgba(255, 77, 77, 0.1);
+            color: var(--cal-primary);
+        }
+        
+        .cal-nav-link.active {
+            background: var(--cal-primary);
+            color: white;
+        }
+        
+        .cal-page-title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: var(--cal-primary);
+            font-family: 'Koulen', sans-serif;
+            letter-spacing: 2px;
+        }
+        
+        .cal-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .cal-stat-card {
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cal-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .cal-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--cal-primary);
+        }
+        
+        .cal-stat-icon {
+            font-size: 2.5rem;
+            color: var(--cal-primary);
+            margin-bottom: 15px;
+        }
+        
+        .cal-stat-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+            font-family: 'Koulen', sans-serif;
+        }
+        
+        .cal-stat-label {
+            font-size: 1rem;
+            color: #999;
+            font-weight: 500;
+        }
+        
+        .cal-chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .cal-chart-card {
+            background: rgba(20, 20, 20, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cal-chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--cal-primary), #ff9b9b);
+        }
+        
+        .cal-chart-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .cal-chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .cal-recent-workouts {
+            background: rgba(20, 20, 20, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+        
+        .cal-recent-workouts::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--cal-primary), #ff9b9b);
+        }
+        
+        .cal-section-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cal-section-title i {
+            color: var(--cal-primary);
+        }
+        
+        .cal-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .cal-table th {
+            text-align: left;
+            padding: 12px;
+            color: #999;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .cal-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .cal-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .cal-workout-type {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .cal-type-strength {
+            background: rgba(255, 77, 77, 0.1);
+            color: var(--cal-primary);
+        }
+        
+        .cal-type-cardio {
+            background: rgba(0, 153, 255, 0.1);
+            color: var(--cal-info);
+        }
+        
+        .cal-type-yoga {
+            background: rgba(0, 204, 102, 0.1);
+            color: var(--cal-success);
+        }
+        
+        .cal-type-hiit {
+            background: rgba(255, 167, 0, 0.1);
+            color: var(--cal-warning);
+        }
+        
+        .cal-calories {
+            font-weight: 600;
+            color: var(--cal-primary);
+        }
+        
+        .cal-date {
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .cal-duration {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .cal-duration i {
+            color: #999;
+        }
+        
+        .cal-empty-state {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .cal-empty-icon {
+            font-size: 3rem;
+            color: rgba(255, 77, 77, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .cal-empty-message {
+            font-size: 1.2rem;
+            color: #999;
+            margin-bottom: 30px;
+        }
+        
+        .cal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .cal-btn-primary {
+            background: var(--cal-primary);
+            color: white;
+        }
+        
+        .cal-btn-primary:hover {
+            background: #ff3333;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .cal-chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cal-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .cal-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header class="top-header">
-        <div class="logo-section">
-            <div class="profile-pic">
-                <i class="fas fa-user"></i>
-            </div>
-            <span><?php echo htmlspecialchars($_SESSION["username"]); ?></span>
-        </div>
-        <nav class="nav-links">
-            <a href="workout-analytics.php" class="nav-link">Total Workouts</a>
-            <a href="calories-burned.php" class="nav-link active">Calories Burned</a>
-            <a href="current-goal.php" class="nav-link">Current Goal</a>
-            <a href="workout-planer.php" class="nav-link">Plan</a>
-            <a href="logout.php" class="nav-link nav-link-logout">Logout</a>
-        </nav>
-    </header>
+    <div class="cal-container">
+        <header class="cal-header">
+            <h1 class="cal-logo">GYMVERSE</h1>
+            <nav class="cal-nav">
+                <a href="profile.php" class="cal-nav-link"><i class="fas fa-user"></i> Profile</a>
+                <a href="current-goal.php" class="cal-nav-link"><i class="fas fa-bullseye"></i> Goals</a>
+                <a href="workout-planer.php" class="cal-nav-link"><i class="fas fa-dumbbell"></i> Workouts</a>
+                <a href="calories-burned.php" class="cal-nav-link active"><i class="fas fa-fire"></i> Calories</a>
+                <a href="nutrition.php" class="cal-nav-link"><i class="fas fa-apple-alt"></i> Nutrition</a>
+                <a href="logout.php" class="cal-nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </header>
 
-    <main class="calories-dashboard">
-        <div class="calories-dashboard-header">
-            <h1 class="calories-dashboard-title">CALORIES BURNED DASHBOARD</h1>
-            <p class="calories-dashboard-subtitle">Track your energy expenditure across different workout types and see your progress over time.</p>
+        <h1 class="cal-page-title">Calories Burned Dashboard</h1>
+
+        <div class="cal-stats-grid">
+            <div class="cal-stat-card">
+                <div class="cal-stat-icon"><i class="fas fa-fire"></i></div>
+                <div class="cal-stat-value"><?php echo number_format($total_calories); ?></div>
+                <div class="cal-stat-label">Total Calories Burned</div>
+            </div>
+            
+            <div class="cal-stat-card">
+                <div class="cal-stat-icon"><i class="fas fa-calendar-week"></i></div>
+                <div class="cal-stat-value"><?php echo number_format($week_total); ?></div>
+                <div class="cal-stat-label">Calories Burned This Week</div>
+            </div>
+            
+            <div class="cal-stat-card">
+                <div class="cal-stat-icon"><i class="fas fa-calculator"></i></div>
+                <div class="cal-stat-value"><?php echo number_format($avg_calories); ?></div>
+                <div class="cal-stat-label">Avg Calories Per Workout</div>
+            </div>
+            
+            <div class="cal-stat-card">
+                <div class="cal-stat-icon"><i class="fas fa-trophy"></i></div>
+                <div class="cal-stat-value"><?php echo number_format($max_calories); ?></div>
+                <div class="cal-stat-label">Most Calories In One Workout</div>
+            </div>
         </div>
-        
-        <div class="calories-stats-grid">
-            <div class="calories-stat-card">
-                <div class="calories-stat-icon">
-                    <i class="fas fa-fire"></i>
-                </div>
-                <div class="calories-stat-value"><?php echo number_format($total_calories); ?></div>
-                <div class="calories-stat-label">Total Calories Burned</div>
-                <div class="calories-info-badge">
-                    All Time
-                    <span class="calories-tooltip">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="calories-tooltip-text">Total calories burned across all your workouts since you started tracking.</span>
-                    </span>
+
+        <div class="cal-chart-grid">
+            <div class="cal-chart-card">
+                <h3 class="cal-chart-title">Daily Calories Burned (Last 7 Days)</h3>
+                <div class="cal-chart-container">
+                    <canvas id="dailyChart"></canvas>
                 </div>
             </div>
             
-            <div class="calories-stat-card">
-                <div class="calories-stat-icon calories-stat-icon-blue">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <div class="calories-stat-value"><?php echo number_format(array_sum($all_calories)); ?></div>
-                <div class="calories-stat-label">Calories This Week</div>
-                <div class="calories-info-badge">
-                    Last 7 Days
-                    <span class="calories-tooltip">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="calories-tooltip-text">Total calories burned in the last 7 days.</span>
-                    </span>
+            <div class="cal-chart-card">
+                <h3 class="cal-chart-title">Calories by Workout Type</h3>
+                <div class="cal-chart-container">
+                    <canvas id="typeChart"></canvas>
                 </div>
             </div>
+        </div>
+
+        <div class="cal-recent-workouts">
+            <h2 class="cal-section-title"><i class="fas fa-history"></i> Recent Workouts</h2>
             
-            <div class="calories-stat-card">
-                <div class="calories-stat-icon calories-stat-icon-orange">
-                    <i class="fas fa-chart-line"></i>
+            <?php if (empty($recent_workouts)): ?>
+                <div class="cal-empty-state">
+                    <div class="cal-empty-icon"><i class="fas fa-fire-alt"></i></div>
+                    <p class="cal-empty-message">No workouts logged yet. Start tracking your calories!</p>
+                    <a href="workout-planer.php" class="cal-btn cal-btn-primary">
+                        <i class="fas fa-dumbbell"></i> Plan a Workout
+                    </a>
                 </div>
-                <div class="calories-stat-value"><?php echo number_format($avg_calories); ?></div>
-                <div class="calories-stat-label">Avg. Calories Per Workout</div>
-                <div class="calories-info-badge">
-                    Overall Average
-                    <span class="calories-tooltip">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="calories-tooltip-text">The average number of calories you burn during a typical workout session.</span>
-                    </span>
-                </div>
-            </div>
-            
-            <div class="calories-stat-card">
-                <div class="calories-stat-icon calories-stat-icon-green">
-                    <i class="fas fa-trophy"></i>
-                </div>
-                <div class="calories-stat-value"><?php echo number_format($max_calories); ?></div>
-                <div class="calories-stat-label">Most Calories in One Workout</div>
-                <div class="calories-info-badge">
-                    Personal Best
-                    <span class="calories-tooltip">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="calories-tooltip-text">Your record for the most calories burned in a single workout session.</span>
-                    </span>
-                </div>
-            </div>
+            <?php else: ?>
+                <table class="cal-table">
+                    <thead>
+                        <tr>
+                            <th>Workout</th>
+                            <th>Type</th>
+                            <th>Duration</th>
+                            <th>Calories</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recent_workouts as $workout): 
+                            $type_class = 'cal-type-strength';
+                            switch (strtolower($workout['workout_type'])) {
+                                case 'cardio': $type_class = 'cal-type-cardio'; break;
+                                case 'yoga': $type_class = 'cal-type-yoga'; break;
+                                case 'hiit': $type_class = 'cal-type-hiit'; break;
+                            }
+                        ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($workout['workout_name']); ?></td>
+                            <td><span class="cal-workout-type <?php echo $type_class; ?>"><?php echo htmlspecialchars($workout['workout_type']); ?></span></td>
+                            <td>
+                                <span class="cal-duration">
+                                    <i class="far fa-clock"></i>
+                                    <?php echo $workout['duration_minutes']; ?> min
+                                </span>
+                            </td>
+                            <td><span class="cal-calories"><?php echo number_format($workout['calories_burned']); ?> kcal</span></td>
+                            <td><span class="cal-date"><?php echo date('M d, Y', strtotime($workout['completed_at'])); ?></span></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
         </div>
-        
-        <div class="calories-chart-grid">
-            <div class="calories-chart-card">
-                <div class="calories-chart-header">
-                    <div class="calories-chart-title">Daily Calories Burned (Last 7 Days)</div>
-                </div>
-                <div class="calories-chart-container">
-                    <canvas id="dailyCaloriesChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="calories-chart-card">
-                <div class="calories-chart-header">
-                    <div class="calories-chart-title">Calories by Workout Type</div>
-                </div>
-                <div class="calories-chart-container">
-                    <canvas id="workoutTypeChart"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <div class="calories-recent-workouts">
-            <h2><i class="fas fa-history"></i> Recent Workouts</h2>
-            <div class="calories-workout-list">
-                <?php if (count($recent_workouts) > 0): ?>
-                    <?php foreach ($recent_workouts as $workout): ?>
-                        <div class="calories-workout-item">
-                            <div class="calories-workout-details">
-                                <h3>
-                                    <?php 
-                                    $type_class = 'calories-type-cardio';
-                                    if (strtolower($workout['workout_type']) == 'strength') {
-                                        $type_class = 'calories-type-strength';
-                                    } elseif (strtolower($workout['workout_type']) == 'hiit') {
-                                        $type_class = 'calories-type-hiit';
-                                    } elseif (strtolower($workout['workout_type']) == 'flexibility') {
-                                        $type_class = 'calories-type-flexibility';
-                                    }
-                                    ?>
-                                    <span class="calories-workout-type-badge <?php echo $type_class; ?>"><?php echo htmlspecialchars($workout['workout_type']); ?></span>
-                                    <?php echo htmlspecialchars($workout['workout_name']); ?>
-                                </h3>
-                                <div class="calories-workout-meta">
-                                    <span><i class="fas fa-calendar"></i> <?php echo date('M d, Y', strtotime($workout['completed_at'])); ?></span>
-                                    <span><i class="fas fa-clock"></i> <?php echo $workout['duration_minutes']; ?> mins</span>
-                                </div>
-                            </div>
-                            <div class="calories-workout-calories">
-                                <i class="fas fa-fire"></i> <?php echo number_format($workout['calories_burned']); ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p>No workout data available yet. Start tracking your workouts to see your calories burned!</p>
-                <?php endif; ?>
-            </div>
-        </div>
-        
-        <div class="calories-actions-row">
-            <a href="workout-planer.php" class="calories-action-button primary">
-                <i class="fas fa-plus-circle"></i> Log New Workout
-            </a>
-            <a href="workout-analytics.php" class="calories-action-button">
-                <i class="fas fa-chart-bar"></i> View Full Analytics
-            </a>
-            <a href="profile.php" class="calories-action-button">
-                <i class="fas fa-user"></i> Back to Profile
-            </a>
-        </div>
-    </main>
-    
+    </div>
+
     <script>
-        // Chart color configurations
-        const chartColors = {
-            red: 'rgb(255, 77, 77)',
-            orange: 'rgb(255, 167, 0)',
-            blue: 'rgb(0, 153, 255)',
-            green: 'rgb(0, 204, 102)',
-            purple: 'rgb(102, 45, 255)',
-            redTransparent: 'rgba(255, 77, 77, 0.2)',
-            blueTransparent: 'rgba(0, 153, 255, 0.2)'
-        };
-        
         // Daily calories chart
-        const dailyCaloriesCtx = document.getElementById('dailyCaloriesChart').getContext('2d');
-        const dailyCaloriesChart = new Chart(dailyCaloriesCtx, {
+        const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+        const dailyChart = new Chart(dailyCtx, {
             type: 'bar',
-            data: {
-                labels: <?php echo $daily_labels_json; ?>,
-                datasets: [{
-                    label: 'Calories Burned',
-                    data: <?php echo $daily_data_json; ?>,
-                    backgroundColor: chartColors.redTransparent,
-                    borderColor: chartColors.red,
-                    borderWidth: 2,
-                    borderRadius: 5,
-                    hoverBackgroundColor: chartColors.red,
-                }]
-            },
+            data: <?php echo $daily_chart_data; ?>,
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: '#333',
-                        titleFont: {
-                            size: 14,
-                            weight: 'bold'
-                        },
-                        bodyFont: {
-                            size: 13
-                        },
-                        padding: 12,
-                        callbacks: {
-                            label: function(context) {
-                                return context.parsed.y.toLocaleString() + ' calories';
-                            }
-                        }
-                    }
-                },
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -340,16 +601,7 @@ $workout_type_data_json = json_encode($workout_type_data);
                             color: 'rgba(255, 255, 255, 0.1)'
                         },
                         ticks: {
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            font: {
-                                size: 12
-                            },
-                            callback: function(value) {
-                                if (value >= 1000) {
-                                    return (value / 1000) + 'k';
-                                }
-                                return value;
-                            }
+                            color: '#cccccc'
                         }
                     },
                     x: {
@@ -357,7 +609,32 @@ $workout_type_data_json = json_encode($workout_type_data);
                             display: false
                         },
                         ticks: {
-                            color: 'rgba(255, 255, 255, 0.7)',
+                            color: '#cccccc'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Workout type chart
+        const typeCtx = document.getElementById('typeChart').getContext('2d');
+        const typeChart = new Chart(typeCtx, {
+            type: 'doughnut',
+            data: <?php echo $workout_type_chart_data; ?>,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#cccccc',
+                            padding: 20,
                             font: {
                                 size: 12
                             }
@@ -366,76 +643,6 @@ $workout_type_data_json = json_encode($workout_type_data);
                 }
             }
         });
-        
-        // Workout type chart
-        const workoutTypeLabels = <?php echo $workout_type_labels_json ?? '[]'; ?>;
-        const workoutTypeData = <?php echo $workout_type_data_json ?? '[]'; ?>;
-        
-        // Only create the chart if we have data
-        if (workoutTypeLabels.length > 0) {
-            const workoutTypeCtx = document.getElementById('workoutTypeChart').getContext('2d');
-            const workoutTypeChart = new Chart(workoutTypeCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: workoutTypeLabels,
-                    datasets: [{
-                        data: workoutTypeData,
-                        backgroundColor: [
-                            chartColors.red,
-                            chartColors.blue,
-                            chartColors.orange,
-                            chartColors.green,
-                            chartColors.purple
-                        ],
-                        borderColor: '#0A0A0A',
-                        borderWidth: 2,
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                font: {
-                                    size: 12
-                                },
-                                padding: 15
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: '#333',
-                            titleFont: {
-                                size: 14,
-                                weight: 'bold'
-                            },
-                            bodyFont: {
-                                size: 13
-                            },
-                            padding: 12,
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed || 0;
-                                    const percentage = Math.round((value / workoutTypeData.reduce((a, b) => a + b, 0)) * 100);
-                                    return `${label}: ${value.toLocaleString()} cal (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        } else {
-            // Display a message if no data is available
-            document.getElementById('workoutTypeChart').parentNode.innerHTML = 
-                '<div style="height: 100%; display: flex; align-items: center; justify-content: center; text-align: center;">' +
-                '<p>No workout type data available yet.<br>Log workouts to see your data.</p>' +
-                '</div>';
-        }
     </script>
 </body>
 </html> 

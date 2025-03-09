@@ -4,8 +4,20 @@ session_start();
 
 // Check if already logged in
 if(isset($_SESSION['user_id'])) {
-    header("Location: profile.php");
+    // If a redirect URL is set, go there
+    if(isset($_SESSION['redirect_url'])) {
+        $redirect = $_SESSION['redirect_url'];
+        unset($_SESSION['redirect_url']);
+        header("Location: $redirect");
+    } else {
+        header("Location: profile.php");
+    }
     exit;
+}
+
+// Store redirect URL if provided
+if(isset($_GET['redirect'])) {
+    $_SESSION['redirect_url'] = $_GET['redirect'];
 }
 
 // Include database connection
@@ -20,6 +32,9 @@ $registration_success = false;
 if(isset($_GET['registered']) && $_GET['registered'] == 'true') {
     $registration_success = true;
 }
+
+// Check if there's a redirect parameter
+$redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '';
 
 // Process form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -53,29 +68,33 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             // Attempt to execute the prepared statement
             if(mysqli_stmt_execute($stmt)) {
                 // Store result
-                mysqli_stmt_store_result($stmt);
+                $result = mysqli_stmt_get_result($stmt);
                 
                 // Check if email exists, if yes then verify password
-                if(mysqli_stmt_num_rows($stmt) == 1) {
-                    // Bind result variables
-                    mysqli_stmt_bind_result($stmt, $id, $email, $username, $hashed_password);
-                    if(mysqli_stmt_fetch($stmt)) {
-                        if(password_verify($password, $hashed_password)) {
-                            // Password is correct, start a new session
-                            session_start();
-                            
-                            // Store data in session variables
-                            $_SESSION["loggedin"] = true;
-                            $_SESSION["user_id"] = $id;
-                            $_SESSION["username"] = $username;
-                            $_SESSION["email"] = $email;
-                            
-                            // Redirect user to profile page
-                            header("location: profile.php");
+                if(mysqli_num_rows($result) == 1) {
+                    $row = mysqli_fetch_assoc($result);
+                    
+                    if(password_verify($password, $row["password"])) {
+                        // Password is correct, so start a new session
+                        session_start();
+                        
+                        // Store data in session variables
+                        $_SESSION["loggedin"] = true;
+                        $_SESSION["user_id"] = $row["id"];
+                        $_SESSION["username"] = $row["username"];
+                        $_SESSION["email"] = $row["email"];
+                        
+                        // Redirect based on the redirect parameter if it exists
+                        if(!empty($redirect)) {
+                            header("location: " . $redirect);
                         } else {
-                            // Password is not valid
-                            $login_err = "Invalid email or password.";
+                            // Otherwise redirect to profile
+                            header("location: profile.php");
                         }
+                        exit;
+                    } else {
+                        // Password is not valid
+                        $login_err = "Invalid email or password.";
                     }
                 } else {
                     // Email doesn't exist
