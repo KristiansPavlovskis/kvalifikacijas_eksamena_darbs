@@ -434,11 +434,11 @@ if (!empty($exercise['instructions'])) {
             <a href="nutrition.php">NUTRITION</a>
             <a href="#">CONTACT</a>
             <?php if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true): ?>
-                <a href="profile.php" style="margin-left: 15px;">PROFILE</a>
-                <a href="logout.php" style="margin-left: 10px; background-color: #ff4d4d; color: white; padding: 8px 15px; border-radius: 5px;">LOGOUT</a>
+                <a href="profile.php" class="auth-button-login">PROFILE</a>
+                <a href="logout.php" class="auth-button-logout">LOGOUT</a>
             <?php else: ?>
-                <a href="login.php" style="margin-left: 15px; background-color: #333; color: white; padding: 8px 15px; border-radius: 5px;">LOGIN</a>
-                <a href="register.php" style="margin-left: 10px; background-color: #ff4d4d; color: white; padding: 8px 15px; border-radius: 5px;">REGISTER</a>
+                <a href="login.php" class="auth-button-login">LOGIN</a>
+                <a href="register.php" class="auth-button-register">REGISTER</a>
             <?php endif; ?>
         </nav>
     </header>

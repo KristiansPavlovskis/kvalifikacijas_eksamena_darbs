@@ -8,1083 +8,166 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Planner</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
-        body {
-            background-color: #0A0A0A;
-            color: white;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .screen {
-            display: none;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Welcome Screen */
-        .welcome-screen {
-            text-align: center;
-            padding: 60px 20px;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            margin: 20px;
-        }
-
-        .welcome-title {
-            font-size: 3.5rem;
-            margin-bottom: 40px;
-            color: #ff4d4d;
-            text-shadow: 0 2px 10px rgba(255, 77, 77, 0.3);
-            font-weight: 800;
-        }
-
-        .welcome-options {
-            display: grid;
-            gap: 25px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .welcome-options .btn {
-            padding: 20px 40px;
-            font-size: 1.2rem;
-            border-radius: 12px;
-            transform: translateY(0);
-            transition: all 0.3s ease;
-        }
-
-        .welcome-options .btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.2);
-        }
-
-        /* Planning Screen */
-        .workout-presets {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .preset-card {
-            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-            border-radius: 15px;
-            padding: 20px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .preset-card:hover {
-            transform: translateY(-5px);
-            border-color: #ff4d4d;
-        }
-
-        .preset-card h3 {
-            color: #ff4d4d;
-            margin-bottom: 10px;
-        }
-
-        /* Active Workout Screen */
-        .active-workout {
-            text-align: center;
-        }
-
-        .workout-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .body-weight-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .exercise-card {
-            background: #1a1a1a;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .exercise-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 77, 77, 0.2);
-        }
-
-        .exercise-name {
-            font-size: 1.2rem;
-            color: #ff4d4d;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .exercise-name i {
-            font-size: 1rem;
-            opacity: 0.8;
-        }
-
-        .sets-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .set-row {
-            display: grid;
-            grid-template-columns: 40px 1fr 1fr 1fr 40px;
-            gap: 10px;
-            align-items: center;
-            background: #2a2a2a;
-            padding: 10px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-
-        .set-row:hover {
-            background: #333;
-        }
-
-        .set-number {
-            color: #ff4d4d;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .set-input {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .set-input-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .set-input-field {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .set-input-field label {
-            font-size: 0.8rem;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .weight-recommendation {
-            color: #4dff88;
-            font-size: 0.8rem;
-            display: block;
-            margin-top: 2px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-
-        .set-input input {
-            width: 100%;
-            padding: 8px;
-            background: #1a1a1a;
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            border-radius: 4px;
-            color: white;
-            font-size: 0.9rem;
-        }
-
-        .set-input input:focus {
-            border-color: #ff4d4d;
-            outline: none;
-        }
-
-        .remove-set {
-            color: #ff4d4d;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .remove-set:hover {
-            opacity: 1;
-        }
-
-        .add-set-btn {
-            background: transparent;
-            border: 2px dashed rgba(255, 77, 77, 0.3);
-            color: #ff4d4d;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 10px;
-        }
-
-        .add-set-btn:hover {
-            border-color: #ff4d4d;
-            background: rgba(255, 77, 77, 0.1);
-        }
-
-        .notes-input {
-            width: 100%;
-            padding: 10px;
-            background: #2a2a2a;
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            border-radius: 8px;
-            color: white;
-            margin-top: 15px;
-            font-size: 0.9rem;
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        .notes-input:focus {
-            border-color: #ff4d4d;
-            outline: none;
-        }
-
-        .exercise-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 77, 77, 0.2);
-        }
-
-        .exercise-stats {
-            display: flex;
-            gap: 15px;
-            font-size: 0.9rem;
-            color: #888;
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .stat-item i {
-            color: #ff4d4d;
-        }
-
-        /* History Screen */
-        .history-card {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .history-date {
-            color: #ff4d4d;
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .history-exercise {
-            background: rgba(255, 77, 77, 0.1);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 15px 0;
-            border: 1px solid rgba(255, 77, 77, 0.2);
-        }
-
-        .history-exercise strong {
-            color: #ff4d4d;
-            font-size: 1.2rem;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .set-item {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            margin: 5px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .rpe {
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        .exercise-notes {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            color: #888;
-            font-style: italic;
-        }
-
-        /* Common Button Styles */
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-primary {
-            background-color: #ff4d4d;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #ff3333;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3);
-        }
-
-        .btn-secondary {
-            background-color: #2a2a2a;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: #333;
-            transform: translateY(-2px);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
-        }
-
-        /* Form Elements */
-        input {
-            width: 100%;
-            padding: 12px;
-            background: #2a2a2a;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-
-        input:focus {
-            border-color: #ff4d4d;
-            outline: none;
-        }
-
-        /* Navigation */
-        .nav-buttons {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .nav-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 25px;
-            background: #ff4d4d;
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            transition: all 0.2s;
-        }
-
-        .nav-btn:hover {
-            transform: scale(1.1);
-        }
-
-        /* Calendar Styles */
-        .calendar-container {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .calendar-header h2 {
-            font-size: 2rem;
-            color: #ff4d4d;
-            text-shadow: 0 2px 10px rgba(255, 77, 77, 0.3);
-        }
-
-        .week-days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .week-day {
-            text-align: center;
-            color: #888;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 600;
-        }
-
-        .week-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-        }
-
-        .day-cell {
-            aspect-ratio: 1;
-            background: rgba(255, 77, 77, 0.1);
-            border-radius: 12px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            border: 2px solid transparent;
-        }
-
-        .day-cell:hover {
-            background: rgba(255, 77, 77, 0.2);
-            transform: translateY(-5px);
-            border-color: rgba(255, 77, 77, 0.3);
-        }
-
-        .day-cell.selected {
-            background: #ff4d4d;
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .day-cell.has-workout {
-            border: 2px solid #ff4d4d;
-            background: rgba(255, 77, 77, 0.15);
-        }
-
-        .day-number {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .workout-type {
-            font-size: 0.9rem;
-            color: #ff4d4d;
-            font-weight: 500;
-        }
-
-        /* Preset Creation Styles */
-        .preset-form {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .preset-form h2 {
-            font-size: 2rem;
-            color: #ff4d4d;
-            margin-bottom: 30px;
-            text-shadow: 0 2px 10px rgba(255, 77, 77, 0.3);
-        }
-
-        .exercise-item {
-            background: rgba(255, 77, 77, 0.1);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .exercise-item:hover {
-            background: rgba(255, 77, 77, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .exercise-name {
-            flex: 1;
-            margin-right: 15px;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-        }
-
-        .sets-count {
-            width: 100px;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-            text-align: center;
-        }
-
-        /* Active Workout Styles */
-        .current-exercise {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .exercise-title {
-            font-size: 2rem;
-            color: #ff4d4d;
-            margin-bottom: 30px;
-            text-shadow: 0 2px 10px rgba(255, 77, 77, 0.3);
-        }
-
-        .set-input {
-            background: rgba(255, 77, 77, 0.1);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .set-input:hover {
-            background: rgba(255, 77, 77, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .set-input label {
-            display: block;
-            margin-bottom: 10px;
-            color: #ff4d4d;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: rgba(255, 77, 77, 0.1);
-            border-radius: 3px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #ff4d4d;
-            transition: width 0.5s ease;
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-            border-radius: 20px;
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-            transform: translateY(20px);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .modal-overlay.active .modal {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 77, 77, 0.2);
-            padding-bottom: 15px;
-        }
-
-        .modal-title {
-            font-size: 1.8rem;
-            color: #ff4d4d;
-            margin: 0;
-            text-shadow: 0 2px 10px rgba(255, 77, 77, 0.3);
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .modal-close:hover {
-            color: #ff4d4d;
-            transform: scale(1.1);
-        }
-
-        .modal-body {
-            margin-bottom: 20px;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            border-top: 1px solid rgba(255, 77, 77, 0.2);
-            padding-top: 15px;
-        }
-
-        /* Custom Select Styles */
-        .custom-select {
-            position: relative;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .select-selected {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            border-radius: 8px;
-            padding: 15px;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-        }
-
-        .select-selected:hover {
-            border-color: #ff4d4d;
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .select-selected:after {
-            content: '\f107';
-            font-family: 'Font Awesome 5 Free';
-            font-weight: 900;
-            color: #ff4d4d;
-        }
-
-        .select-items {
-            position: absolute;
-            background: #1a1a1a;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 99;
-            border-radius: 8px;
-            margin-top: 5px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .select-items div {
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-bottom: 1px solid rgba(255, 77, 77, 0.1);
-        }
-
-        .select-items div:hover {
-            background-color: rgba(255, 77, 77, 0.1);
-        }
-
-        .select-items div:last-child {
-            border-bottom: none;
-        }
-
-        .select-hide {
-            display: none;
-        }
-
-        .select-items.select-show {
-            display: block;
-            animation: fadeIn 0.2s ease;
-        }
-
-        /* Enhanced Input Styles */
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #888;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .input-field:focus {
-            border-color: #ff4d4d;
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
-            outline: none;
-        }
-
-        .input-field::placeholder {
-            color: #555;
-        }
-
-        /* Preset Card Styles */
-        .preset-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .preset-card {
-            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-            border-radius: 15px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .preset-card:hover {
-            transform: translateY(-5px);
-            border-color: #ff4d4d;
-            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.2);
-        }
-
-        .preset-card h3 {
-            color: #ff4d4d;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-        }
-
-        .preset-card p {
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        .preset-card .exercise-count {
-            background: rgba(255, 77, 77, 0.1);
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 0.8rem;
-            color: #ff4d4d;
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #ff4d4d;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3);
-            z-index: 1000;
-            opacity: 0;
-            transition: all 0.3s ease;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        /* Exercise List in Preset Creation */
-        .exercise-list {
-            margin: 20px 0;
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .exercise-list::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .exercise-list::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-        }
-
-        .exercise-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 77, 77, 0.3);
-            border-radius: 4px;
-        }
-
-        .exercise-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 77, 77, 0.5);
-        }
-    </style>
+    <link rel="stylesheet" href="lietotaja-view.css">
 </head>
 <body>
-    <div class="container">
+    <div class="workout-planner-container">
         <!-- Welcome Screen -->
-        <div id="welcomeScreen" class="screen welcome-screen active">
-            <h1 class="welcome-title">Workout Planner</h1>
-            <div class="welcome-options">
-                <button class="btn btn-primary" onclick="showScreen('calendarScreen')">View Calendar</button>
-                <button class="btn btn-secondary" onclick="showScreen('presetScreen')">Create Preset</button>
-                <button class="btn btn-secondary" onclick="showScreen('historyScreen')">View History</button>
+        <div id="welcomeScreen" class="workout-planner-screen workout-planner-welcome-screen active">
+            <h1 class="workout-planner-welcome-title">Workout Planner</h1>
+            <div class="workout-planner-welcome-options">
+                <button class="workout-planner-btn workout-planner-btn-primary" onclick="showScreen('calendarScreen')">View Calendar</button>
+                <button class="workout-planner-btn workout-planner-btn-secondary" onclick="showScreen('presetScreen')">Create Preset</button>
+                <button class="workout-planner-btn workout-planner-btn-secondary" onclick="showScreen('historyScreen')">View History</button>
             </div>
         </div>
 
         <!-- Calendar Screen -->
-        <div id="calendarScreen" class="screen">
-            <div class="calendar-container">
-                <div class="calendar-header">
+        <div id="calendarScreen" class="workout-planner-screen">
+            <div class="workout-planner-calendar-container">
+                <div class="workout-planner-calendar-header">
                     <h2>This Week's Plan</h2>
-                    <button class="btn btn-secondary" onclick="showScreen('presetScreen')">Create New Preset</button>
+                    <button class="workout-planner-btn workout-planner-btn-secondary" onclick="showScreen('presetScreen')">Create New Preset</button>
                 </div>
-                <div class="week-days">
-                    <div class="week-day">Mon</div>
-                    <div class="week-day">Tue</div>
-                    <div class="week-day">Wed</div>
-                    <div class="week-day">Thu</div>
-                    <div class="week-day">Fri</div>
-                    <div class="week-day">Sat</div>
-                    <div class="week-day">Sun</div>
+                <div class="workout-planner-week-days">
+                    <div class="workout-planner-week-day">Mon</div>
+                    <div class="workout-planner-week-day">Tue</div>
+                    <div class="workout-planner-week-day">Wed</div>
+                    <div class="workout-planner-week-day">Thu</div>
+                    <div class="workout-planner-week-day">Fri</div>
+                    <div class="workout-planner-week-day">Sat</div>
+                    <div class="workout-planner-week-day">Sun</div>
                 </div>
-                <div class="week-grid" id="weekGrid">
+                <div class="workout-planner-week-grid" id="weekGrid">
                     <!-- Days will be added here dynamically -->
                 </div>
             </div>
-            <button class="btn btn-secondary" onclick="showScreen('welcomeScreen')">Back</button>
+            <button class="workout-planner-btn workout-planner-btn-secondary" onclick="showScreen('welcomeScreen')">Back</button>
         </div>
 
         <!-- Preset Creation Screen -->
-        <div id="presetScreen" class="screen">
-            <div class="preset-form">
+        <div id="presetScreen" class="workout-planner-screen">
+            <div class="workout-planner-preset-form">
                 <h2>Create Workout Preset</h2>
                 
-                <div class="input-group">
+                <div class="workout-planner-input-group">
                     <label for="presetName">Preset Name</label>
-                    <input type="text" id="presetName" placeholder="E.g., Push Day, Leg Day, Full Body" class="input-field">
+                    <input type="text" id="presetName" placeholder="E.g., Push Day, Leg Day, Full Body" class="workout-planner-input-field">
                 </div>
                 
-                <div class="exercise-list" id="exerciseList">
+                <div class="workout-planner-exercise-list" id="exerciseList">
                     <!-- Exercise items will be added here -->
                 </div>
                 
-                <button class="btn btn-secondary" onclick="addExerciseToPreset()">
+                <button class="workout-planner-btn workout-planner-btn-secondary" onclick="addExerciseToPreset()">
                     <i class="fas fa-plus"></i> Add Exercise
                 </button>
                 
-                <button class="btn btn-primary" onclick="savePreset()">Save Preset</button>
+                <button class="workout-planner-btn workout-planner-btn-primary" onclick="savePreset()">Save Preset</button>
             </div>
-            <button class="btn btn-secondary" onclick="showScreen('calendarScreen')">Back</button>
+            <button class="workout-planner-btn workout-planner-btn-secondary" onclick="showScreen('calendarScreen')">Back</button>
         </div>
 
         <!-- Active Workout Screen -->
-        <div id="activeWorkoutScreen" class="screen">
-            <div class="workout-header">
+        <div id="activeWorkoutScreen" class="workout-planner-screen">
+            <div class="workout-planner-workout-header">
                 <h2 id="currentWorkoutType">Push Day</h2>
-                <div class="body-weight-input">
-                    <input type="number" id="bodyWeight" placeholder="Body Weight (kg)" step="0.1">
+                <div class="workout-planner-body-weight-input">
+                    <input type="number" id="bodyWeight" placeholder="Body Weight (kg)" step="0.1" class="workout-planner-input">
                 </div>
             </div>
             
-            <div class="current-exercise">
-                <div class="workout-progress">
+            <div class="workout-planner-current-exercise">
+                <div class="workout-planner-workout-progress">
                     <span>Exercise 1 of 8</span>
                     <span>Set 1 of 3</span>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 30%"></div>
+                <div class="workout-planner-progress-bar">
+                    <div class="workout-planner-progress-fill" style="width: 30%"></div>
                 </div>
                 
-                <h3 class="exercise-title">Dumbbell Bench Press</h3>
-                <div class="set-inputs">
-                    <div class="set-input">
+                <h3 class="workout-planner-exercise-title">Dumbbell Bench Press</h3>
+                <div class="workout-planner-set-inputs">
+                    <div class="workout-planner-set-input">
                         <label>Set 1</label>
-                        <div class="set-input-row">
-                            <div class="set-input-field">
+                        <div class="workout-planner-set-input-row">
+                            <div class="workout-planner-set-input-field">
                                 <label>Weight (kg)</label>
-                                <input type="number" placeholder="kg" step="0.5">
+                                <input type="number" placeholder="kg" step="0.5" class="workout-planner-input">
                             </div>
-                            <div class="set-input-field">
+                            <div class="workout-planner-set-input-field">
                                 <label>Reps</label>
-                                <input type="number" placeholder="Reps">
+                                <input type="number" placeholder="Reps" class="workout-planner-input">
                             </div>
-                            <div class="set-input-field">
+                            <div class="workout-planner-set-input-field">
                                 <label>RPE</label>
-                                <input type="number" placeholder="1-10" min="1" max="10">
+                                <input type="number" placeholder="1-10" min="1" max="10" class="workout-planner-input">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="action-buttons">
-                <button class="btn btn-secondary" onclick="previousExercise()">Previous</button>
-                <button class="btn btn-primary" onclick="nextExercise()">Next</button>
-                <button class="btn btn-primary" onclick="saveWorkout()">Save Workout</button>
+            <div class="workout-planner-action-buttons">
+                <button class="workout-planner-btn workout-planner-btn-secondary" onclick="previousExercise()">Previous</button>
+                <button class="workout-planner-btn workout-planner-btn-primary" onclick="nextExercise()">Next</button>
+                <button class="workout-planner-btn workout-planner-btn-primary" onclick="saveWorkout()">Save Workout</button>
             </div>
         </div>
 
         <!-- History Screen -->
-        <div id="historyScreen" class="screen">
+        <div id="historyScreen" class="workout-planner-screen">
             <h2>Workout History</h2>
             <div id="historyContainer">
                 <!-- History cards will be added here -->
             </div>
-            <button class="btn btn-secondary" onclick="showScreen('welcomeScreen')">Back</button>
+            <button class="workout-planner-btn workout-planner-btn-secondary" onclick="showScreen('welcomeScreen')">Back</button>
         </div>
     </div>
 
     <!-- Modal for scheduling workout -->
-    <div class="modal-overlay" id="scheduleModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Schedule Workout</h3>
-                <button class="modal-close" onclick="closeModal('scheduleModal')">&times;</button>
+    <div class="workout-planner-modal-overlay" id="scheduleModal">
+        <div class="workout-planner-modal">
+            <div class="workout-planner-modal-header">
+                <h3 class="workout-planner-modal-title">Schedule Workout</h3>
+                <button class="workout-planner-modal-close" onclick="closeModal('scheduleModal')">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="workout-planner-modal-body">
                 <p>Select a workout preset to schedule:</p>
-                <div class="preset-cards" id="presetSelectCards">
+                <div class="workout-planner-preset-cards" id="presetSelectCards">
                     <!-- Preset cards will be added here -->
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('scheduleModal')">Cancel</button>
-                <button class="btn btn-primary" onclick="createNewPreset()">Create New Preset</button>
+            <div class="workout-planner-modal-footer">
+                <button class="workout-planner-btn workout-planner-btn-secondary" onclick="closeModal('scheduleModal')">Cancel</button>
+                <button class="workout-planner-btn workout-planner-btn-primary" onclick="createNewPreset()">Create New Preset</button>
             </div>
         </div>
     </div>
 
     <!-- Modal for workout confirmation -->
-    <div class="modal-overlay" id="confirmWorkoutModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Start Workout</h3>
-                <button class="modal-close" onclick="closeModal('confirmWorkoutModal')">&times;</button>
+    <div class="workout-planner-modal-overlay" id="confirmWorkoutModal">
+        <div class="workout-planner-modal">
+            <div class="workout-planner-modal-header">
+                <h3 class="workout-planner-modal-title">Start Workout</h3>
+                <button class="workout-planner-modal-close" onclick="closeModal('confirmWorkoutModal')">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="workout-planner-modal-body">
                 <p id="confirmWorkoutText">Are you ready to start your workout?</p>
-                <div class="input-group">
+                <div class="workout-planner-input-group">
                     <label for="modalBodyWeight">Your Body Weight Today (kg)</label>
-                    <input type="number" id="modalBodyWeight" placeholder="Enter your weight" step="0.1" class="input-field">
+                    <input type="number" id="modalBodyWeight" placeholder="Enter your weight" step="0.1" class="workout-planner-input-field">
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('confirmWorkoutModal')">Cancel</button>
-                <button class="btn btn-primary" id="startWorkoutBtn">Start Workout</button>
+            <div class="workout-planner-modal-footer">
+                <button class="workout-planner-btn workout-planner-btn-secondary" onclick="closeModal('confirmWorkoutModal')">Cancel</button>
+                <button class="workout-planner-btn workout-planner-btn-primary" id="startWorkoutBtn">Start Workout</button>
             </div>
         </div>
     </div>
 
     <!-- Toast notification -->
-    <div class="toast" id="toast">Workout saved successfully!</div>
+    <div class="workout-planner-toast" id="toast">Workout saved successfully!</div>
 
     <script>
         let presets = JSON.parse(localStorage.getItem('workoutPresets')) || [];
@@ -1095,7 +178,7 @@
         let selectedDate = null;
 
         function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
+            document.querySelectorAll('.workout-planner-screen').forEach(screen => {
                 screen.classList.remove('active');
             });
             document.getElementById(screenId).classList.add('active');
@@ -1134,7 +217,7 @@
                 const date = new Date(startOfWeek);
                 date.setDate(startOfWeek.getDate() + i);
                 const dayCell = document.createElement('div');
-                dayCell.className = 'day-cell';
+                dayCell.className = 'workout-planner-day-cell';
                 
                 // Highlight today
                 if (date.toDateString() === today.toDateString()) {
@@ -1142,8 +225,8 @@
                 }
                 
                 dayCell.innerHTML = `
-                    <div class="day-number">${date.getDate()}</div>
-                    <div class="workout-type" data-date="${date.toISOString()}"></div>
+                    <div class="workout-planner-day-number">${date.getDate()}</div>
+                    <div class="workout-planner-workout-type" data-date="${date.toISOString()}"></div>
                 `;
                 dayCell.onclick = () => selectDay(date);
                 weekGrid.appendChild(dayCell);
@@ -1153,13 +236,13 @@
         }
 
         function loadPresetsToCalendar() {
-            const cells = document.querySelectorAll('.day-cell');
+            const cells = document.querySelectorAll('.workout-planner-day-cell');
             cells.forEach(cell => {
-                const date = cell.querySelector('.workout-type').dataset.date;
+                const date = cell.querySelector('.workout-planner-workout-type').dataset.date;
                 const preset = presets.find(p => p.scheduledDate === date);
                 if (preset) {
                     cell.classList.add('has-workout');
-                    cell.querySelector('.workout-type').textContent = preset.name;
+                    cell.querySelector('.workout-planner-workout-type').textContent = preset.name;
                 }
             });
         }
@@ -1167,10 +250,10 @@
         function selectDay(date) {
             selectedDate = date;
             
-            const cells = document.querySelectorAll('.day-cell');
+            const cells = document.querySelectorAll('.workout-planner-day-cell');
             cells.forEach(cell => {
                 cell.classList.remove('selected');
-                if (cell.querySelector('.workout-type').dataset.date === date.toISOString()) {
+                if (cell.querySelector('.workout-planner-workout-type').dataset.date === date.toISOString()) {
                     cell.classList.add('selected');
                 }
             });
@@ -1193,7 +276,7 @@
                 
                 openModal('confirmWorkoutModal');
             } else {
-                // Show schedule modal
+                // Schedule a workout
                 populatePresetCards();
                 openModal('scheduleModal');
             }
@@ -1215,10 +298,10 @@
             presets.forEach(preset => {
                 if (!preset.scheduledDate) { // Only show unscheduled presets
                     const card = document.createElement('div');
-                    card.className = 'preset-card';
+                    card.className = 'workout-planner-preset-card';
                     card.innerHTML = `
                         <h3>${preset.name}</h3>
-                        <span class="exercise-count">${preset.exercises.length} exercises</span>
+                        <span class="workout-planner-exercise-count">${preset.exercises.length} exercises</span>
                     `;
                     card.onclick = () => scheduleWorkout(preset);
                     presetCards.appendChild(card);
@@ -1244,12 +327,12 @@
         function addExerciseToPreset() {
             const exerciseList = document.getElementById('exerciseList');
             const exerciseItem = document.createElement('div');
-            exerciseItem.className = 'exercise-item';
+            exerciseItem.className = 'workout-planner-exercise-item';
             exerciseItem.innerHTML = `
-                <input type="text" placeholder="Exercise name (e.g., Bench Press)" class="exercise-name">
-                <div class="exercise-inputs">
-                    <input type="number" placeholder="Sets" min="1" value="3" class="sets-count">
-                    <button class="btn btn-secondary" onclick="removeExerciseFromPreset(this)">
+                <input type="text" placeholder="Exercise name (e.g., Bench Press)" class="workout-planner-exercise-name">
+                <div class="workout-planner-exercise-inputs">
+                    <input type="number" placeholder="Sets" min="1" value="3" class="workout-planner-sets-count">
+                    <button class="workout-planner-btn workout-planner-btn-secondary" onclick="removeExerciseFromPreset(this)">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -1257,11 +340,11 @@
             exerciseList.appendChild(exerciseItem);
             
             // Focus the new input
-            exerciseItem.querySelector('.exercise-name').focus();
+            exerciseItem.querySelector('.workout-planner-exercise-name').focus();
         }
 
         function removeExerciseFromPreset(button) {
-            button.closest('.exercise-item').remove();
+            button.closest('.workout-planner-exercise-item').remove();
         }
 
         function savePreset() {
@@ -1272,9 +355,9 @@
             }
 
             const exercises = [];
-            document.querySelectorAll('.exercise-item').forEach(item => {
-                const exerciseName = item.querySelector('.exercise-name').value;
-                const sets = parseInt(item.querySelector('.sets-count').value);
+            document.querySelectorAll('.workout-planner-exercise-item').forEach(item => {
+                const exerciseName = item.querySelector('.workout-planner-exercise-name').value;
+                const sets = parseInt(item.querySelector('.workout-planner-sets-count').value);
                 if (exerciseName && sets) {
                     exercises.push({ name: exerciseName, sets });
                 }
@@ -1374,37 +457,37 @@
 
         function updateWorkoutDisplay() {
             const exercise = currentWorkout.exercises[currentWorkout.currentExerciseIndex];
-            document.querySelector('.exercise-title').textContent = exercise.name;
+            document.querySelector('.workout-planner-exercise-title').textContent = exercise.name;
             
-            const setInputs = document.querySelector('.set-inputs');
+            const setInputs = document.querySelector('.workout-planner-set-inputs');
             setInputs.innerHTML = '';
             
             for (let i = 0; i < exercise.sets.length; i++) {
                 const set = exercise.sets[i];
                 const setInput = document.createElement('div');
-                setInput.className = 'set-input';
+                setInput.className = 'workout-planner-set-input';
                 
                 // Create recommendation message if it exists
                 const recommendationHtml = set.recommendation ? 
-                    `<span class="weight-recommendation">↑ Try ${set.recommendation}kg</span>` : '';
+                    `<span class="workout-planner-weight-recommendation">↑ Try ${set.recommendation}kg</span>` : '';
                 
                 setInput.innerHTML = `
                     <label>Set ${i + 1}</label>
-                    <div class="set-input-row">
-                        <div class="set-input-field">
+                    <div class="workout-planner-set-input-row">
+                        <div class="workout-planner-set-input-field">
                             <label>Weight (kg)</label>
-                            <input type="number" placeholder="kg" step="0.5" value="${set.weight || ''}"
+                            <input type="number" placeholder="kg" step="0.5" value="${set.weight || ''}" class="workout-planner-input"
                                 onchange="updateSetWeight(${i}, this.value)">
                             ${recommendationHtml}
                         </div>
-                        <div class="set-input-field">
+                        <div class="workout-planner-set-input-field">
                             <label>Reps</label>
-                            <input type="number" placeholder="Reps" value="${set.reps || ''}"
+                            <input type="number" placeholder="Reps" value="${set.reps || ''}" class="workout-planner-input"
                                 onchange="updateSetReps(${i}, this.value)">
                         </div>
-                        <div class="set-input-field">
+                        <div class="workout-planner-set-input-field">
                             <label>RPE</label>
-                            <input type="number" placeholder="1-10" min="1" max="10" value="${set.rpe || ''}"
+                            <input type="number" placeholder="1-10" min="1" max="10" value="${set.rpe || ''}" class="workout-planner-input"
                                 onchange="updateSetRPE(${i}, this.value)">
                         </div>
                     </div>
@@ -1412,7 +495,7 @@
                 setInputs.appendChild(setInput);
             }
             
-            document.querySelector('.workout-progress').innerHTML = `
+            document.querySelector('.workout-planner-workout-progress').innerHTML = `
                 <span>Exercise ${currentWorkout.currentExerciseIndex + 1} of ${currentWorkout.exercises.length}</span>
                 <span>Set ${currentWorkout.currentSetIndex + 1} of ${exercise.sets.length}</span>
             `;
@@ -1422,7 +505,7 @@
                 .reduce((sum, ex) => sum + ex.sets.length, 0) + currentWorkout.currentSetIndex;
             
             const progress = (completedSets / totalSets) * 100;
-            document.querySelector('.progress-fill').style.width = `${progress}%`;
+            document.querySelector('.workout-planner-progress-fill').style.width = `${progress}%`;
         }
 
         function updateSetWeight(setIndex, weight) {
@@ -1469,7 +552,7 @@
 
             if (workoutHistory.length === 0) {
                 historyContainer.innerHTML = `
-                    <div class="history-card">
+                    <div class="workout-planner-history-card">
                         <p style="text-align: center; color: #888;">No workout history yet. Complete your first workout!</p>
                     </div>
                 `;
@@ -1478,26 +561,26 @@
 
             workoutHistory.reverse().forEach(workout => {
                 const historyCard = document.createElement('div');
-                historyCard.className = 'history-card';
+                historyCard.className = 'workout-planner-history-card';
                 
                 const date = new Date(workout.date).toLocaleDateString();
                 historyCard.innerHTML = `
-                    <div class="history-date">${date} - ${workout.type} (${workout.bodyWeight}kg)</div>
+                    <div class="workout-planner-history-date">${date} - ${workout.type} (${workout.bodyWeight}kg)</div>
                     ${workout.exercises.map(exercise => `
-                        <div class="history-exercise">
+                        <div class="workout-planner-history-exercise">
                             <strong>${exercise.name}</strong>
-                            <div class="sets-list">
+                            <div class="workout-planner-sets-list">
                                 ${exercise.sets.map((set, index) => `
-                                    <div class="set-item">
+                                    <div class="workout-planner-set-item">
                                         Set ${index + 1}: ${set.weight || 0}kg × ${set.reps || 0} reps
-                                        ${set.rpe ? `<span class="rpe">RPE ${set.rpe}</span>` : ''}
+                                        ${set.rpe ? `<span class="workout-planner-rpe">RPE ${set.rpe}</span>` : ''}
                                     </div>
                                 `).join('')}
                             </div>
-                            ${exercise.notes ? `<div class="exercise-notes"><em>${exercise.notes}</em></div>` : ''}
+                            ${exercise.notes ? `<div class="workout-planner-exercise-notes"><em>${exercise.notes}</em></div>` : ''}
                         </div>
                     `).join('')}
-                    ${workout.notes ? `<div class="workout-notes"><p><strong>Workout Notes:</strong> ${workout.notes}</p></div>` : ''}
+                    ${workout.notes ? `<div class="workout-planner-workout-notes"><p><strong>Workout Notes:</strong> ${workout.notes}</p></div>` : ''}
                 `;
                 historyContainer.appendChild(historyCard);
             });

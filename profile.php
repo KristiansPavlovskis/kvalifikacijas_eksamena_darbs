@@ -41,230 +41,8 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitness Profile Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="lietotaja-view.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-
-        body {
-            background-color: #0A0A0A;
-            color: #ffffff;
-            min-height: 100vh;
-        }
-
-        .top-header {
-            background-color: #0A0A0A;
-            border-bottom: 1px solid rgba(255, 77, 77, 0.2);
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .profile-pic {
-            width: 40px;
-            height: 40px;
-            background-color: #333;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-        }
-
-        .nav-link {
-            color: #A9A9A9;
-            text-decoration: none;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            transition: color 0.3s;
-        }
-
-        .nav-link:hover {
-            color: #FF4D4D;
-        }
-
-        .dashboard {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        .section {
-            margin-bottom: 3rem;
-            animation: slideFadeIn 0.6s ease-out;
-        }
-
-        @keyframes slideFadeIn {
-            0% { opacity: 0; transform: translateY(50px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-title {
-            color: #FF4D4D;
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .section-title::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, #FF4D4D 0%, rgba(255,77,77,0.1) 100%);
-            margin-left: 1rem;
-        }
-
-        .tile-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .tile {
-            background: linear-gradient(135deg, #1E1E1E 0%, #252525 100%);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
-        }
-
-        .tile:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(255, 77, 77, 0.2);
-            border-color: rgba(255, 77, 77, 0.3);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-box {
-            background: #292929;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            color: #FF4D4D;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: #A9A9A9;
-            font-size: 0.9rem;
-        }
-
-        .chart-container {
-            height: 200px;
-            position: relative;
-        }
-
-        .body-visual {
-            display: flex;
-            gap: 2rem;
-        }
-
-        .body-image {
-            flex: 1;
-            background: #1E1E1E;
-            border-radius: 8px;
-            padding: 1rem;
-        }
-
-        .pie-chart {
-            flex: 1;
-            background: #1E1E1E;
-            border-radius: 8px;
-            padding: 1rem;
-        }
-
-        .achievements-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1rem;
-        }
-
-        .achievement-card {
-            background: #1E1E1E;
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .achievement-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 12px rgba(255, 77, 77, 0.5);
-        }
-
-        .progress-bars {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-
-        .progress-bar {
-            background: #1E1E1E;
-            border-radius: 8px;
-            padding: 1rem;
-        }
-
-        .progress-fill {
-            height: 8px;
-            background: #FF4D4D;
-            border-radius: 4px;
-            transition: width 1.2s ease-in-out;
-        }
-
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .tile-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .body-visual {
-                flex-direction: column;
-            }
-
-            .progress-bars {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 <body>
     <header class="top-header">
@@ -276,60 +54,60 @@ try {
         </div>
         <nav class="nav-links">
             <a href="workout-analytics.php" class="nav-link">Total Workouts</a>
-            <a href="#" class="nav-link">Calories Burned</a>
-            <a href="#" class="nav-link">Current Goal</a>
+            <a href="calories-burned.php" class="nav-link">Calories Burned</a>
+            <a href="current-goal.php" class="nav-link">Current Goal</a>
             <a href="workout-planer.php" class="nav-link">Plan</a>
-            <a href="logout.php" class="nav-link" style="margin-left: 20px; background-color: #ff4d4d; color: white; padding: 8px 15px; border-radius: 5px;">Logout</a>
+            <a href="logout.php" class="nav-link nav-link-logout">Logout</a>
         </nav>
     </header>
 
     <main class="dashboard">
         <!-- Welcome Section -->
-        <section class="section welcome-section" style="background: linear-gradient(45deg, #333, #1a1a1a); border-radius: 15px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: space-between;">
+        <section class="section profile-welcome-section">
             <div>
-                <h1 style="font-size: 28px; margin-bottom: 10px; color: #fff;">Welcome back, <?php echo htmlspecialchars($_SESSION["username"]); ?>!</h1>
-                <p style="color: #ccc; margin-bottom: 0;">Ready to crush your fitness goals today?</p>
+                <h1 class="profile-welcome-title">Welcome back, <?php echo htmlspecialchars($_SESSION["username"]); ?>!</h1>
+                <p class="profile-welcome-text">Ready to crush your fitness goals today?</p>
             </div>
-            <div style="text-align: right;">
-                <a href="workout-planer.php" style="display: inline-block; background-color: #ff4d4d; color: white; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: all 0.3s ease;">START WORKOUT</a>
+            <div class="profile-welcome-cta">
+                <a href="workout-planer.php" class="profile-start-button">START WORKOUT</a>
             </div>
         </section>
 
         <!-- Account Information Section -->
-        <section class="section" style="background: linear-gradient(45deg, #222, #0f0f0f); border-radius: 15px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
-            <h2 class="section-title" style="display: flex; align-items: center; margin-bottom: 25px; color: #fff;">
-                <i class="fas fa-user-circle" style="margin-right: 10px; color: #ff4d4d;"></i>
+        <section class="section profile-section">
+            <h2 class="profile-section-title">
+                <i class="fas fa-user-circle"></i>
                 Account Information
             </h2>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;">
-                    <h3 style="font-size: 18px; color: #ff4d4d; margin-bottom: 15px;">Profile Details</h3>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; color: #999; font-size: 14px; margin-bottom: 5px;">Username</label>
-                        <p style="margin: 0; color: #fff; font-weight: bold;"><?php echo htmlspecialchars($username); ?></p>
+            <div class="profile-grid">
+                <div class="profile-card">
+                    <h3 class="profile-card-title">Profile Details</h3>
+                    <div class="profile-field">
+                        <label class="profile-label">Username</label>
+                        <p class="profile-value"><?php echo htmlspecialchars($username); ?></p>
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; color: #999; font-size: 14px; margin-bottom: 5px;">Email</label>
-                        <p style="margin: 0; color: #fff;"><?php echo htmlspecialchars($email); ?></p>
+                    <div class="profile-field">
+                        <label class="profile-label">Email</label>
+                        <p class="profile-value profile-value-normal"><?php echo htmlspecialchars($email); ?></p>
                     </div>
-                    <div>
-                        <label style="display: block; color: #999; font-size: 14px; margin-bottom: 5px;">Member Since</label>
-                        <p style="margin: 0; color: #fff;"><?php echo !empty($join_date) ? $join_date : "N/A"; ?></p>
+                    <div class="profile-field">
+                        <label class="profile-label">Member Since</label>
+                        <p class="profile-value profile-value-normal"><?php echo !empty($join_date) ? $join_date : "N/A"; ?></p>
                     </div>
                 </div>
                 
-                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;">
-                    <h3 style="font-size: 18px; color: #ff4d4d; margin-bottom: 15px;">Account Settings</h3>
-                    <div style="margin-bottom: 15px;">
-                        <a href="#" style="display: block; padding: 10px; background: rgba(255,77,77,0.1); color: #fff; border-radius: 5px; text-decoration: none; margin-bottom: 10px; transition: all 0.3s ease;">
-                            <i class="fas fa-key" style="margin-right: 10px; color: #ff4d4d;"></i> Change Password
+                <div class="profile-card">
+                    <h3 class="profile-card-title">Account Settings</h3>
+                    <div>
+                        <a href="#" class="profile-settings-link">
+                            <i class="fas fa-key"></i> Change Password
                         </a>
-                        <a href="#" style="display: block; padding: 10px; background: rgba(255,77,77,0.1); color: #fff; border-radius: 5px; text-decoration: none; margin-bottom: 10px; transition: all 0.3s ease;">
-                            <i class="fas fa-cog" style="margin-right: 10px; color: #ff4d4d;"></i> Edit Profile
+                        <a href="#" class="profile-settings-link">
+                            <i class="fas fa-cog"></i> Edit Profile
                         </a>
-                        <a href="#" style="display: block; padding: 10px; background: rgba(255,77,77,0.1); color: #fff; border-radius: 5px; text-decoration: none; transition: all 0.3s ease;">
-                            <i class="fas fa-bell" style="margin-right: 10px; color: #ff4d4d;"></i> Notification Settings
+                        <a href="#" class="profile-settings-link">
+                            <i class="fas fa-bell"></i> Notification Settings
                         </a>
                     </div>
                 </div>

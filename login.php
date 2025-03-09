@@ -9,7 +9,7 @@ if(isset($_SESSION['user_id'])) {
 }
 
 // Include database connection
-require_once 'config/db_connect.php';
+require_once 'assets/db_connection.php';
 
 // Initialize variables
 $email = $password = "";
@@ -41,25 +41,25 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validate credentials
     if(empty($email_err) && empty($password_err)) {
         // Prepare a select statement
-        $sql = "SELECT id, email, username, password FROM users WHERE email = :email";
+        $sql = "SELECT id, email, username, password FROM users WHERE email = ?";
         
-        if($stmt = $conn->prepare($sql)) {
+        if($stmt = mysqli_prepare($conn, $sql)) {
             // Bind variables to the prepared statement as parameters
-            $stmt->bindParam(":email", $param_email, PDO::PARAM_STR);
+            mysqli_stmt_bind_param($stmt, "s", $param_email);
             
             // Set parameters
             $param_email = $email;
             
             // Attempt to execute the prepared statement
-            if($stmt->execute()) {
+            if(mysqli_stmt_execute($stmt)) {
+                // Store result
+                mysqli_stmt_store_result($stmt);
+                
                 // Check if email exists, if yes then verify password
-                if($stmt->rowCount() == 1) {
-                    if($row = $stmt->fetch()) {
-                        $id = $row["id"];
-                        $email = $row["email"];
-                        $username = $row["username"];
-                        $hashed_password = $row["password"];
-                        
+                if(mysqli_stmt_num_rows($stmt) == 1) {
+                    // Bind result variables
+                    mysqli_stmt_bind_result($stmt, $id, $email, $username, $hashed_password);
+                    if(mysqli_stmt_fetch($stmt)) {
                         if(password_verify($password, $hashed_password)) {
                             // Password is correct, start a new session
                             session_start();
@@ -86,12 +86,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             
             // Close statement
-            unset($stmt);
+            mysqli_stmt_close($stmt);
         }
     }
-    
-    // Close connection
-    unset($conn);
 }
 ?>
 

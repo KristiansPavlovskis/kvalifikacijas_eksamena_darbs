@@ -9,7 +9,7 @@ if(isset($_SESSION['user_id'])) {
 }
 
 // Include database connection
-require_once 'config/db_connect.php';
+require_once 'assets/db_connection.php';
 
 // Initialize variables
 $username = $email = $password = $confirm_password = "";
@@ -25,18 +25,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         $username_err = "Username can only contain letters, numbers, and underscores.";
     } else {
         // Prepare a select statement
-        $sql = "SELECT id FROM users WHERE username = :username";
+        $sql = "SELECT id FROM users WHERE username = ?";
         
-        if($stmt = $conn->prepare($sql)) {
+        if($stmt = mysqli_prepare($conn, $sql)) {
             // Bind variables to the prepared statement as parameters
-            $stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
+            mysqli_stmt_bind_param($stmt, "s", $param_username);
             
             // Set parameters
             $param_username = trim($_POST["username"]);
             
             // Attempt to execute the prepared statement
-            if($stmt->execute()) {
-                if($stmt->rowCount() > 0) {
+            if(mysqli_stmt_execute($stmt)) {
+                // Store result
+                mysqli_stmt_store_result($stmt);
+                
+                if(mysqli_stmt_num_rows($stmt) > 0) {
                     $username_err = "This username is already taken.";
                 } else {
                     $username = trim($_POST["username"]);
@@ -46,7 +49,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             
             // Close statement
-            unset($stmt);
+            mysqli_stmt_close($stmt);
         }
     }
     
@@ -57,18 +60,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         $email_err = "Please enter a valid email address.";
     } else {
         // Prepare a select statement
-        $sql = "SELECT id FROM users WHERE email = :email";
+        $sql = "SELECT id FROM users WHERE email = ?";
         
-        if($stmt = $conn->prepare($sql)) {
+        if($stmt = mysqli_prepare($conn, $sql)) {
             // Bind variables to the prepared statement as parameters
-            $stmt->bindParam(":email", $param_email, PDO::PARAM_STR);
+            mysqli_stmt_bind_param($stmt, "s", $param_email);
             
             // Set parameters
             $param_email = trim($_POST["email"]);
             
             // Attempt to execute the prepared statement
-            if($stmt->execute()) {
-                if($stmt->rowCount() > 0) {
+            if(mysqli_stmt_execute($stmt)) {
+                // Store result
+                mysqli_stmt_store_result($stmt);
+                
+                if(mysqli_stmt_num_rows($stmt) > 0) {
                     $email_err = "This email is already registered.";
                 } else {
                     $email = trim($_POST["email"]);
@@ -78,7 +84,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             
             // Close statement
-            unset($stmt);
+            mysqli_stmt_close($stmt);
         }
     }
     
@@ -104,29 +110,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check input errors before inserting in database
     if(empty($username_err) && empty($email_err) && empty($password_err) && empty($confirm_password_err)) {
         
-        // First, check if the users table exists, if not create it
-        try {
-            $conn->query("SELECT 1 FROM users LIMIT 1");
-        } catch(PDOException $e) {
-            // Table doesn't exist, create it
-            $sql = "CREATE TABLE users (
-                id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-                username VARCHAR(50) NOT NULL UNIQUE,
-                email VARCHAR(100) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )";
-            $conn->exec($sql);
-        }
-        
         // Prepare an insert statement
-        $sql = "INSERT INTO users (username, email, password) VALUES (:username, :email, :password)";
+        $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
          
-        if($stmt = $conn->prepare($sql)) {
+        if($stmt = mysqli_prepare($conn, $sql)) {
             // Bind variables to the prepared statement as parameters
-            $stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
-            $stmt->bindParam(":email", $param_email, PDO::PARAM_STR);
-            $stmt->bindParam(":password", $param_password, PDO::PARAM_STR);
+            mysqli_stmt_bind_param($stmt, "sss", $param_username, $param_email, $param_password);
             
             // Set parameters
             $param_username = $username;
@@ -134,7 +123,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             $param_password = password_hash($password, PASSWORD_DEFAULT); // Creates a password hash
             
             // Attempt to execute the prepared statement
-            if($stmt->execute()) {
+            if(mysqli_stmt_execute($stmt)) {
                 // Redirect to login page
                 header("location: login.php?registered=true");
             } else {
@@ -142,12 +131,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             
             // Close statement
-            unset($stmt);
+            mysqli_stmt_close($stmt);
         }
     }
-    
-    // Close connection
-    unset($conn);
 }
 ?>
  

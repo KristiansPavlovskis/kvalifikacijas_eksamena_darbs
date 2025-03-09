@@ -279,17 +279,20 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 </head>
 <body>
     <!-- Top Navigation -->
-    <div class="top-nav" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background-color: #1a1a1a; border-bottom: 1px solid rgba(255, 77, 77, 0.2);">
-        <div class="user-info" style="display: flex; align-items: center; gap: 1rem;">
-            <div class="user-avatar" style="width: 40px; height: 40px; background-color: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-user" style="color: #ff4d4d;"></i>
+    <div class="top-header">
+        <div class="logo-section">
+            <div class="profile-pic">
+                <i class="fas fa-user"></i>
             </div>
-            <span style="color: #fff; font-weight: bold;"><?php echo htmlspecialchars($_SESSION["username"]); ?></span>
+            <span><?php echo htmlspecialchars($_SESSION["username"]); ?></span>
         </div>
-        <div class="nav-actions">
-            <a href="profile.php" style="margin-right: 15px; color: #fff; text-decoration: none;">Profile</a>
-            <a href="logout.php" style="background-color: #ff4d4d; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Logout</a>
-        </div>
+        <nav class="nav-links">
+            <a href="workout-analytics.php" class="nav-link active">Total Workouts</a>
+            <a href="calories-burned.php" class="nav-link">Calories Burned</a>
+            <a href="current-goal.php" class="nav-link">Current Goal</a>
+            <a href="workout-planer.php" class="nav-link">Plan</a>
+            <a href="logout.php" class="nav-link nav-link-logout">Logout</a>
+        </nav>
     </div>
 
     <!-- Header Summary -->
