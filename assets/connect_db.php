@@ -1,14 +1,8 @@
 <?php
-    $serveris = "localhost";
-    $lietotajs = "grobina1_pavlovskis";
-    $parole = "3LZeL@hxv";
-    $db_nosaukums = "grobina1_pavlovskis";
+// This is a compatibility file for any code that might be using connect_db.php
 
-    $savienojums = mysqli_connect($serveris, $lietotajs, $parole, $db_nosaukums);
+// Include the main database connection file
+require_once __DIR__ . '/db_connection.php';
 
-    if(!$savienojums){
-       #die("Kļūda ar datu bāzi".mysqli_connect_error());
-    }else{
-        #echo "Savienojums veiksmīgi izveidots!";
-    }
-    ?>
+// The main connection file already creates $savienojums for backward compatibility
+?>

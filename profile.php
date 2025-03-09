@@ -17,9 +17,10 @@ $username = $_SESSION["username"];
 $email = $_SESSION["email"];
 $join_date = "";
 
+// Use the PDO connection that's defined in db_connection.php
 try {
     $sql = "SELECT created_at FROM users WHERE id = :id";
-    if($stmt = $conn->prepare($sql)) {
+    if($stmt = $pdo->prepare($sql)) {
         $stmt->bindParam(":id", $user_id, PDO::PARAM_INT);
         if($stmt->execute()) {
             if($row = $stmt->fetch()) {

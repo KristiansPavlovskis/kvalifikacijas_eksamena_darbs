@@ -7,10 +7,16 @@ $db_nosaukums = "grobina1_pavlovskis";
 
 // Create connection using mysqli
 $conn = mysqli_connect($serveris, $lietotajs, $parole, $db_nosaukums);
+$savienojums = $conn; // For backward compatibility with any code using $savienojums
 
 // Check connection
 if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+    // Don't show connection errors in production, but log them instead
+    error_log("Connection failed: " . mysqli_connect_error());
+    // die("Connection failed: " . mysqli_connect_error());
+} else {
+    // Optional connection success message for debugging
+    // echo "Connection successful!";
 }
 
 // Set character set to utf8mb4
@@ -24,6 +30,6 @@ try {
     $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 } catch (PDOException $e) {
     // In production you would log this rather than display
-    // error_log("PDO Connection Error: " . $e->getMessage());
+    error_log("PDO Connection Error: " . $e->getMessage());
 }
 ?> 
