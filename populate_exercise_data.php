@@ -4,6 +4,45 @@
  * This script will populate your database with exercise data for the quick workout feature
  */
 
+// Add this debugging code at the top of the file
+session_start();
+
+// Debug exercise data
+echo "<div style='background: #f8f9fa; padding: 10px; margin: 10px; border: 1px solid #ddd;'>";
+echo "<h3>Debugging Exercise Data</h3>";
+
+require_once '../assets/db_connection.php';
+
+// Check exercise_library table
+$result = $conn->query("SELECT COUNT(*) as count FROM exercise_library");
+if ($result) {
+    $row = $result->fetch_assoc();
+    echo "<p>exercise_library table has " . $row['count'] . " exercises</p>";
+} else {
+    echo "<p>Error checking exercise_library: " . $conn->error . "</p>";
+}
+
+// Check exercises table if it exists
+$result = $conn->query("SHOW TABLES LIKE 'exercises'");
+if ($result->num_rows > 0) {
+    $result = $conn->query("SELECT COUNT(*) as count FROM exercises");
+    if ($result) {
+        $row = $result->fetch_assoc();
+        echo "<p>exercises table has " . $row['count'] . " exercises</p>";
+    } else {
+        echo "<p>Error checking exercises: " . $conn->error . "</p>";
+    }
+}
+
+// Check if fetch_exercises.php file exists
+if (file_exists('../get_exercises.php')) {
+    echo "<p>get_exercises.php file exists</p>";
+} else {
+    echo "<p>get_exercises.php file does NOT exist</p>";
+}
+
+echo "</div>";
+
 // Database connection settings - modify these to match your environment
 $host = "localhost";
 $username = "root";
