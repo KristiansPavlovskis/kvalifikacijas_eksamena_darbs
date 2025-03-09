@@ -36,6 +36,20 @@ if(isset($_GET['registered']) && $_GET['registered'] == 'true') {
 // Check if there's a redirect parameter
 $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '';
 
+// Check if the user is already logged in, if yes then redirect accordingly
+if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
+    // Check if there is a redirect parameter
+    if (isset($_GET['redirect']) && !empty($_GET['redirect'])) {
+        // Validate and sanitize the redirect URL
+        $redirect = filter_var($_GET['redirect'], FILTER_SANITIZE_URL);
+        header("location: $redirect");
+    } else {
+        // Default redirect to profile
+        header("location: profile/profile.php");
+    }
+    exit;
+}
+
 // Process form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST") {
     
@@ -89,7 +103,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                             header("location: " . $redirect);
                         } else {
                             // Otherwise redirect to profile
-                            header("location: profile.php");
+                            header("location: profile/profile.php");
                         }
                         exit;
                     } else {
@@ -108,6 +122,20 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             mysqli_stmt_close($stmt);
         }
     }
+}
+
+// If login is successful
+if ($is_login_successful) {
+    // Check if there is a redirect parameter
+    if (isset($_GET['redirect']) && !empty($_GET['redirect'])) {
+        // Validate and sanitize the redirect URL
+        $redirect = filter_var($_GET['redirect'], FILTER_SANITIZE_URL);
+        header("location: $redirect");
+    } else {
+        // Default redirect to profile
+        header("location: profile/profile.php");
+    }
+    exit;
 }
 ?>
 

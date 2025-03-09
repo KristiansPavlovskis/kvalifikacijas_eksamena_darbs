@@ -4,12 +4,12 @@ session_start();
 
 // Check if the user is not logged in, if not redirect to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    header("location: login.php?redirect=calories-burned.php");
+    header("location: ../login.php?redirect=profile/calories-burned.php");
     exit;
 }
 
 // Include database connection
-require_once 'assets/db_connection.php';
+require_once '../assets/db_connection.php';
 
 // Get user ID
 $user_id = $_SESSION["user_id"];
@@ -141,9 +141,129 @@ $workout_type_chart_data = json_encode([
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="lietotaja-view.css">
+    <link rel="stylesheet" href="../lietotaja-view.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Common profile section styles */
+        .prof-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .prof-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 30px;
+            background: linear-gradient(135deg, #4361ee, #4cc9f0);
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .prof-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 40%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: skewX(-15deg);
+            transform-origin: top right;
+        }
+        
+        .prof-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 10px;
+        }
+        
+        .prof-nav::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .prof-nav-item {
+            padding: 12px 24px;
+            background-color: #1E1E1E;
+            color: white;
+            border-radius: 10px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .prof-nav-item:hover, .prof-nav-item.active {
+            background-color: #4361ee;
+            transform: translateY(-3px);
+        }
+        
+        .prof-nav-item i {
+            font-size: 1.2rem;
+        }
+        
+        .prof-section {
+            margin-bottom: 30px;
+            background-color: #1E1E1E;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .prof-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+        
+        .prof-section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .prof-section-title i {
+            color: #4361ee;
+        }
+        
+        @media (max-width: 768px) {
+            .prof-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .prof-user-info {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .prof-stats {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 15px;
+            }
+        }
+        
         /* Calories Burned Page Styles with unique cal- prefix */
         :root {
             --cal-primary: #ff4d4d;
@@ -478,19 +598,72 @@ $workout_type_chart_data = json_encode([
     </style>
 </head>
 <body>
-    <div class="cal-container">
-        <header class="cal-header">
-            <h1 class="cal-logo">GYMVERSE</h1>
-            <nav class="cal-nav">
-                <a href="profile.php" class="cal-nav-link"><i class="fas fa-user"></i> Profile</a>
-                <a href="current-goal.php" class="cal-nav-link"><i class="fas fa-bullseye"></i> Goals</a>
-                <a href="workout-planer.php" class="cal-nav-link"><i class="fas fa-dumbbell"></i> Workouts</a>
-                <a href="calories-burned.php" class="cal-nav-link active"><i class="fas fa-fire"></i> Calories</a>
-                <a href="nutrition.php" class="cal-nav-link"><i class="fas fa-apple-alt"></i> Nutrition</a>
-                <a href="logout.php" class="cal-nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            </nav>
-        </header>
+    <!-- Navigation -->
+    <header class="navbar">
+        <div class="logo">
+            <a href="../index.php">
+                <i class="fas fa-dumbbell"></i>
+                <span>GYMVERSE</span>
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="../index.php"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="../workouts.php"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                <li><a href="../excercises.php"><i class="fas fa-running"></i> Exercises</a></li>
+                <li><a href="../quick-workout.php"><i class="fas fa-stopwatch"></i> Quick Workout</a></li>
+                <li><a class="active" href="profile.php"><i class="fas fa-user"></i> Profile</a></li>
+                <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+    </header>
 
+    <div class="prof-container">
+        <!-- Profile Header -->
+        <div class="prof-header">
+            <div>
+                <h1><i class="fas fa-fire"></i> Calories Burned</h1>
+                <p>Track your calorie burn and optimize your workouts</p>
+            </div>
+            <div class="prof-stats">
+                <div class="prof-stat-item">
+                    <div class="prof-stat-value"><?= number_format($total_calories) ?></div>
+                    <div class="prof-stat-label">Total Calories</div>
+                </div>
+                <div class="prof-stat-item">
+                    <div class="prof-stat-value"><?= number_format($avg_calories) ?></div>
+                    <div class="prof-stat-label">Avg per Workout</div>
+                </div>
+                <div class="prof-stat-item">
+                    <div class="prof-stat-value"><?= number_format($max_calories) ?></div>
+                    <div class="prof-stat-label">Best Workout</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Navigation -->
+        <div class="prof-nav">
+            <a href="profile.php" class="prof-nav-item">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="calories-burned.php" class="prof-nav-item active">
+                <i class="fas fa-fire"></i> Calories Burned
+            </a>
+            <a href="current-goal.php" class="prof-nav-item">
+                <i class="fas fa-bullseye"></i> Goals
+            </a>
+            <a href="nutrition.php" class="prof-nav-item">
+                <i class="fas fa-apple-alt"></i> Nutrition
+            </a>
+            <a href="#" class="prof-nav-item">
+                <i class="fas fa-chart-line"></i> Progress
+            </a>
+            <a href="#" class="prof-nav-item">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </div>
+
+        <!-- Continue with the rest of the calories burned page content -->
         <h1 class="cal-page-title">Calories Burned Dashboard</h1>
 
         <div class="cal-stats-grid">

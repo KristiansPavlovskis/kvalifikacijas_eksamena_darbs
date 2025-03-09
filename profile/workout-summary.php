@@ -21,7 +21,7 @@ mysqli_stmt_execute($stmt);
 $workout = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 
 if (!$workout) {
-    header("location: profile.php");
+    header("location: profile/profile.php");
     exit;
 }
 

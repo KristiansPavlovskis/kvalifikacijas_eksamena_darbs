@@ -12,32 +12,81 @@ require_once 'assets/db_connection.php';
 // Get user ID
 $user_id = $_SESSION["user_id"];
 
-// Fetch user's exercise history
-$exercise_history_query = "SELECT DISTINCT exercise_name, weight, reps, sets 
-                         FROM workout_exercises 
-                         WHERE user_id = ? 
-                         ORDER BY created_at DESC 
-                         LIMIT 50";
-$stmt = mysqli_prepare($conn, $exercise_history_query);
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-mysqli_stmt_execute($stmt);
-$exercise_history = mysqli_stmt_get_result($stmt);
+// Fetch user's exercise history (fix for lines 22-24)
+try {
+    // First check if tables exist
+    $check_table = "SHOW TABLES LIKE 'workouts'";
+    $table_exists = mysqli_query($conn, $check_table);
+    
+    if (mysqli_num_rows($table_exists) > 0) {
+        $exercise_history_query = "SELECT DISTINCT 
+                                IF(we.exercise_name IS NOT NULL, we.exercise_name, 'Custom Exercise') as exercise_name, 
+                                MAX(es.weight) as weight, 
+                                AVG(es.reps) as reps, 
+                                COUNT(es.id) as sets
+                            FROM workouts w
+                            LEFT JOIN workout_exercises we ON w.id = we.workout_id
+                            LEFT JOIN exercise_sets es ON we.id = es.exercise_id
+                            WHERE w.user_id = ? 
+                            GROUP BY exercise_name
+                            ORDER BY MAX(w.created_at) DESC 
+                            LIMIT 50";
+        $stmt = mysqli_prepare($conn, $exercise_history_query);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $exercise_history = mysqli_stmt_get_result($stmt);
+    } else {
+        $exercise_history = false;
+    }
+} catch (Exception $e) {
+    // If the table doesn't exist or has error, provide an empty result
+    $exercise_history = false;
+}
 
 // Fetch common exercises
-$common_exercises_query = "SELECT exercise_name, muscle_group, equipment_needed 
-                         FROM exercise_library 
-                         ORDER BY popularity DESC 
-                         LIMIT 20";
-$common_exercises = mysqli_query($conn, $common_exercises_query);
+try {
+    // Check if exercise library table exists
+    $check_table = "SHOW TABLES LIKE 'exercise_library'";
+    $table_exists = mysqli_query($conn, $check_table);
+    
+    if (mysqli_num_rows($table_exists) > 0) {
+        $common_exercises_query = "SELECT exercise_name, 
+                              el.muscle_group_id as muscle_group, 
+                              el.equipment_id as equipment_needed 
+                              FROM exercise_library el
+                              ORDER BY popularity DESC 
+                              LIMIT 20";
+        $common_exercises = mysqli_query($conn, $common_exercises_query);
+    } else {
+        $common_exercises = false;
+    }
+} catch (Exception $e) {
+    // If the table doesn't exist or has error, provide an empty result
+    $common_exercises = false;
+}
 
 // Fetch user's favorite exercises
-$favorites_query = "SELECT exercise_name 
-                   FROM user_favorite_exercises 
-                   WHERE user_id = ?";
-$stmt = mysqli_prepare($conn, $favorites_query);
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-mysqli_stmt_execute($stmt);
-$favorites = mysqli_stmt_get_result($stmt);
+try {
+    // Check if favorite exercises table exists
+    $check_table = "SHOW TABLES LIKE 'user_favorite_exercises'";
+    $table_exists = mysqli_query($conn, $check_table);
+    
+    if (mysqli_num_rows($table_exists) > 0) {
+        $favorites_query = "SELECT el.exercise_name 
+                        FROM user_favorite_exercises uf
+                        JOIN exercise_library el ON uf.exercise_id = el.id
+                        WHERE uf.user_id = ?";
+        $stmt = mysqli_prepare($conn, $favorites_query);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $favorites = mysqli_stmt_get_result($stmt);
+    } else {
+        $favorites = false;
+    }
+} catch (Exception $e) {
+    // If the table doesn't exist or has error, provide an empty result
+    $favorites = false;
+}
 
 ?>
 
@@ -247,6 +296,86 @@ $favorites = mysqli_stmt_get_result($stmt);
                 </button>
             </div>
         </div>
+
+        <!-- Template Management Section -->
+        <div class="qw-templates-section" id="templatesSection">
+            <div class="qw-templates-header">
+                <h2>Workout Templates</h2>
+                <button id="createTemplateBtn" class="qw-btn qw-btn-primary">
+                    <i class="fas fa-plus"></i> Create Template
+                </button>
+            </div>
+            
+            <div class="qw-templates-container" id="templatesContainer">
+                <div class="qw-templates-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading templates...
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Modal -->
+        <div id="templateModal" class="qw-modal">
+            <div class="qw-modal-content qw-template-modal">
+                <div class="qw-modal-header">
+                    <h2>Save Workout Template</h2>
+                    <button class="qw-modal-close" onclick="closeModal('templateModal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="qw-modal-body">
+                    <form id="templateForm">
+                        <div class="qw-form-group">
+                            <label for="templateName">Template Name</label>
+                            <input type="text" id="templateName" required placeholder="e.g., Full Body Strength">
+                        </div>
+                        <div class="qw-form-group">
+                            <label for="templateDescription">Description</label>
+                            <textarea id="templateDescription" rows="3" placeholder="What's this workout for?"></textarea>
+                        </div>
+                        <div class="qw-form-row">
+                            <div class="qw-form-group qw-form-half">
+                                <label for="templateDuration">Duration (minutes)</label>
+                                <input type="number" id="templateDuration" min="10" value="60">
+                            </div>
+                            <div class="qw-form-group qw-form-half">
+                                <label for="templateIcon">Icon</label>
+                                <select id="templateIcon">
+                                    <option value="dumbbell">Dumbbell</option>
+                                    <option value="running">Running</option>
+                                    <option value="heartbeat">Cardio</option>
+                                    <option value="bolt">Power</option>
+                                    <option value="user">Upper Body</option>
+                                    <option value="child">Lower Body</option>
+                                    <option value="apple-alt">Health</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="qw-form-group">
+                            <label for="templateColor">Color</label>
+                            <div class="qw-color-options">
+                                <span class="qw-color-option" data-color="#4361ee" style="background-color: #4361ee;"></span>
+                                <span class="qw-color-option" data-color="#3a0ca3" style="background-color: #3a0ca3;"></span>
+                                <span class="qw-color-option" data-color="#7209b7" style="background-color: #7209b7;"></span>
+                                <span class="qw-color-option" data-color="#f72585" style="background-color: #f72585;"></span>
+                                <span class="qw-color-option" data-color="#e63946" style="background-color: #e63946;"></span>
+                                <span class="qw-color-option" data-color="#fb8500" style="background-color: #fb8500;"></span>
+                                <span class="qw-color-option" data-color="#2a9d8f" style="background-color: #2a9d8f;"></span>
+                                <span class="qw-color-option" data-color="#38b000" style="background-color: #38b000;"></span>
+                            </div>
+                            <input type="hidden" id="templateColor" value="#4361ee">
+                        </div>
+                        <div class="qw-template-preview">
+                            <h3>Included Exercises</h3>
+                            <div id="templateExercisesList" class="qw-template-exercises-list"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="qw-modal-footer">
+                    <button class="qw-btn qw-btn-secondary" onclick="closeModal('templateModal')">Cancel</button>
+                    <button class="qw-btn qw-btn-primary" id="saveTemplateBtn">Save Template</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modals -->
@@ -345,12 +474,17 @@ $favorites = mysqli_stmt_get_result($stmt);
         let activeRestTimer = null;
         let activeRestInterval = null;
 
+        // Template variables
+        let currentTemplateId = null;
+        let templates = [];
+
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             initializeTimers();
             initializeSearchFunctionality();
             initializeExerciseHandling();
             initializeWorkoutSummary();
+            initializeTemplates();
         });
 
         // Timer Functions
@@ -1200,6 +1334,437 @@ $favorites = mysqli_stmt_get_result($stmt);
             if (interval > 1) return Math.floor(interval) + 'm ago';
             
             return 'just now';
+        }
+
+        // Initialize template functionality
+        async function initializeTemplates() {
+            document.getElementById('createTemplateBtn').addEventListener('click', showCreateTemplateModal);
+            document.getElementById('saveTemplateBtn').addEventListener('click', saveTemplate);
+            
+            document.querySelector('.qw-color-options').addEventListener('click', function(e) {
+                const colorOption = e.target.closest('.qw-color-option');
+                if (colorOption) {
+                    // Remove active class from all options
+                    document.querySelectorAll('.qw-color-option').forEach(opt => opt.classList.remove('active'));
+                    
+                    // Add active class to clicked option
+                    colorOption.classList.add('active');
+                    
+                    // Update hidden input
+                    document.getElementById('templateColor').value = colorOption.dataset.color;
+                }
+            });
+            
+            // Load templates on page load
+            await loadTemplates();
+        }
+
+        // Load templates from server
+        async function loadTemplates() {
+            try {
+                const templatesContainer = document.getElementById('templatesContainer');
+                templatesContainer.innerHTML = '<div class="qw-templates-loading"><i class="fas fa-spinner fa-spin"></i> Loading templates...</div>';
+                
+                const response = await fetch('manage_templates.php?action=list');
+                const data = await response.json();
+                
+                templates = data.templates || [];
+                
+                if (templates.length === 0) {
+                    templatesContainer.innerHTML = `
+                        <div class="qw-no-templates">
+                            <p>You don't have any workout templates yet.</p>
+                            <p>Templates make it easy to quickly start your favorite workouts.</p>
+                            <button class="qw-btn qw-btn-primary" onclick="showCreateTemplateModal()">
+                                <i class="fas fa-plus"></i> Create Your First Template
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                templatesContainer.innerHTML = `
+                    <div class="qw-templates-grid">
+                        ${templates.map(template => `
+                            <div class="qw-template-card" style="border-color: ${template.color}">
+                                <div class="qw-template-icon" style="background-color: ${template.color}">
+                                    <i class="fas fa-${template.icon}"></i>
+                                </div>
+                                <div class="qw-template-content">
+                                    <h3>${template.name}</h3>
+                                    <p>${template.description || 'No description'}</p>
+                                    <div class="qw-template-meta">
+                                        <span><i class="fas fa-dumbbell"></i> ${template.exercise_count} exercises</span>
+                                        <span><i class="far fa-clock"></i> ${template.avg_duration || '~60 min'}</span>
+                                    </div>
+                                </div>
+                                <div class="qw-template-actions">
+                                    <button class="qw-btn qw-btn-primary qw-start-template-btn" data-id="${template.id}">
+                                        <i class="fas fa-play"></i> Start
+                                    </button>
+                                    <button class="qw-btn qw-btn-icon qw-edit-template-btn" data-id="${template.id}" title="Edit Template">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="qw-btn qw-btn-icon qw-delete-template-btn" data-id="${template.id}" title="Delete Template">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                // Add event listeners to template action buttons
+                document.querySelectorAll('.qw-start-template-btn').forEach(btn => {
+                    btn.addEventListener('click', () => startTemplate(btn.dataset.id));
+                });
+                
+                document.querySelectorAll('.qw-edit-template-btn').forEach(btn => {
+                    btn.addEventListener('click', () => editTemplate(btn.dataset.id));
+                });
+                
+                document.querySelectorAll('.qw-delete-template-btn').forEach(btn => {
+                    btn.addEventListener('click', () => deleteTemplate(btn.dataset.id));
+                });
+                
+            } catch (error) {
+                console.error('Error loading templates:', error);
+                document.getElementById('templatesContainer').innerHTML = '<div class="qw-error">Failed to load templates. Please try again.</div>';
+            }
+        }
+
+        // Show template creation modal
+        function showCreateTemplateModal() {
+            // Reset form
+            document.getElementById('templateForm').reset();
+            document.querySelectorAll('.qw-color-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelector('.qw-color-option[data-color="#4361ee"]').classList.add('active');
+            document.getElementById('templateColor').value = '#4361ee';
+            
+            // Set template ID to null (creating a new template)
+            currentTemplateId = null;
+            
+            // Show current exercises in preview
+            updateTemplateExercisesPreview();
+            
+            // Show modal
+            document.getElementById('templateModal').style.display = 'block';
+        }
+
+        // Update template exercises preview
+        function updateTemplateExercisesPreview() {
+            const exercisesList = document.getElementById('templateExercisesList');
+            const exercises = Array.from(document.querySelectorAll('.qw-exercise-item')).map(item => {
+                return {
+                    name: item.querySelector('.qw-exercise-name').textContent,
+                    sets: Array.from(item.querySelectorAll('.qw-set-item')).length
+                };
+            });
+            
+            if (exercises.length === 0) {
+                exercisesList.innerHTML = '<p class="qw-no-exercises">No exercises added yet. Add exercises to your workout first.</p>';
+                return;
+            }
+            
+            exercisesList.innerHTML = exercises.map(exercise => `
+                <div class="qw-template-exercise-item">
+                    <span class="qw-template-exercise-name">${exercise.name}</span>
+                    <span class="qw-template-exercise-sets">${exercise.sets} sets</span>
+                </div>
+            `).join('');
+        }
+
+        // Save template
+        async function saveTemplate() {
+            const name = document.getElementById('templateName').value.trim();
+            if (!name) {
+                alert('Please enter a template name');
+                return;
+            }
+            
+            // Get exercises from current workout
+            const exercises = Array.from(document.querySelectorAll('.qw-exercise-item')).map(item => {
+                return {
+                    name: item.querySelector('.qw-exercise-name').textContent,
+                    notes: item.querySelector('.qw-exercise-notes textarea').value,
+                    sets: Array.from(item.querySelectorAll('.qw-set-item')).map(setItem => {
+                        const weight = parseFloat(setItem.querySelector('.qw-weight-input').value) || 0;
+                        const reps = parseInt(setItem.querySelector('.qw-reps-input').value) || 0;
+                        const isWarmup = setItem.classList.contains('qw-warmup-set');
+                        
+                        return {
+                            weight,
+                            reps,
+                            is_warmup: isWarmup ? 1 : 0
+                        };
+                    })
+                };
+            });
+            
+            if (exercises.length === 0) {
+                alert('Please add at least one exercise to your workout before saving as a template');
+                return;
+            }
+            
+            // Prepare template data
+            const templateData = {
+                action: currentTemplateId ? 'update' : 'create',
+                template_id: currentTemplateId,
+                name,
+                description: document.getElementById('templateDescription').value,
+                duration_minutes: parseInt(document.getElementById('templateDuration').value) || 60,
+                icon: document.getElementById('templateIcon').value,
+                color: document.getElementById('templateColor').value,
+                exercises
+            };
+            
+            try {
+                // Show saving indicator
+                const saveBtn = document.getElementById('saveTemplateBtn');
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                saveBtn.disabled = true;
+                
+                // Send to server
+                const response = await fetch('manage_templates.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(templateData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Close modal
+                    closeModal('templateModal');
+                    
+                    // Reload templates
+                    await loadTemplates();
+                    
+                    // Show success message
+                    showToast('Template saved successfully!', 'success');
+                } else {
+                    throw new Error(data.error || 'Failed to save template');
+                }
+            } catch (error) {
+                console.error('Error saving template:', error);
+                alert('Failed to save template: ' + error.message);
+            } finally {
+                // Reset save button
+                const saveBtn = document.getElementById('saveTemplateBtn');
+                saveBtn.innerHTML = 'Save Template';
+                saveBtn.disabled = false;
+            }
+        }
+
+        // Edit template
+        async function editTemplate(templateId) {
+            try {
+                const response = await fetch(`manage_templates.php?action=get&template_id=${templateId}`);
+                const data = await response.json();
+                
+                if (!response.ok || !data.template) {
+                    throw new Error(data.error || 'Failed to load template');
+                }
+                
+                const template = data.template;
+                
+                // Set form values
+                document.getElementById('templateName').value = template.name;
+                document.getElementById('templateDescription').value = template.description || '';
+                document.getElementById('templateDuration').value = template.duration_minutes || 60;
+                document.getElementById('templateIcon').value = template.icon || 'dumbbell';
+                
+                // Set color
+                document.querySelectorAll('.qw-color-option').forEach(opt => opt.classList.remove('active'));
+                const colorOption = document.querySelector(`.qw-color-option[data-color="${template.color}"]`);
+                if (colorOption) {
+                    colorOption.classList.add('active');
+                } else {
+                    document.querySelector('.qw-color-option[data-color="#4361ee"]').classList.add('active');
+                }
+                document.getElementById('templateColor').value = template.color || '#4361ee';
+                
+                // Set current template ID
+                currentTemplateId = template.id;
+                
+                // Clear current workout
+                document.getElementById('exerciseList').innerHTML = '';
+                
+                // Add exercises from template
+                template.exercises.forEach(exercise => {
+                    const exerciseItem = addExerciseToWorkoutFromTemplate(exercise);
+                });
+                
+                // Update template exercises preview
+                updateTemplateExercisesPreview();
+                
+                // Show modal
+                document.getElementById('templateModal').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading template for editing:', error);
+                alert('Failed to load template for editing');
+            }
+        }
+
+        // Add exercise from template
+        function addExerciseToWorkoutFromTemplate(exercise) {
+            const template = document.getElementById('exerciseTemplate');
+            const clone = template.content.cloneNode(true);
+            
+            // Set exercise name
+            clone.querySelector('.qw-exercise-name').textContent = exercise.exercise_name;
+            
+            // Set notes if available
+            if (exercise.notes) {
+                clone.querySelector('.qw-exercise-notes textarea').value = exercise.notes;
+            }
+            
+            // Add to DOM
+            const exerciseList = document.getElementById('exerciseList');
+            exerciseList.appendChild(clone);
+            
+            // Get the newly added exercise item
+            const exerciseItem = exerciseList.lastElementChild;
+            
+            // Add sets
+            const setsContainer = exerciseItem.querySelector('.qw-sets-list');
+            
+            if (exercise.sets && exercise.sets.length > 0) {
+                exercise.sets.forEach(set => {
+                    addSetToExercise(setsContainer, {
+                        weight: set.weight,
+                        reps: set.reps,
+                        is_warmup: set.is_warmup
+                    });
+                });
+            } else {
+                // Add a default set if none exist
+                addSetToExercise(setsContainer);
+            }
+            
+            updateWorkoutSummary();
+            return exerciseItem;
+        }
+
+        // Delete template
+        async function deleteTemplate(templateId) {
+            if (!confirm('Are you sure you want to delete this template?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('manage_templates.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        template_id: templateId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Reload templates
+                    await loadTemplates();
+                    
+                    // Show success message
+                    showToast('Template deleted successfully!', 'success');
+                } else {
+                    throw new Error(data.error || 'Failed to delete template');
+                }
+            } catch (error) {
+                console.error('Error deleting template:', error);
+                alert('Failed to delete template: ' + error.message);
+            }
+        }
+
+        // Start workout from template
+        async function startTemplate(templateId) {
+            try {
+                const response = await fetch(`manage_templates.php?action=use&template_id=${templateId}`);
+                const data = await response.json();
+                
+                if (!response.ok || !data.template) {
+                    throw new Error(data.error || 'Failed to load template');
+                }
+                
+                const template = data.template;
+                
+                // Clear current workout
+                document.getElementById('exerciseList').innerHTML = '';
+                
+                // Reset timer
+                resetWorkoutTimer();
+                
+                // Add exercises from template
+                template.exercises.forEach(exercise => {
+                    addExerciseToWorkoutFromTemplate(exercise);
+                });
+                
+                // Show success message
+                showToast(`Started "${template.name}" workout!`, 'success');
+                
+                // Scroll to workout section
+                document.querySelector('.qw-current-workout').scrollIntoView({ behavior: 'smooth' });
+                
+                // Start the timer automatically
+                startWorkoutTimer();
+                
+            } catch (error) {
+                console.error('Error starting template workout:', error);
+                alert('Failed to start workout from template');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            // Remove any existing toasts
+            const existingToast = document.querySelector('.qw-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `qw-toast qw-toast-${type}`;
+            toast.innerHTML = `
+                <div class="qw-toast-icon">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                </div>
+                <div class="qw-toast-content">${message}</div>
+                <button class="qw-toast-close"><i class="fas fa-times"></i></button>
+            `;
+            
+            // Add to document
+            document.body.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+            
+            // Close button
+            toast.querySelector('.qw-toast-close').addEventListener('click', () => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            });
         }
     </script>
 </body>
