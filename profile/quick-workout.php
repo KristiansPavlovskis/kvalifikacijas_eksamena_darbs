@@ -12,13 +12,15 @@ require_once '../assets/db_connection.php';
 // Get user ID
 $user_id = $_SESSION["user_id"];
 
+// Function to check if table exists
+function tableExists($conn, $tableName) {
+    $result = mysqli_query($conn, "SHOW TABLES LIKE '$tableName'");
+    return mysqli_num_rows($result) > 0;
+}
+
 // Fetch user's exercise history (fix for lines 22-24)
 try {
-    // First check if tables exist
-    $check_table = "SHOW TABLES LIKE 'workouts'";
-    $table_exists = mysqli_query($conn, $check_table);
-    
-    if (mysqli_num_rows($table_exists) > 0) {
+    if (tableExists($conn, 'workouts') && tableExists($conn, 'workout_exercises') && tableExists($conn, 'exercise_sets')) {
         $exercise_history_query = "SELECT DISTINCT 
                                 IF(we.exercise_name IS NOT NULL, we.exercise_name, 'Custom Exercise') as exercise_name, 
                                 MAX(es.weight) as weight, 
@@ -32,6 +34,9 @@ try {
                             ORDER BY MAX(w.created_at) DESC 
                             LIMIT 50";
         $stmt = mysqli_prepare($conn, $exercise_history_query);
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare exercise history query: " . mysqli_error($conn));
+        }
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $exercise_history = mysqli_stmt_get_result($stmt);
@@ -39,17 +44,13 @@ try {
         $exercise_history = false;
     }
 } catch (Exception $e) {
-    // If the table doesn't exist or has error, provide an empty result
+    error_log("Error fetching exercise history: " . $e->getMessage());
     $exercise_history = false;
 }
 
 // Fetch common exercises
 try {
-    // Check if exercise library table exists
-    $check_table = "SHOW TABLES LIKE 'exercise_library'";
-    $table_exists = mysqli_query($conn, $check_table);
-    
-    if (mysqli_num_rows($table_exists) > 0) {
+    if (tableExists($conn, 'exercise_library')) {
         $common_exercises_query = "SELECT exercise_name, 
                               el.muscle_group_id as muscle_group, 
                               el.equipment_id as equipment_needed 
@@ -57,26 +58,28 @@ try {
                               ORDER BY popularity DESC 
                               LIMIT 20";
         $common_exercises = mysqli_query($conn, $common_exercises_query);
+        if ($common_exercises === false) {
+            throw new Exception("Failed to fetch common exercises: " . mysqli_error($conn));
+        }
     } else {
         $common_exercises = false;
     }
 } catch (Exception $e) {
-    // If the table doesn't exist or has error, provide an empty result
+    error_log("Error fetching common exercises: " . $e->getMessage());
     $common_exercises = false;
 }
 
 // Fetch user's favorite exercises
 try {
-    // Check if favorite exercises table exists
-    $check_table = "SHOW TABLES LIKE 'user_favorite_exercises'";
-    $table_exists = mysqli_query($conn, $check_table);
-    
-    if (mysqli_num_rows($table_exists) > 0) {
+    if (tableExists($conn, 'user_favorite_exercises') && tableExists($conn, 'exercise_library')) {
         $favorites_query = "SELECT el.exercise_name 
                         FROM user_favorite_exercises uf
                         JOIN exercise_library el ON uf.exercise_id = el.id
                         WHERE uf.user_id = ?";
         $stmt = mysqli_prepare($conn, $favorites_query);
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare favorites query: " . mysqli_error($conn));
+        }
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $favorites = mysqli_stmt_get_result($stmt);
@@ -84,7 +87,7 @@ try {
         $favorites = false;
     }
 } catch (Exception $e) {
-    // If the table doesn't exist or has error, provide an empty result
+    error_log("Error fetching favorite exercises: " . $e->getMessage());
     $favorites = false;
 }
 

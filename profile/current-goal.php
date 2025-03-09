@@ -98,16 +98,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 // Fetch active goals
 $active_goals = [];
 try {
-    $query = "SELECT * FROM goals WHERE user_id = ? AND completed = 0 ORDER BY deadline ASC";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        $active_goals[] = $row;
+    // Check if goals table exists first
+    $result = mysqli_query($conn, "SHOW TABLES LIKE 'goals'");
+    if (mysqli_num_rows($result) > 0) {
+        $query = "SELECT * FROM goals WHERE user_id = ? AND completed = 0 ORDER BY deadline ASC";
+        $stmt = mysqli_prepare($conn, $query);
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare query: " . mysqli_error($conn));
+        }
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        if (!mysqli_stmt_execute($stmt)) {
+            throw new Exception("Failed to execute query: " . mysqli_error($conn));
+        }
+        $result = mysqli_stmt_get_result($stmt);
+        if ($result === false) {
+            throw new Exception("Failed to get result: " . mysqli_error($conn));
+        }
+        
+        while ($row = mysqli_fetch_assoc($result)) {
+            $active_goals[] = $row;
+        }
     }
 } catch (Exception $e) {
+    error_log("Error fetching active goals: " . $e->getMessage());
     $message = "Error fetching active goals: " . $e->getMessage();
     $message_type = "error";
 }
@@ -115,16 +128,29 @@ try {
 // Fetch completed goals
 $completed_goals = [];
 try {
-    $query = "SELECT * FROM goals WHERE user_id = ? AND completed = 1 ORDER BY updated_at DESC LIMIT 5";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        $completed_goals[] = $row;
+    // Check if goals table exists first
+    $result = mysqli_query($conn, "SHOW TABLES LIKE 'goals'");
+    if (mysqli_num_rows($result) > 0) {
+        $query = "SELECT * FROM goals WHERE user_id = ? AND completed = 1 ORDER BY updated_at DESC LIMIT 5";
+        $stmt = mysqli_prepare($conn, $query);
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare query: " . mysqli_error($conn));
+        }
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        if (!mysqli_stmt_execute($stmt)) {
+            throw new Exception("Failed to execute query: " . mysqli_error($conn));
+        }
+        $result = mysqli_stmt_get_result($stmt);
+        if ($result === false) {
+            throw new Exception("Failed to get result: " . mysqli_error($conn));
+        }
+        
+        while ($row = mysqli_fetch_assoc($result)) {
+            $completed_goals[] = $row;
+        }
     }
 } catch (Exception $e) {
+    error_log("Error fetching completed goals: " . $e->getMessage());
     $message = "Error fetching completed goals: " . $e->getMessage();
     $message_type = "error";
 }
@@ -770,6 +796,94 @@ try {
             
             .goals-form-row {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        /* Navigation Bar Styles */
+        .navbar {
+            background-color: #1E1E1E;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .navbar .logo a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: white;
+            font-family: 'Koulen', sans-serif;
+            font-size: 1.5rem;
+        }
+
+        .navbar .logo i {
+            color: #FF4D4D;
+            font-size: 1.8rem;
+        }
+
+        .navbar nav ul {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .navbar nav ul li a i {
+            font-size: 1.1rem;
+        }
+
+        .navbar nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .navbar nav ul li a.active {
+            background-color: #FF4D4D;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .navbar nav ul {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 1rem;
+                gap: 10px;
+            }
+
+            .navbar nav ul li a {
+                padding: 6px 12px;
+                font-size: 0.9rem;
             }
         }
     </style>
