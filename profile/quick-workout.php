@@ -102,9 +102,203 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="lietotaja-view.css">
+    <link rel="stylesheet" href="../lietotaja-view.css">
+    <style>
+        /* Navbar styles */
+        .navbar {
+            background-color: #1E1E1E;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar .logo a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: white;
+            font-family: 'Koulen', sans-serif;
+            font-size: 1.5rem;
+        }
+
+        .navbar .logo i {
+            color: #FF4D4D;
+            font-size: 1.8rem;
+        }
+
+        .navbar nav ul {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .navbar nav ul li a i {
+            font-size: 1.1rem;
+        }
+
+        .navbar nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .navbar nav ul li a.active {
+            background-color: #FF4D4D;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .navbar nav ul {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 1rem;
+                gap: 10px;
+            }
+
+            .navbar nav ul li a {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Quick workout styles */
+        .qw-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .qw-timer-section {
+            display: flex;
+            justify-content: space-between;
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .qw-workout-timer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .qw-workout-timer span {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .qw-timer-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .qw-btn {
+            background-color: #3a3a3a;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+        
+        .qw-btn:hover {
+            background-color: #4a4a4a;
+        }
+        
+        .qw-btn-primary {
+            background-color: #FF4D4D;
+        }
+        
+        .qw-btn-primary:hover {
+            background-color: #ff6b6b;
+        }
+        
+        .qw-btn-secondary {
+            background-color: #3a3a3a;
+        }
+        
+        .qw-btn-secondary:hover {
+            background-color: #4a4a4a;
+        }
+        
+        .qw-btn-warning {
+            background-color: #ffa200;
+        }
+        
+        .qw-btn-warning:hover {
+            background-color: #ffb733;
+        }
+        
+        .qw-btn-danger {
+            background-color: #dc3545;
+        }
+        
+        .qw-btn-danger:hover {
+            background-color: #e25563;
+        }
+    </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <header class="navbar">
+        <div class="logo">
+            <a href="../index.php">
+                <i class="fas fa-dumbbell"></i>
+                <span>GYMVERSE</span>
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="../index.php"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="../workouts.php"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                <li><a href="../excercises.php"><i class="fas fa-running"></i> Exercises</a></li>
+                <li><a href="../quick-workout.php" class="active"><i class="fas fa-stopwatch"></i> Quick Workout</a></li>
+                <li><a href="profile.php"><i class="fas fa-user"></i> Profile</a></li>
+                <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
     <div class="qw-container">
         <!-- Timer Section -->
         <div class="qw-timer-section">
@@ -659,7 +853,7 @@ try {
             }
         }
 
-        function addExerciseToWorkout(exerciseName) {
+        async function addExerciseToWorkout(exerciseName) {
             const template = document.getElementById('exerciseTemplate');
             const clone = template.content.cloneNode(true);
             
