@@ -34,8 +34,10 @@ function tableExists($conn, $tableName) {
 
 // Get basic user info
 try {
-    $query = "SELECT created_at, last_active, body_weight, height, fitness_level FROM users WHERE id = ?";
-    $stmt = mysqli_prepare($conn, $query);
+    $stmt = mysqli_prepare($conn, "SELECT created_at, last_active, body_weight, height, fitness_level FROM users WHERE id = ?");
+    if ($stmt === false) {
+        throw new Exception("Failed to prepare user info query: " . mysqli_error($conn));
+    }
     mysqli_stmt_bind_param($stmt, "i", $user_id);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
@@ -48,14 +50,17 @@ try {
         $fitness_level = $user_data["fitness_level"] ?: "Beginner";
     }
 } catch (Exception $e) {
-    // Handle error
+    // Log error and continue with default values
+    error_log("Error fetching user info: " . $e->getMessage());
 }
 
 // Get workout statistics
 try {
     if (tableExists($conn, 'workouts')) {
-        $query = "SELECT COUNT(*) as workout_count, MAX(created_at) as last_workout FROM workouts WHERE user_id = ?";
-        $stmt = mysqli_prepare($conn, $query);
+        $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as workout_count, MAX(created_at) as last_workout FROM workouts WHERE user_id = ?");
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare workout stats query: " . mysqli_error($conn));
+        }
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -66,14 +71,16 @@ try {
         }
     }
 } catch (Exception $e) {
-    // Handle error
+    error_log("Error fetching workout stats: " . $e->getMessage());
 }
 
 // Get workout volume
 try {
     if (tableExists($conn, 'workouts')) {
-        $query = "SELECT SUM(total_volume) as total_volume FROM workouts WHERE user_id = ?";
-        $stmt = mysqli_prepare($conn, $query);
+        $stmt = mysqli_prepare($conn, "SELECT SUM(total_volume) as total_volume FROM workouts WHERE user_id = ?");
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare volume query: " . mysqli_error($conn));
+        }
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -83,14 +90,16 @@ try {
         }
     }
 } catch (Exception $e) {
-    // Handle error
+    error_log("Error fetching workout volume: " . $e->getMessage());
 }
 
 // Calculate activity streak
 try {
     if (tableExists($conn, 'workouts')) {
-        $query = "SELECT created_at FROM workouts WHERE user_id = ? ORDER BY created_at DESC";
-        $stmt = mysqli_prepare($conn, $query);
+        $stmt = mysqli_prepare($conn, "SELECT created_at FROM workouts WHERE user_id = ? ORDER BY created_at DESC");
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare activity streak query: " . mysqli_error($conn));
+        }
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -105,7 +114,6 @@ try {
             $yesterday = new DateTime();
             $yesterday->modify('-1 day');
             
-            // Check if worked out today or yesterday
             $today_str = $today->format('Y-m-d');
             $yesterday_str = $yesterday->format('Y-m-d');
             
@@ -127,27 +135,31 @@ try {
         }
     }
 } catch (Exception $e) {
-    // Handle error
+    error_log("Error calculating activity streak: " . $e->getMessage());
 }
 
 // Update last active
 try {
-    $query = "UPDATE users SET last_active = NOW() WHERE id = ?";
-    $stmt = mysqli_prepare($conn, $query);
+    $stmt = mysqli_prepare($conn, "UPDATE users SET last_active = NOW() WHERE id = ?");
+    if ($stmt === false) {
+        throw new Exception("Failed to prepare last active update query: " . mysqli_error($conn));
+    }
     mysqli_stmt_bind_param($stmt, "i", $user_id);
     mysqli_stmt_execute($stmt);
 } catch (Exception $e) {
-    // Handle error
+    error_log("Error updating last active: " . $e->getMessage());
 }
 
 // Get active goals count
 try {
     if (tableExists($conn, 'goals')) {
-        $query = "SELECT 
+        $stmt = mysqli_prepare($conn, "SELECT 
                     SUM(CASE WHEN completed = 0 THEN 1 ELSE 0 END) as active_count,
                     SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END) as completed_count
-                  FROM goals WHERE user_id = ?";
-        $stmt = mysqli_prepare($conn, $query);
+                  FROM goals WHERE user_id = ?");
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare goals count query: " . mysqli_error($conn));
+        }
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -158,20 +170,22 @@ try {
         }
     }
 } catch (Exception $e) {
-    // Handle error
+    error_log("Error fetching goals count: " . $e->getMessage());
 }
 
 // Get favorite exercises
 $favorite_exercises = [];
 try {
     if (tableExists($conn, 'user_favorite_exercises') && tableExists($conn, 'exercise_library')) {
-        $query = "SELECT el.exercise_name 
+        $stmt = mysqli_prepare($conn, "SELECT el.exercise_name 
                 FROM user_favorite_exercises uf 
                 JOIN exercise_library el ON uf.exercise_id = el.id 
                 WHERE uf.user_id = ? 
                 ORDER BY uf.created_at DESC 
-                LIMIT 5";
-        $stmt = mysqli_prepare($conn, $query);
+                LIMIT 5");
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare favorite exercises query: " . mysqli_error($conn));
+        }
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -181,44 +195,48 @@ try {
         }
     }
 } catch (Exception $e) {
-    // Handle error
+    error_log("Error fetching favorite exercises: " . $e->getMessage());
 }
 
 // Get most recent workouts
 $recent_workouts = [];
 try {
     if (tableExists($conn, 'workouts')) {
-        $query = "SELECT id, name as workout_name, created_at, duration_minutes as duration, calories_burned, total_volume 
+        $stmt = mysqli_prepare($conn, "SELECT id, name as workout_name, created_at, duration_minutes as duration, calories_burned, total_volume 
                 FROM workouts 
                 WHERE user_id = ? 
                 ORDER BY created_at DESC 
-                LIMIT 3";
-        $stmt = mysqli_prepare($conn, $query);
+                LIMIT 3");
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare recent workouts query: " . mysqli_error($conn));
+        }
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $recent_workouts = mysqli_stmt_get_result($stmt);
     }
 } catch (Exception $e) {
-    // Handle error
+    error_log("Error fetching recent workouts: " . $e->getMessage());
 }
 
 // Get active goals for display
 $goals = false;
 try {
     if (tableExists($conn, 'goals')) {
-        $query = "SELECT id, title, description, target_value, current_value, unit, goal_type, deadline as end_date, 
+        $stmt = mysqli_prepare($conn, "SELECT id, title, description, target_value, current_value, unit, goal_type, deadline as end_date, 
                          DATE(created_at) as start_date 
                   FROM goals 
                   WHERE user_id = ? AND completed = 0 
                   ORDER BY deadline ASC 
-                  LIMIT 4";
-        $stmt = mysqli_prepare($conn, $query);
+                  LIMIT 4");
+        if ($stmt === false) {
+            throw new Exception("Failed to prepare active goals query: " . mysqli_error($conn));
+        }
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $goals = mysqli_stmt_get_result($stmt);
     }
 } catch (Exception $e) {
-    // Handle error
+    error_log("Error fetching active goals: " . $e->getMessage());
 }
 ?>
 
