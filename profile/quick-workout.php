@@ -662,7 +662,7 @@ try {
             <div class="qw-step active" id="step1">
                 <div class="qw-step-circle">1</div>
                 <div class="qw-step-label">Select Exercises</div>
-            </div>
+                </div>
             <div class="qw-step" id="step2">
                 <div class="qw-step-circle">2</div>
                 <div class="qw-step-label">Perform Workout</div>
@@ -764,9 +764,9 @@ try {
                     <span id="restTimer">Rest: 00:00</span>
                     <button id="startRest" class="qw-btn qw-btn-secondary">Start Rest Timer</button>
                 </div>
-            </div>
+        </div>
 
-            <!-- Current Workout Section -->
+        <!-- Current Workout Section -->
             <div id="exerciseList" class="qw-exercise-list"></div>
             
             <div class="qw-step-navigation">
@@ -862,93 +862,93 @@ try {
                 </div>
             </div>
         </div>
-        
-        <!-- Exercise Template (Hidden) -->
-        <template id="exerciseTemplate">
-            <div class="qw-exercise-item">
-                <div class="qw-exercise-header">
-                    <h3 class="qw-exercise-name"></h3>
-                    <div class="qw-exercise-actions">
-                        <button class="qw-btn qw-btn-icon qw-history-btn" title="View History">
-                            <i class="fas fa-history"></i>
-                        </button>
-                        <button class="qw-btn qw-btn-icon qw-favorite-btn" title="Add to Favorites">
-                            <i class="far fa-star"></i>
-                        </button>
-                        <button class="qw-btn qw-btn-icon qw-remove-btn" title="Remove Exercise">
+            
+            <!-- Exercise Template (Hidden) -->
+            <template id="exerciseTemplate">
+                <div class="qw-exercise-item">
+                    <div class="qw-exercise-header">
+                        <h3 class="qw-exercise-name"></h3>
+                        <div class="qw-exercise-actions">
+                            <button class="qw-btn qw-btn-icon qw-history-btn" title="View History">
+                                <i class="fas fa-history"></i>
+                            </button>
+                            <button class="qw-btn qw-btn-icon qw-favorite-btn" title="Add to Favorites">
+                                <i class="far fa-star"></i>
+                            </button>
+                            <button class="qw-btn qw-btn-icon qw-remove-btn" title="Remove Exercise">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="qw-personal-bests-bar">
+                        <span class="qw-pb-badge" title="Personal Best">
+                            <i class="fas fa-trophy"></i> <span class="qw-pb-value">--</span>
+                        </span>
+                        <span class="qw-volume-badge" title="Total Volume">
+                            <i class="fas fa-chart-line"></i> <span class="qw-volume-value">0</span> kg
+                        </span>
+                    </div>
+                    
+                    <div class="qw-sets-container">
+                        <div class="qw-sets-header">
+                            <span class="qw-set-col">Set</span>
+                            <span class="qw-weight-col">Weight (kg)</span>
+                            <span class="qw-reps-col">Reps</span>
+                            <span class="qw-rpe-col">RPE</span>
+                            <span class="qw-actions-col"></span>
+                        </div>
+                        <div class="qw-sets-list"></div>
+                        <div class="qw-sets-actions">
+                            <button class="qw-btn qw-btn-secondary qw-add-set-btn">
+                                <i class="fas fa-plus"></i> Add Set
+                            </button>
+                            <button class="qw-btn qw-btn-outline qw-recommend-btn">
+                                <i class="fas fa-magic"></i> Recommend
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="qw-exercise-notes">
+                        <textarea placeholder="Add notes for this exercise..." rows="2"></textarea>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Set Template (Hidden) -->
+            <template id="setTemplate">
+                <div class="qw-set-item">
+                    <span class="qw-set-number"></span>
+                    <div class="qw-weight-input-wrapper">
+                        <input type="number" class="qw-input qw-weight-input" placeholder="0" step="2.5" min="0">
+                        <span class="qw-unit">kg</span>
+                    </div>
+                    <input type="number" class="qw-input qw-reps-input" placeholder="0" min="0">
+                    <div class="qw-rpe-input-wrapper">
+                        <input type="number" class="qw-input qw-rpe-input" placeholder="RPE" min="1" max="10">
+                        <span class="qw-rpe-help" title="Click for RPE help">
+                            <i class="fas fa-question-circle"></i>
+                        </span>
+                    </div>
+                    <div class="qw-set-actions">
+                        <button class="qw-btn qw-btn-icon qw-remove-set-btn" title="Remove Set">
                             <i class="fas fa-times"></i>
                         </button>
-                    </div>
-                </div>
-
-                <div class="qw-personal-bests-bar">
-                    <span class="qw-pb-badge" title="Personal Best">
-                        <i class="fas fa-trophy"></i> <span class="qw-pb-value">--</span>
-                    </span>
-                    <span class="qw-volume-badge" title="Total Volume">
-                        <i class="fas fa-chart-line"></i> <span class="qw-volume-value">0</span> kg
-                    </span>
-                </div>
-                
-                <div class="qw-sets-container">
-                    <div class="qw-sets-header">
-                        <span class="qw-set-col">Set</span>
-                        <span class="qw-weight-col">Weight (kg)</span>
-                        <span class="qw-reps-col">Reps</span>
-                        <span class="qw-rpe-col">RPE</span>
-                        <span class="qw-actions-col"></span>
-                    </div>
-                    <div class="qw-sets-list"></div>
-                    <div class="qw-sets-actions">
-                        <button class="qw-btn qw-btn-secondary qw-add-set-btn">
-                            <i class="fas fa-plus"></i> Add Set
-                        </button>
-                        <button class="qw-btn qw-btn-outline qw-recommend-btn">
-                            <i class="fas fa-magic"></i> Recommend
+                        <button class="qw-btn qw-btn-icon qw-start-rest-btn" title="Start Rest Timer">
+                            <i class="fas fa-stopwatch"></i>
                         </button>
                     </div>
                 </div>
-                
-                <div class="qw-exercise-notes">
-                    <textarea placeholder="Add notes for this exercise..." rows="2"></textarea>
-                </div>
-            </div>
-        </template>
-
-        <!-- Set Template (Hidden) -->
-        <template id="setTemplate">
-            <div class="qw-set-item">
-                <span class="qw-set-number"></span>
-                <div class="qw-weight-input-wrapper">
-                    <input type="number" class="qw-input qw-weight-input" placeholder="0" step="2.5" min="0">
-                    <span class="qw-unit">kg</span>
-                </div>
-                <input type="number" class="qw-input qw-reps-input" placeholder="0" min="0">
-                <div class="qw-rpe-input-wrapper">
-                    <input type="number" class="qw-input qw-rpe-input" placeholder="RPE" min="1" max="10">
-                    <span class="qw-rpe-help" title="Click for RPE help">
-                        <i class="fas fa-question-circle"></i>
-                    </span>
-                </div>
-                <div class="qw-set-actions">
-                    <button class="qw-btn qw-btn-icon qw-remove-set-btn" title="Remove Set">
-                        <i class="fas fa-times"></i>
-                    </button>
-                    <button class="qw-btn qw-btn-icon qw-start-rest-btn" title="Start Rest Timer">
-                        <i class="fas fa-stopwatch"></i>
-                    </button>
-                </div>
-            </div>
-        </template>
+            </template>
 
         <!-- Selected Exercise Template (Hidden) -->
         <template id="selectedExerciseTemplate">
             <div class="qw-selected-item">
                 <span class="qw-selected-name"></span>
                 <button class="qw-btn qw-btn-icon qw-remove-selected-btn">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
         </template>
     </div>
 
@@ -1075,7 +1075,7 @@ try {
                 resultsContainer.innerHTML = `<div class="qw-no-results">No ${category} exercises found</div>`;
                 return;
             }
-            
+
             resultsContainer.innerHTML = `
                 <div class="qw-results-grid">
                     ${exercises.map(exercise => `
@@ -1327,9 +1327,9 @@ try {
             // Handle favorite button
             if (event.target.closest('.qw-favorite-btn')) {
                 toggleFavorite(exerciseItem);
-                return;
-            }
-            
+                    return;
+                }
+                
             // Handle remove button
             if (event.target.closest('.qw-remove-btn')) {
                 removeExercise(exerciseItem);
@@ -1338,11 +1338,11 @@ try {
             
             // Handle add set button
             if (event.target.closest('.qw-add-set-btn')) {
-                const setsContainer = exerciseItem.querySelector('.qw-sets-list');
+            const setsContainer = exerciseItem.querySelector('.qw-sets-list');
                 addSetToExercise(setsContainer);
-                return;
-            }
-            
+                    return;
+                }
+                
             // Handle remove set button
             if (event.target.closest('.qw-remove-set-btn')) {
                 const setItem = event.target.closest('.qw-set-item');
