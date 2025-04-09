@@ -16,54 +16,6 @@ GYMVERSE is a comprehensive fitness web application designed to help users track
 - **Membership Plans**: Access premium features with different subscription tiers
 - **Exercise Database**: Comprehensive collection of exercises with detailed instructions
 
-## 🚀 Installation
-
-Follow these steps to set up GYMVERSE on your local machine:
-
-### Prerequisites
-
-- PHP 7.4 or higher
-- MySQL or MariaDB
-- Web server (e.g., Apache, Nginx)
-
-### Steps
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/gymverse.git
-   cd gymverse
-   ```
-
-2. **Configure the database**
-   
-   Edit the database connection details in `config/db_connect.php`:
-   ```php
-   $host = 'localhost';
-   $db_name = 'gymverse_db';
-   $username = 'your_db_username';
-   $password = 'your_db_password';
-   ```
-
-3. **Create the database and tables**
-   
-   Access the setup page in your browser:
-   ```
-   http://localhost/gymverse/config/setup_db.php
-   ```
-   
-   This will automatically create the required database and tables.
-
-4. **Set up your web server**
-   
-   Configure your web server to point to the project's directory.
-
-5. **Access the application**
-   
-   Open your web browser and navigate to:
-   ```
-   http://localhost/gymverse/
-   ```
-
 ## 💻 Usage
 
 1. **Registration**: Create a new account using the registration page
@@ -103,14 +55,3 @@ gymverse/
 └── lietotaja-view.css  # Main stylesheet
 ```
 
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👥 Contact
-
-For any questions or suggestions, please feel free to contact us:
-
-- Email: info@gymverse.com
-- Website: www.gymverse.com
-- Social Media: @gymverse
