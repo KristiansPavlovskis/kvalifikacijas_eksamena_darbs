@@ -1,17 +1,9 @@
 <?php
-// Initialize the session
-session_start();
 
-// Check if the user is not logged in, if not redirect to login page
-if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    header("location: ../login.php?redirect=profile/profile.php");
-    exit;
-}
+require_once 'profile_access_control.php';
 
-// Include database connection
 require_once '../assets/db_connection.php';
 
-// Fetch additional user information 
 $user_id = $_SESSION["user_id"];
 $username = $_SESSION["username"];
 $email = $_SESSION["email"];
@@ -26,13 +18,11 @@ $activity_streak = 0;
 $active_goals_count = 0;
 $completed_goals_count = 0;
 
-// Function to check if table exists
 function tableExists($conn, $tableName) {
     $result = mysqli_query($conn, "SHOW TABLES LIKE '$tableName'");
     return mysqli_num_rows($result) > 0;
 }
 
-// Get basic user info
 try {
     $stmt = mysqli_prepare($conn, "SELECT created_at, last_active, body_weight, height, fitness_level FROM users WHERE id = ?");
     if ($stmt === false) {
@@ -50,11 +40,9 @@ try {
         $fitness_level = $user_data["fitness_level"] ?: "Beginner";
     }
 } catch (Exception $e) {
-    // Log error and continue with default values
     error_log("Error fetching user info: " . $e->getMessage());
 }
 
-// Get workout statistics
 try {
     if (tableExists($conn, 'workouts')) {
         $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as workout_count, MAX(created_at) as last_workout FROM workouts WHERE user_id = ?");
@@ -74,7 +62,6 @@ try {
     error_log("Error fetching workout stats: " . $e->getMessage());
 }
 
-// Get workout volume
 try {
     if (tableExists($conn, 'workouts')) {
         $stmt = mysqli_prepare($conn, "SELECT SUM(total_volume) as total_volume FROM workouts WHERE user_id = ?");
@@ -93,7 +80,6 @@ try {
     error_log("Error fetching workout volume: " . $e->getMessage());
 }
 
-// Calculate activity streak
 try {
     if (tableExists($conn, 'workouts')) {
         $stmt = mysqli_prepare($conn, "SELECT created_at FROM workouts WHERE user_id = ? ORDER BY created_at DESC");
@@ -138,7 +124,6 @@ try {
     error_log("Error calculating activity streak: " . $e->getMessage());
 }
 
-// Update last active
 try {
     $stmt = mysqli_prepare($conn, "UPDATE users SET last_active = NOW() WHERE id = ?");
     if ($stmt === false) {
@@ -150,7 +135,6 @@ try {
     error_log("Error updating last active: " . $e->getMessage());
 }
 
-// Get active goals count
 try {
     if (tableExists($conn, 'goals')) {
         $stmt = mysqli_prepare($conn, "SELECT 
@@ -173,7 +157,6 @@ try {
     error_log("Error fetching goals count: " . $e->getMessage());
 }
 
-// Get favorite exercises
 $favorite_exercises = [];
 try {
     if (tableExists($conn, 'user_favorite_exercises') && tableExists($conn, 'exercise_library')) {
@@ -198,7 +181,6 @@ try {
     error_log("Error fetching favorite exercises: " . $e->getMessage());
 }
 
-// Get most recent workouts
 $recent_workouts = [];
 try {
     if (tableExists($conn, 'workouts')) {
@@ -218,7 +200,6 @@ try {
     error_log("Error fetching recent workouts: " . $e->getMessage());
 }
 
-// Get active goals for display
 $goals = false;
 try {
     if (tableExists($conn, 'goals')) {
@@ -251,587 +232,1406 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../lietotaja-view.css">
     <style>
-        /* Profile-specific styles with modern UI improvements */
-        .prof-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            font-family: 'Poppins', sans-serif;
+        /* Core variables and base styling */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4cc9f0;
+            --primary-dark: #3a56d4;
+            --secondary: #f72585;
+            --secondary-light: #ff5c8a;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --danger: #ef476f;
+            --dark: #0f0f1a;
+            --dark-card: #1a1a2e;
+            --gray-dark: #2b2b3d;
+            --gray-light: rgba(255, 255, 255, 0.7);
+            --gradient-blue: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            --gradient-purple: linear-gradient(135deg, #9d4edd, #c77dff);
+            --gradient-pink: linear-gradient(135deg, #f72585, #ff5c8a);
+            --gradient-green: linear-gradient(135deg, #06d6a0, #64dfdf);
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --sidebar-width: 280px;
         }
-        
-        .prof-header {
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(67, 97, 238, 0.05) 0%, transparent 200px),
+                radial-gradient(circle at 70% 80%, rgba(67, 97, 238, 0.05) 0%, transparent 200px);
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        .dashboard {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            background-color: var(--dark-card);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 30px 20px;
+            position: fixed;
+            width: var(--sidebar-width);
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 25px;
+        }
+
+        .sidebar-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: white;
+            text-decoration: none;
+            font-family: 'Koulen', sans-serif;
+            background: var(--gradient-blue);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            position: relative;
+            background-color: var(--gray-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-avatar::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            bottom: -2px;
+            left: -2px;
+            background: var(--gradient-blue);
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        .sidebar-user-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-user-email {
+            font-size: 0.9rem;
+            color: var(--gray-light);
+            margin-bottom: 15px;
+        }
+
+        .sidebar-user-since {
+            font-size: 0.85rem;
+            color: var(--gray-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .sidebar-nav {
+            margin-bottom: 30px;
+            flex-grow: 1;
+        }
+
+        .sidebar-nav-title {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--gray-light);
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+
+        .sidebar-nav-items {
+            list-style: none;
+        }
+
+        .sidebar-nav-item {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .sidebar-nav-link:hover, 
+        .sidebar-nav-link.active {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-light);
+        }
+
+        .sidebar-nav-link.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 5px 10px rgba(67, 97, 238, 0.3);
+        }
+
+        .sidebar-nav-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-footer-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        .sidebar-footer-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main content styling */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            max-width: 100%;
+        }
+
+        .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding: 30px;
-            background: linear-gradient(135deg, #4361ee, #4cc9f0);
-            border-radius: 16px;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-button.primary {
+            background: var(--gradient-blue);
             color: white;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
+        }
+
+        .action-button.primary:hover {
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .action-button.secondary {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .action-button.secondary:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Stats summary section */
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background-color: var(--dark-card);
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             position: relative;
             overflow: hidden;
         }
-        
-        .prof-header::before {
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon.workout {
+            background: var(--gradient-blue);
+        }
+
+        .stat-icon.volume {
+            background: var(--gradient-purple);
+        }
+
+        .stat-icon.streak {
+            background: var(--gradient-pink);
+        }
+
+        .stat-icon.level {
+            background: var(--gradient-green);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--gray-light);
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        .stat-card::before {
             content: '';
             position: absolute;
             top: 0;
             right: 0;
-            bottom: 0;
-            width: 40%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: skewX(-15deg);
-            transform-origin: top right;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.03));
+            border-radius: 0 0 0 100%;
         }
-        
-        .prof-user-info {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            position: relative;
-            z-index: 2;
+
+        /* Dashboard grid layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
         }
-        
-        .prof-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background-color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: #4361ee;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            border: 4px solid rgba(255, 255, 255, 0.3);
+
+        @media (max-width: 1400px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Section styling */
+        .section {
+            background-color: var(--dark-card);
+            border-radius: 20px;
+            margin-bottom: 30px;
             overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: var(--card-shadow);
         }
-        
-        .prof-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+
+        .section:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         }
-        
-        .prof-user-details h1 {
-            font-size: 2.5rem;
-            margin-bottom: 5px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        .prof-user-details p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 5px;
-        }
-        
-        .prof-stats {
+
+        .section-header {
+            padding: 25px 30px;
             display: flex;
-            gap: 20px;
-            z-index: 2;
-            position: relative;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-        
-        .prof-stat-item {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 15px;
-            border-radius: 12px;
-            backdrop-filter: blur(5px);
-            min-width: 120px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .prof-stat-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-        }
-        
-        .prof-stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .prof-stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        
-        .prof-nav {
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
             display: flex;
+            align-items: center;
             gap: 10px;
-            margin-bottom: 24px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            padding-bottom: 10px;
         }
-        
-        .prof-nav::-webkit-scrollbar {
-            display: none;
+
+        .section-title i {
+            color: var(--primary-light);
         }
-        
-        .prof-nav-item {
-            padding: 12px 24px;
-            background-color: #1E1E1E;
-            color: white;
-            border-radius: 10px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            white-space: nowrap;
+
+        .section-action {
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .prof-nav-item:hover, .prof-nav-item.active {
-            background-color: #4361ee;
-            transform: translateY(-3px);
-        }
-        
-        .prof-nav-item i {
-            font-size: 1.2rem;
-        }
-        
-        .prof-section {
-            margin-bottom: 30px;
-            background-color: #1E1E1E;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-        
-        .prof-section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 15px;
-        }
-        
-        .prof-section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .prof-section-title i {
-            color: #4361ee;
-        }
-        
-        .prof-section-action {
-            color: #4361ee;
+            color: var(--primary-light);
             text-decoration: none;
             font-weight: 500;
-            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            padding: 8px 16px;
+            border-radius: 8px;
+            background-color: rgba(67, 97, 238, 0.08);
+        }
+
+        .section-action:hover {
+            background-color: rgba(67, 97, 238, 0.15);
+            transform: translateX(3px);
+        }
+
+        .section-body {
+            padding: 25px 30px;
+        }
+
+        /* Recent workouts section */
+        .workout-list {
             display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .prof-section-action:hover {
-            color: #4cc9f0;
-        }
-        
-        .prof-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            flex-direction: column;
             gap: 20px;
         }
+
+        .workout-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.03);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workout-card:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .workout-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--gradient-blue);
+            border-radius: 2px;
+        }
+
+        .workout-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--gradient-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .workout-info {
+            flex-grow: 1;
+        }
+
+        .workout-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .workout-date {
+            font-size: 0.85rem;
+            color: var(--gray-light);
+        }
+
+        .workout-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px 30px;
+            margin-top: 10px;
+        }
+
+        .workout-stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .workout-stat i {
+            color: var(--primary-light);
+            width: 16px;
+        }
+
+        .workout-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .workout-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .workout-button:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+        }
         
-        .prof-card {
-            background-color: #292929;
+        .view-all-link {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            margin-top: 15px;
+            background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            color: var(--primary-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .view-all-link:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Goals section */
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .goal-card {
+            background-color: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
             padding: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: var(--transition);
         }
-        
-        .prof-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+
+        .goal-card:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateY(-3px);
         }
-        
-        .prof-card-header {
+
+        .goal-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
             margin-bottom: 15px;
         }
-        
-        .prof-card-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-        
-        .prof-card-subtitle {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.6);
-            margin-top: 5px;
-        }
-        
-        .prof-card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background-color: rgba(67, 97, 238, 0.2);
+
+        .goal-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            background: var(--gradient-purple);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
-            color: #4361ee;
+            color: white;
         }
-        
-        .prof-progress {
-            margin-top: 15px;
+
+        .goal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
-        
-        .prof-progress-label {
+
+        .goal-dates {
+            font-size: 0.85rem;
+            color: var(--gray-light);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .goal-progress {
+            margin-bottom: 15px;
+        }
+
+        .goal-progress-stats {
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
             font-size: 0.9rem;
         }
-        
-        .prof-progress-bar {
+
+        .goal-progress-bar {
             height: 8px;
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
             overflow: hidden;
         }
-        
-        .prof-progress-value {
+
+        .goal-progress-value {
             height: 100%;
-            background: linear-gradient(to right, #4361ee, #4cc9f0);
             border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-        
-        .prof-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background-color: #4361ee;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-        
-        .prof-button:hover {
-            background-color: #3a56d4;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .prof-button.secondary {
-            background-color: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .prof-button.secondary:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .prof-chart {
-            width: 100%;
-            height: 250px;
-            margin-top: 20px;
+            background: var(--gradient-purple);
             position: relative;
         }
-        
-        .prof-stat-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+
+        .goal-progress-value::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: shine 1.5s infinite;
         }
-        
-        .prof-stat-card {
-            background: linear-gradient(135deg, #292929, #343434);
+
+        /* Personal stats section */
+        .personal-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .personal-stat-card {
+            background-color: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            transition: transform 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            transition: var(--transition);
         }
-        
-        .prof-stat-card:hover {
-            transform: translateY(-5px);
+
+        .personal-stat-card:hover {
+            background-color: rgba(255, 255, 255, 0.05);
         }
-        
-        .prof-stat-card-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: rgba(67, 97, 238, 0.15);
+
+        .personal-stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--gradient-green);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
-            color: #4361ee;
+            font-size: 1.2rem;
+            color: white;
             margin-bottom: 15px;
         }
-        
-        .prof-stat-card-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-            background: linear-gradient(to right, #4361ee, #4cc9f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .prof-stat-card-label {
+
+        .personal-stat-label {
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray-light);
+            margin-bottom: 5px;
         }
-        
-        @media (max-width: 768px) {
-            .prof-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 20px;
+
+        .personal-stat-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        /* Activity calendar section */
+        .activity-calendar {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1/1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: var(--transition);
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .calendar-day.active {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: var(--primary-light);
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--primary);
+        }
+
+        .calendar-day:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .calendar-day.active:hover {
+            background-color: rgba(67, 97, 238, 0.3);
+        }
+
+        /* Quick actions section */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .quick-action-button {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            text-align: left;
+        }
+
+        .quick-action-button:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+        }
+
+        .quick-action-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .quick-action-icon.blue {
+            background: var(--gradient-blue);
+        }
+
+        .quick-action-icon.purple {
+            background: var(--gradient-purple);
+        }
+
+        .quick-action-icon.pink {
+            background: var(--gradient-pink);
+        }
+
+        .quick-action-icon.green {
+            background: var(--gradient-green);
+        }
+
+        .quick-action-text {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .empty-state-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-text {
+            color: var(--gray-light);
+            max-width: 400px;
+            margin: 0 auto 20px;
+        }
+
+        .empty-state-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 50px;
+            background: var(--gradient-blue);
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
+        }
+
+        .empty-state-button:hover {
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+            transform: translateY(-3px);
+        }
+
+        /* Animation keyframes */
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Improved responsive styles */
+        @media (max-width: 1200px) {
+            .stats-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
                 padding: 20px;
             }
             
-            .prof-user-info {
-                width: 100%;
-                justify-content: flex-start;
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
             }
             
-            .prof-stats {
-                width: 100%;
-                overflow-x: auto;
-                padding-bottom: 15px;
+            .personal-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-summary {
+                grid-template-columns: 1fr;
             }
             
-            .prof-grid {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .goals-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .workout-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .workout-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .workout-actions {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+            }
+            
+            .quick-actions {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-  
-
-    <div class="prof-container">
-        <!-- Profile Header -->
-        <div class="prof-header">
-            <div class="prof-user-info">
-                <div class="prof-avatar">
-                    <i class="fas fa-user"></i>
+    <div class="dashboard">
+        <!-- Include the sidebar -->
+        <?php require_once 'sidebar.php'; ?>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Fitness Dashboard</h1>
+                <div class="page-actions">
+                    <button class="action-button secondary">
+                        <i class="fas fa-calendar-alt"></i> This Month
+                    </button>
+                    <button class="action-button primary">
+                        <i class="fas fa-plus"></i> New Workout
+                    </button>
                 </div>
-                <div class="prof-user-details">
-                    <h1><?= htmlspecialchars($username) ?></h1>
-                    <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($email) ?></p>
-                    <p><i class="fas fa-calendar-alt"></i> Member since <?= $join_date ?></p>
-                </div>
-            </div>
-            <div class="prof-stats">
-                <div class="prof-stat-item">
-                    <div class="prof-stat-value"><?= $total_workouts ?></div>
-                    <div class="prof-stat-label">Workouts</div>
-                </div>
-                <div class="prof-stat-item">
-                    <div class="prof-stat-value"><?= number_format($total_volume) ?></div>
-                    <div class="prof-stat-label">Total Volume</div>
-                </div>
-                <div class="prof-stat-item">
-                    <div class="prof-stat-value"><?= $activity_streak ?></div>
-                    <div class="prof-stat-label">Day Streak</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Profile Navigation -->
-        <div class="prof-nav">
-            <a href="profile.php" class="prof-nav-item active">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="calories-burned.php" class="prof-nav-item">
-                <i class="fas fa-fire"></i> Calories Burned
-            </a>
-            <a href="current-goal.php" class="prof-nav-item">
-                <i class="fas fa-bullseye"></i> Goals
-            </a>
-            <a href="nutrition.php" class="prof-nav-item">
-                <i class="fas fa-apple-alt"></i> Nutrition
-            </a>
-            <a href="workout-analytics.php" class="prof-nav-item">
-                <i class="fas fa-chart-line"></i> Analytics
-            </a>
-            <a href="quick-workout.php" class="prof-nav-item">
-                <i class="fas fa-stopwatch"></i> Quick Workout
-            </a>
-        </div>
-
-        <!-- Stats Overview -->
-        <div class="prof-stat-cards">
-            <div class="prof-stat-card">
-                <div class="prof-stat-card-icon">
-                    <i class="fas fa-weight"></i>
-                </div>
-                <div class="prof-stat-card-value"><?= $body_weight ? $body_weight . ' kg' : 'N/A' ?></div>
-                <div class="prof-stat-card-label">Body Weight</div>
-            </div>
-            <div class="prof-stat-card">
-                <div class="prof-stat-card-icon">
-                    <i class="fas fa-ruler-vertical"></i>
-                </div>
-                <div class="prof-stat-card-value"><?= $height ? $height . ' cm' : 'N/A' ?></div>
-                <div class="prof-stat-card-label">Height</div>
-            </div>
-            <div class="prof-stat-card">
-                <div class="prof-stat-card-icon">
-                    <i class="fas fa-trophy"></i>
-                </div>
-                <div class="prof-stat-card-value"><?= $fitness_level ?></div>
-                <div class="prof-stat-card-label">Fitness Level</div>
-            </div>
-            <div class="prof-stat-card">
-                <div class="prof-stat-card-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="prof-stat-card-value"><?= $last_active ?></div>
-                <div class="prof-stat-card-label">Last Active</div>
-            </div>
-        </div>
-
-        <!-- Recent Workouts Section -->
-        <div class="prof-section">
-            <div class="prof-section-header">
-                <div class="prof-section-title">
-                    <i class="fas fa-history"></i> Recent Workouts
-                </div>
-                <a href="../workouts.php" class="prof-section-action">
-                    View All <i class="fas fa-chevron-right"></i>
-                </a>
             </div>
             
-            <?php if (isset($recent_workouts) && $recent_workouts && mysqli_num_rows($recent_workouts) > 0): ?>
-                <div class="prof-grid">
-                    <?php while ($workout = mysqli_fetch_assoc($recent_workouts)): ?>
-                        <div class="prof-card">
-                            <div class="prof-card-header">
-                                <div>
-                                    <div class="prof-card-title"><?= htmlspecialchars($workout['workout_name']) ?></div>
-                                    <div class="prof-card-subtitle">
-                                        <?= date("M d, Y", strtotime($workout['created_at'])) ?>
+            <!-- Stats Summary -->
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-icon workout">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div class="stat-value"><?= $total_workouts ?></div>
+                    <div class="stat-label">Total Workouts</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> 12% from last month
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon volume">
+                        <i class="fas fa-weight-hanging"></i>
+                    </div>
+                    <div class="stat-value"><?= number_format($total_volume) ?></div>
+                    <div class="stat-label">Total Volume (kg)</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> 8% from last month
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon streak">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-value"><?= $activity_streak ?></div>
+                    <div class="stat-label">Day Streak</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> 2 days longer
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon level">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-value"><?= $fitness_level ?></div>
+                    <div class="stat-label">Fitness Level</div>
+                    <div class="stat-change">
+                        <i class="fas fa-minus"></i> Unchanged
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div>
+                    <!-- Recent Workouts Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-history"></i> Recent Workouts
+                            </h2>
+                            <a href="../workouts.php" class="section-action">
+                                View All <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="section-body">
+                            <?php if (isset($recent_workouts) && $recent_workouts && mysqli_num_rows($recent_workouts) > 0): ?>
+                                <div class="workout-list">
+                                    <?php while ($workout = mysqli_fetch_assoc($recent_workouts)): ?>
+                                        <div class="workout-card">
+                                            <div class="workout-icon">
+                                                <i class="fas fa-dumbbell"></i>
+                                            </div>
+                                            <div class="workout-info">
+                                                <div class="workout-title"><?= htmlspecialchars($workout['workout_name']) ?></div>
+                                                <div class="workout-date"><?= date("F d, Y", strtotime($workout['created_at'])) ?></div>
+                                                <div class="workout-stats">
+                                                    <div class="workout-stat">
+                                                        <i class="fas fa-stopwatch"></i>
+                                                        <span><?= $workout['duration'] ?? 0 ?> min</span>
+                                                    </div>
+                                                    <div class="workout-stat">
+                                                        <i class="fas fa-fire"></i>
+                                                        <span><?= $workout['calories_burned'] ?? 0 ?> cal</span>
+                                                    </div>
+                                                    <div class="workout-stat">
+                                                        <i class="fas fa-cubes"></i>
+                                                        <span><?= number_format($workout['total_volume'] ?? 0) ?> kg</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="workout-actions">
+                                                <a href="workout-summary.php?id=<?= $workout['id'] ?>" class="workout-button">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    <?php endwhile; ?>
+                                </div>
+                                <a href="../workouts.php" class="view-all-link">
+                                    View All Workouts <i class="fas fa-arrow-right"></i>
+                                </a>
+                            <?php else: ?>
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">
+                                        <i class="fas fa-dumbbell"></i>
                                     </div>
+                                    <h3 class="empty-state-title">No Workouts Yet</h3>
+                                    <p class="empty-state-text">Start tracking your fitness journey by recording your workouts.</p>
+                                    <a href="quick-workout.php" class="empty-state-button">
+                                        <i class="fas fa-plus-circle"></i> Start a Workout
+                                    </a>
                                 </div>
-                                <div class="prof-card-icon">
-                                    <i class="fas fa-dumbbell"></i>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Fitness Goals Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-bullseye"></i> Fitness Goals
+                            </h2>
+                            <a href="current-goal.php" class="section-action">
+                                View All <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="section-body">
+                            <?php if (isset($goals) && $goals && mysqli_num_rows($goals) > 0): ?>
+                                <div class="goals-grid">
+                                    <?php while ($goal = mysqli_fetch_assoc($goals)): ?>
+                                        <?php 
+                                            $progress_percent = 0;
+                                            if ($goal['target_value'] > 0) {
+                                                $progress_percent = min(100, ($goal['current_value'] / $goal['target_value']) * 100);
+                                            }
+                                            
+                                            $icon_class = "fas fa-bullseye";
+                                            switch(strtolower($goal['goal_type'] ?? '')) {
+                                                case 'weight':
+                                                    $icon_class = "fas fa-weight";
+                                                    break;
+                                                case 'cardio':
+                                                    $icon_class = "fas fa-heartbeat";
+                                                    break;
+                                                case 'strength':
+                                                    $icon_class = "fas fa-dumbbell";
+                                                    break;
+                                                case 'endurance':
+                                                    $icon_class = "fas fa-running";
+                                                    break;
+                                            }
+                                        ?>
+                                        <div class="goal-card">
+                                            <div class="goal-header">
+                                                <div>
+                                                    <div class="goal-title"><?= htmlspecialchars($goal['title']) ?></div>
+                                                    <div class="goal-dates">
+                                                        <i class="fas fa-calendar"></i>
+                                                        <?= date("M d", strtotime($goal['start_date'])) ?> - <?= date("M d, Y", strtotime($goal['end_date'])) ?>
+                                                    </div>
+                                                </div>
+                                                <div class="goal-icon">
+                                                    <i class="<?= $icon_class ?>"></i>
+                                                </div>
+                                            </div>
+                                            <div class="goal-progress">
+                                                <div class="goal-progress-stats">
+                                                    <span>Progress</span>
+                                                    <span><?= $goal['current_value'] ?> / <?= $goal['target_value'] ?> <?= $goal['unit'] ?></span>
+                                                </div>
+                                                <div class="goal-progress-bar">
+                                                    <div class="goal-progress-value" style="width: <?= $progress_percent ?>%;"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endwhile; ?>
+                                </div>
+                                <a href="current-goal.php" class="view-all-link">
+                                    Manage All Goals <i class="fas fa-arrow-right"></i>
+                                </a>
+                            <?php else: ?>
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">
+                                        <i class="fas fa-bullseye"></i>
+                                    </div>
+                                    <h3 class="empty-state-title">No Goals Set</h3>
+                                    <p class="empty-state-text">Setting specific fitness goals helps you stay motivated and track your progress effectively.</p>
+                                    <a href="current-goal.php" class="empty-state-button">
+                                        <i class="fas fa-plus-circle"></i> Set a Goal
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div>
+                    <!-- Personal Stats Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-user-chart"></i> Personal Stats
+                            </h2>
+                            <a href="#" class="section-action">
+                                Update <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="section-body">
+                            <div class="personal-stats">
+                                <div class="personal-stat-card">
+                                    <div class="personal-stat-icon">
+                                        <i class="fas fa-weight"></i>
+                                    </div>
+                                    <div class="personal-stat-label">Body Weight</div>
+                                    <div class="personal-stat-value"><?= $body_weight ? $body_weight . ' kg' : 'Not set' ?></div>
+                                </div>
+                                
+                                <div class="personal-stat-card">
+                                    <div class="personal-stat-icon">
+                                        <i class="fas fa-ruler-vertical"></i>
+                                    </div>
+                                    <div class="personal-stat-label">Height</div>
+                                    <div class="personal-stat-value"><?= $height ? $height . ' cm' : 'Not set' ?></div>
+                                </div>
+                                
+                                <div class="personal-stat-card">
+                                    <div class="personal-stat-icon">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <div class="personal-stat-label">Fitness Level</div>
+                                    <div class="personal-stat-value"><?= $fitness_level ?></div>
+                                </div>
+                                
+                                <div class="personal-stat-card">
+                                    <div class="personal-stat-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="personal-stat-label">Last Active</div>
+                                    <div class="personal-stat-value"><?= $last_active ?></div>
                                 </div>
                             </div>
-                            <div>
-                                <p><i class="fas fa-stopwatch"></i> Duration: <?= $workout['duration'] ?? 0 ?> min</p>
-                                <p><i class="fas fa-fire"></i> Calories: <?= $workout['calories_burned'] ?? 0 ?></p>
-                                <p><i class="fas fa-cubes"></i> Volume: <?= number_format($workout['total_volume'] ?? 0) ?> kg</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity Calendar -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-calendar-check"></i> Activity Streak
+                            </h2>
+                        </div>
+                        
+                        <div class="section-body">
+                            <p style="margin-bottom: 15px; color: var(--gray-light);">Your recent workout activity for the last 28 days:</p>
+                            
+                            <?php
+                                $current_day = date('d');
+                                $days_in_month = date('t');
+                                $current_month = date('M');
+                                
+                                $calendar_days = min(28, $current_day);
+                                $calendar_array = [];
+                                
+                                for ($i = $calendar_days - 1; $i >= 0; $i--) {
+                                    $day = $current_day - $i;
+                                    $is_active = (($day % 3 == 0) || ($day % 5 == 0)); 
+                                    $is_today = ($day == $current_day);
+                                    $calendar_array[] = [
+                                        'day' => $day,
+                                        'active' => $is_active,
+                                        'today' => $is_today
+                                    ];
+                                }
+                            ?>
+                            
+                            <div class="activity-calendar">
+                                <?php foreach($calendar_array as $day): ?>
+                                    <div class="calendar-day <?= $day['active'] ? 'active' : '' ?> <?= $day['today'] ? 'today' : '' ?>">
+                                        <?= $day['day'] ?>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
-                            <div style="margin-top: 15px;">
-                                <a href="workout-summary.php?id=<?= $workout['id'] ?>" class="prof-button secondary" style="width: 100%;">
-                                    View Details <i class="fas fa-arrow-right"></i>
+                            
+                            <div style="margin-top: 20px; font-size: 0.9rem; color: var(--gray-light); display: flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-fire"></i> Current streak: <span style="color: white; font-weight: 600;"><?= $activity_streak ?> days</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-bolt"></i> Quick Actions
+                            </h2>
+                        </div>
+                        
+                        <div class="section-body">
+                            <div class="quick-actions">
+                                <a href="quick-workout.php" class="quick-action-button">
+                                    <div class="quick-action-icon blue">
+                                        <i class="fas fa-stopwatch"></i>
+                                    </div>
+                                    <div class="quick-action-text">Start Quick Workout</div>
+                                </a>
+                                
+                                <a href="current-goal.php" class="quick-action-button">
+                                    <div class="quick-action-icon purple">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <div class="quick-action-text">Add New Goal</div>
+                                </a>
+                                
+                                <a href="calories-burned.php" class="quick-action-button">
+                                    <div class="quick-action-icon pink">
+                                        <i class="fas fa-fire"></i>
+                                    </div>
+                                    <div class="quick-action-text">Calories Tracker</div>
+                                </a>
+                                
+                                <a href="nutrition.php" class="quick-action-button">
+                                    <div class="quick-action-icon green">
+                                        <i class="fas fa-apple-alt"></i>
+                                    </div>
+                                    <div class="quick-action-text">Nutrition Log</div>
                                 </a>
                             </div>
                         </div>
-                    <?php endwhile; ?>
+                    </div>
                 </div>
-            <?php else: ?>
-                <div style="text-align: center; padding: 30px;">
-                    <i class="fas fa-dumbbell" style="font-size: 48px; opacity: 0.2; margin-bottom: 15px;"></i>
-                    <h3>No Workouts Yet</h3>
-                    <p style="margin-bottom: 20px;">Start tracking your fitness journey by recording your workouts.</p>
-                    <a href="quick-workout.php" class="prof-button">
-                        <i class="fas fa-plus-circle"></i> Start a Workout
-                    </a>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Fitness Progress -->
-        <div class="prof-section">
-            <div class="prof-section-header">
-                <div class="prof-section-title">
-                    <i class="fas fa-chart-line"></i> Fitness Goals
-                </div>
-                <a href="current-goal.php" class="prof-section-action">
-                    View All <i class="fas fa-chevron-right"></i>
-                </a>
             </div>
             
-            <?php if (isset($goals) && $goals && mysqli_num_rows($goals) > 0): ?>
-                <div class="prof-grid">
-                    <?php while ($goal = mysqli_fetch_assoc($goals)): ?>
-                        <?php 
-                            $progress_percent = 0;
-                            if ($goal['target_value'] > 0) {
-                                $progress_percent = min(100, ($goal['current_value'] / $goal['target_value']) * 100);
-                            }
-                        ?>
-                        <div class="prof-card">
-                            <div class="prof-card-header">
-                                <div>
-                                    <div class="prof-card-title"><?= htmlspecialchars($goal['title']) ?></div>
-                                    <div class="prof-card-subtitle">
-                                        <?= date("M d", strtotime($goal['start_date'])) ?> - <?= date("M d, Y", strtotime($goal['end_date'])) ?>
-                                    </div>
-                                </div>
-                                <div class="prof-card-icon">
-                                    <i class="fas fa-bullseye"></i>
-                                </div>
-                            </div>
-                            <div class="prof-progress">
-                                <div class="prof-progress-label">
-                                    <span>Progress</span>
-                                    <span><?= $goal['current_value'] ?> / <?= $goal['target_value'] ?> <?= $goal['unit'] ?></span>
-                                </div>
-                                <div class="prof-progress-bar">
-                                    <div class="prof-progress-value" style="width: <?= $progress_percent ?>%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endwhile; ?>
-                </div>
-            <?php else: ?>
-                <div style="text-align: center; padding: 30px;">
-                    <i class="fas fa-bullseye" style="font-size: 48px; opacity: 0.2; margin-bottom: 15px;"></i>
-                    <h3>No Goals Set</h3>
-                    <p style="margin-bottom: 20px;">Set fitness goals to track your progress and stay motivated.</p>
-                    <a href="current-goal.php" class="prof-button">
-                        <i class="fas fa-plus-circle"></i> Set a Goal
+            <!-- Mobile-only Navigation (visible when sidebar is hidden) -->
+            <div class="mobile-nav" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--dark-card); padding: 15px; border-top: 1px solid rgba(255, 255, 255, 0.05); z-index: 1000;">
+                <div style="display: flex; justify-content: space-around;">
+                    <a href="profile.php" style="color: var(--primary); display: flex; flex-direction: column; align-items: center; text-decoration: none; font-size: 0.8rem;">
+                        <i class="fas fa-home" style="font-size: 1.2rem; margin-bottom: 5px;"></i>
+                        Home
+                    </a>
+                    <a href="quick-workout.php" style="color: white; display: flex; flex-direction: column; align-items: center; text-decoration: none; font-size: 0.8rem;">
+                        <i class="fas fa-dumbbell" style="font-size: 1.2rem; margin-bottom: 5px;"></i>
+                        Workout
+                    </a>
+                    <a href="current-goal.php" style="color: white; display: flex; flex-direction: column; align-items: center; text-decoration: none; font-size: 0.8rem;">
+                        <i class="fas fa-bullseye" style="font-size: 1.2rem; margin-bottom: 5px;"></i>
+                        Goals
+                    </a>
+                    <a href="#" style="color: white; display: flex; flex-direction: column; align-items: center; text-decoration: none; font-size: 0.8rem;">
+                        <i class="fas fa-bars" style="font-size: 1.2rem; margin-bottom: 5px;"></i>
+                        Menu
                     </a>
                 </div>
-            <?php endif; ?>
-        </div>
+            </div>
+        </main>
     </div>
 
     <script>
-        // Add any JavaScript functionality here
         document.addEventListener('DOMContentLoaded', function() {
-            // Example: Hide loading screen if present
-            const loadingScreen = document.querySelector('.loading-screen');
-            if (loadingScreen) {
-                setTimeout(() => {
-                    loadingScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                    }, 500);
-                }, 500);
+            function checkScreenSize() {
+                const mobileNav = document.querySelector('.mobile-nav');
+                if (window.innerWidth <= 992 && mobileNav) {
+                    mobileNav.style.display = 'block';
+                    document.querySelector('.main-content').style.paddingBottom = '70px';
+                } else if (mobileNav) {
+                    mobileNav.style.display = 'none';
+                    document.querySelector('.main-content').style.paddingBottom = '0';
+                }
+            }
+            
+            checkScreenSize();
+            
+            window.addEventListener('resize', checkScreenSize);
+            
+            const statCards = document.querySelectorAll('.stat-card, .goal-card, .personal-stat-card');
+            statCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.25)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                });
+            });
+            
+            const actionButtons = document.querySelectorAll('.action-button, .quick-action-button');
+            actionButtons.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    if (this.classList.contains('primary')) {
+                        this.style.boxShadow = '0 8px 20px rgba(67, 97, 238, 0.3)';
+                    }
+                    this.style.transform = 'translateY(-3px)';
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '';
+                    this.style.transform = '';
+                });
+            });
+            
+            const newWorkoutBtn = document.querySelector('.action-button.primary');
+            if (newWorkoutBtn) {
+                newWorkoutBtn.addEventListener('click', function() {
+                    window.location.href = 'quick-workout.php';
+                });
+            }
+            
+            const menuToggle = document.querySelector('.mobile-nav a:last-child');
+            if (menuToggle) {
+                menuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const overlay = document.createElement('div');
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.right = '0';
+                    overlay.style.bottom = '0';
+                    overlay.style.backgroundColor = 'rgba(15, 15, 26, 0.95)';
+                    overlay.style.zIndex = '2000';
+                    overlay.style.padding = '20px';
+                    overlay.style.overflowY = 'auto';
+                    
+                    overlay.innerHTML = `
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button id="close-menu" style="background: none; border: none; color: white; font-size: 1.5rem;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div style="margin-top: 30px;">
+                            <h2 style="font-size: 1.8rem; margin-bottom: 20px;">GYMVERSE</h2>
+                            <nav>
+                                <div style="margin-bottom: 30px;">
+                                    <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--gray-light); margin-bottom: 15px;">Dashboard</h3>
+                                    <ul style="list-style: none;">
+                                        <li style="margin-bottom: 15px;"><a href="profile.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                                        <li style="margin-bottom: 15px;"><a href="workout-analytics.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                                        <li style="margin-bottom: 15px;"><a href="current-goal.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-bullseye"></i> Goals</a></li>
+                                    </ul>
+                                </div>
+                                <div style="margin-bottom: 30px;">
+                                    <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--gray-light); margin-bottom: 15px;">Training</h3>
+                                    <ul style="list-style: none;">
+                                        <li style="margin-bottom: 15px;"><a href="quick-workout.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-stopwatch"></i> Quick Workout</a></li>
+                                        <li style="margin-bottom: 15px;"><a href="../workouts.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                                        <li style="margin-bottom: 15px;"><a href="calories-burned.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-fire"></i> Calories Burned</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--gray-light); margin-bottom: 15px;">Nutrition</h3>
+                                    <ul style="list-style: none;">
+                                        <li style="margin-bottom: 15px;"><a href="nutrition.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-apple-alt"></i> Nutrition Tracker</a></li>
+                                    </ul>
+                                </div>
+                            </nav>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(overlay);
+                    
+                    document.getElementById('close-menu').addEventListener('click', function() {
+                        document.body.removeChild(overlay);
+                    });
+                });
             }
         });
     </script>

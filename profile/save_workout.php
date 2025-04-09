@@ -1,7 +1,8 @@
 <?php
+require_once 'profile_access_control.php';
+
 session_start();
 
-// Check if user is logged in
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     http_response_code(401);
     exit('Unauthorized');
@@ -9,10 +10,8 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 require_once 'assets/db_connection.php';
 
-// Get user ID
 $user_id = $_SESSION["user_id"];
 
-// Get POST data
 $json = file_get_contents('php://input');
 $data = json_decode($json, true);
 
@@ -22,10 +21,8 @@ if (!$data) {
 }
 
 try {
-    // Start transaction
     mysqli_begin_transaction($conn);
 
-    // Insert workout record
     $workout_query = "INSERT INTO workouts (
         user_id, 
         workout_name, 
@@ -40,7 +37,6 @@ try {
 
     $stmt = mysqli_prepare($conn, $workout_query);
     
-    // Calculate total volume
     $total_volume = 0;
     foreach ($data['exercises'] as $exercise) {
         foreach ($exercise['sets'] as $set) {
@@ -62,7 +58,6 @@ try {
     mysqli_stmt_execute($stmt);
     $workout_id = mysqli_insert_id($conn);
 
-    // Insert exercises and sets
     foreach ($data['exercises'] as $exercise_index => $exercise) {
         $exercise_query = "INSERT INTO workout_exercises (
             workout_id,
@@ -84,7 +79,6 @@ try {
         mysqli_stmt_execute($stmt);
         $exercise_id = mysqli_insert_id($conn);
 
-        // Insert sets for this exercise
         foreach ($exercise['sets'] as $set_index => $set) {
             $set_query = "INSERT INTO exercise_sets (
                 exercise_id,
@@ -111,7 +105,6 @@ try {
         }
     }
 
-    // Update user's workout stats
     $stats_query = "INSERT INTO user_workout_stats (
         user_id,
         total_workouts,
@@ -131,14 +124,11 @@ try {
     );
     mysqli_stmt_execute($stmt);
 
-    // Commit transaction
     mysqli_commit($conn);
 
-    // Return workout ID
     echo $workout_id;
 
 } catch (Exception $e) {
-    // Rollback transaction on error
     mysqli_rollback($conn);
     http_response_code(500);
     exit('Error saving workout: ' . $e->getMessage());

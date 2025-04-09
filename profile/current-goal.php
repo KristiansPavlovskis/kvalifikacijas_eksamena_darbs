@@ -1,26 +1,21 @@
 <?php
-// Initialize the session
-session_start();
 
-// Check if the user is not logged in, if not redirect to login page
+require_once 'profile_access_control.php';
+
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php?redirect=profile/current-goal.php");
     exit;
 }
 
-// Include database connection
 require_once '../assets/db_connection.php';
 
-// Get user ID
 $user_id = $_SESSION["user_id"];
 
-// Process goal submission
 $message = "";
 $message_type = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST["add_goal"])) {
-        // Add new goal
         $title = trim($_POST["title"]);
         $description = trim($_POST["description"]);
         $target_value = floatval($_POST["target_value"]);
@@ -51,13 +46,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     } else if (isset($_POST["update_goal"])) {
-        // Update existing goal
         $goal_id = intval($_POST["goal_id"]);
         $current_value = floatval($_POST["current_value"]);
         $completed = isset($_POST["completed"]) ? 1 : 0;
         
         try {
-            $query = "UPDATE goals SET current_value = ?, completed = ?, updated_at = NOW() WHERE id = ? AND user_id = ?";
+            $query = "UPDATE goals SET current_value = ?, completed = ?";
+            
+            if ($completed) {
+                $query .= ", completed_at = NOW()";
+            }
+            
+            $query .= " WHERE id = ? AND user_id = ?";
             $stmt = mysqli_prepare($conn, $query);
             mysqli_stmt_bind_param($stmt, "diii", $current_value, $completed, $goal_id, $user_id);
             
@@ -73,7 +73,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $message_type = "error";
         }
     } else if (isset($_POST["delete_goal"])) {
-        // Delete goal
         $goal_id = intval($_POST["goal_id"]);
         
         try {
@@ -95,12 +94,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Fetch active goals
 $active_goals = [];
 try {
-    // Check if goals table exists first
     $result = mysqli_query($conn, "SHOW TABLES LIKE 'goals'");
-    if (mysqli_num_rows($result) > 0) {
+    $goalsTableExists = mysqli_num_rows($result) > 0;
+    if ($goalsTableExists) {
         $query = "SELECT * FROM goals WHERE user_id = ? AND completed = 0 ORDER BY deadline ASC";
         $stmt = mysqli_prepare($conn, $query);
         if ($stmt === false) {
@@ -119,19 +117,19 @@ try {
             $active_goals[] = $row;
         }
     }
+    $active_goals_count = count($active_goals);
 } catch (Exception $e) {
     error_log("Error fetching active goals: " . $e->getMessage());
     $message = "Error fetching active goals: " . $e->getMessage();
     $message_type = "error";
+    $active_goals_count = 0;
 }
 
-// Fetch completed goals
 $completed_goals = [];
 try {
-    // Check if goals table exists first
     $result = mysqli_query($conn, "SHOW TABLES LIKE 'goals'");
     if (mysqli_num_rows($result) > 0) {
-        $query = "SELECT * FROM goals WHERE user_id = ? AND completed = 1 ORDER BY updated_at DESC LIMIT 5";
+        $query = "SELECT * FROM goals WHERE user_id = ? AND completed = 1 ORDER BY completed_at DESC, created_at DESC LIMIT 5";
         $stmt = mysqli_prepare($conn, $query);
         if ($stmt === false) {
             throw new Exception("Failed to prepare query: " . mysqli_error($conn));
@@ -149,20 +147,20 @@ try {
             $completed_goals[] = $row;
         }
     }
+    $completed_goals_count = count($completed_goals);
 } catch (Exception $e) {
     error_log("Error fetching completed goals: " . $e->getMessage());
     $message = "Error fetching completed goals: " . $e->getMessage();
     $message_type = "error";
+    $completed_goals_count = 0;
 }
 
-// Function to calculate progress percentage
 function calculateProgress($current, $target) {
     if ($target == 0) return 0;
     $progress = ($current / $target) * 100;
     return min(100, max(0, $progress));
 }
 
-// Function to get badge color based on goal type
 function getGoalTypeColor($type) {
     switch ($type) {
         case 'weight':
@@ -180,7 +178,6 @@ function getGoalTypeColor($type) {
     }
 }
 
-// Function to get icon based on goal type
 function getGoalTypeIcon($type) {
     switch ($type) {
         case 'weight':
@@ -198,7 +195,6 @@ function getGoalTypeIcon($type) {
     }
 }
 
-// Function to format the deadline
 function formatDeadline($deadline) {
     $date = new DateTime($deadline);
     $now = new DateTime();
@@ -219,14 +215,12 @@ function formatDeadline($deadline) {
     }
 }
 
-// Check if goals table exists
 $goalsTableExists = false;
 try {
     $result = mysqli_query($conn, "SHOW TABLES LIKE 'goals'");
     $goalsTableExists = mysqli_num_rows($result) > 0;
     
     if (!$goalsTableExists) {
-        // Create goals table
         $createGoalsTable = "CREATE TABLE goals (
             id INT PRIMARY KEY AUTO_INCREMENT,
             user_id INT NOT NULL,
@@ -237,8 +231,8 @@ try {
             goal_type VARCHAR(50) NOT NULL,
             deadline DATE NOT NULL,
             completed BOOLEAN DEFAULT FALSE,
+            completed_at TIMESTAMP NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )";
         
@@ -266,368 +260,508 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../lietotaja-view.css">
     <style>
-        /* Common profile section styles */
-        .prof-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        /* Core variables and base styling */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4cc9f0;
+            --primary-dark: #3a56d4;
+            --secondary: #f72585;
+            --secondary-light: #ff5c8a;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --danger: #ef476f;
+            --dark: #0f0f1a;
+            --dark-card: #1a1a2e;
+            --gray-dark: #2b2b3d;
+            --gray-light: rgba(255, 255, 255, 0.7);
+            --gradient-blue: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            --gradient-purple: linear-gradient(135deg, #9d4edd, #c77dff);
+            --gradient-pink: linear-gradient(135deg, #f72585, #ff5c8a);
+            --gradient-green: linear-gradient(135deg, #06d6a0, #64dfdf);
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: white;
             font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(67, 97, 238, 0.05) 0%, transparent 200px),
+                radial-gradient(circle at 70% 80%, rgba(67, 97, 238, 0.05) 0%, transparent 200px);
+            width: 100%;
+            overflow-x: hidden;
         }
-        
-        .prof-header {
+
+        .dashboard {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding: 30px;
-            background: linear-gradient(135deg, #4361ee, #4cc9f0);
-            border-radius: 16px;
-            color: white;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-            position: relative;
-            overflow: hidden;
+            width: 100%;
+            min-height: 100vh;
         }
-        
-        .prof-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 40%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: skewX(-15deg);
-            transform-origin: top right;
-        }
-        
-        .prof-nav {
+
+        /* Sidebar styling */
+        .sidebar {
+            background-color: var(--dark-card);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 30px 20px;
+            position: fixed;
+            width: var(--sidebar-width);
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 10;
             display: flex;
-            gap: 10px;
-            margin-bottom: 24px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            padding-bottom: 10px;
+            flex-direction: column;
+            flex-shrink: 0;
         }
-        
-        .prof-nav::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .prof-nav-item {
-            padding: 12px 24px;
-            background-color: #1E1E1E;
-            color: white;
-            border-radius: 10px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            white-space: nowrap;
+
+        .sidebar-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 25px;
         }
-        
-        .prof-nav-item:hover, .prof-nav-item.active {
-            background-color: #4361ee;
-            transform: translateY(-3px);
-        }
-        
-        .prof-nav-item i {
-            font-size: 1.2rem;
-        }
-        
-        .prof-section {
-            margin-bottom: 30px;
-            background-color: #1E1E1E;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-        
-        .prof-section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 15px;
-        }
-        
-        .prof-section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .prof-section-title i {
-            color: #4361ee;
-        }
-        
-        @media (max-width: 768px) {
-            .prof-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 20px;
-                padding: 20px;
-            }
-            
-            .prof-user-info {
-                width: 100%;
-                justify-content: flex-start;
-            }
-            
-            .prof-stats {
-                width: 100%;
-                overflow-x: auto;
-                padding-bottom: 15px;
-            }
-        }
-        
-        /* Goals page specific styles */
-        .goals-container {
-            max-width:
-            1200px;
-            margin: 0 auto;
-            padding: 20px;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        .goals-header {
-            margin-bottom: 24px;
-            background: linear-gradient(135deg, #7209b7, #3a0ca3);
-            border-radius: 12px;
-            color: white;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .goals-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 40%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: skewX(-15deg);
-            transform-origin: top right;
-        }
-        
-        .goals-title {
-            font-size: 2.2rem;
+
+        .sidebar-logo {
+            font-size: 1.8rem;
             font-weight: 700;
-            margin: 0 0 8px 0;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 1px;
+            color: white;
+            text-decoration: none;
+            font-family: 'Koulen', sans-serif;
+            background: var(--gradient-blue);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            position: relative;
+            background-color: var(--gray-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .sidebar-avatar::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            bottom: -2px;
+            left: -2px;
+            background: var(--gradient-purple);
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        .sidebar-user-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-user-email {
+            font-size: 0.9rem;
+            color: var(--gray-light);
+            margin-bottom: 15px;
+        }
+
+        .sidebar-user-since {
+            font-size: 0.85rem;
+            color: var(--gray-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .sidebar-nav {
+            margin-bottom: 30px;
+            flex-grow: 1;
+        }
+
+        .sidebar-nav-title {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--gray-light);
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+
+        .sidebar-nav-items {
+            list-style: none;
+        }
+
+        .sidebar-nav-item {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-nav-link {
             display: flex;
             align-items: center;
             gap: 12px;
-        }
-        
-        .goals-title i {
-            font-size: 1.8rem;
-        }
-        
-        .goals-subtitle {
-            font-size: 1.1rem;
-            font-weight: 400;
-            margin: 0;
-            opacity: 0.9;
-            max-width: 600px;
-        }
-        
-        .goals-nav {
-            padding: 5px;
-            background-color: white;
-            border-radius: 12px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            overflow-x: auto;
-        }
-        
-        .goals-nav-link {
-            padding: 12px 20px;
-            color: #666;
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: white;
             text-decoration: none;
+            transition: var(--transition);
             font-weight: 500;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            white-space: nowrap;
+        }
+
+        .sidebar-nav-link:hover, 
+        .sidebar-nav-link.active {
+            background-color: rgba(157, 78, 221, 0.1);
+            color: var(--primary-light);
+        }
+
+        .sidebar-nav-link.active {
+            background-color: #9d4edd;
+            color: white;
+            box-shadow: 0 5px 10px rgba(157, 78, 221, 0.3);
+        }
+
+        .sidebar-nav-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-footer-button {
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-        
-        .goals-nav-link:hover {
-            background-color: #f5f5f5;
-            color: #7209b7;
-        }
-        
-        .goals-nav-link.active {
-            background-color: #7209b7;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
             color: white;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
         }
-        
-        .goals-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
+
+        .sidebar-footer-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
-        
-        .goals-active-container {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
+
+        /* Main content styling */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            max-width: 100%;
         }
-        
-        .goals-section {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-        }
-        
-        .goals-section-header {
+
+        .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Goals dashboard metrics */
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background-color: var(--dark-card);
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
         }
         
-        .goals-section-title {
-            font-size: 1.4rem;
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .metric-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .metric-icon.active {
+            background: var(--gradient-purple);
+        }
+
+        .metric-icon.completed {
+            background: var(--gradient-green);
+        }
+
+        .metric-icon.success {
+            background: var(--gradient-pink);
+        }
+
+        .metric-icon.streak {
+            background: var(--gradient-blue);
+        }
+
+        .metric-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.95rem;
+            color: var(--gray-light);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.03));
+            border-radius: 0 0 0 100%;
+        }
+
+        /* Dashboard layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        /* Section styling */
+        .section {
+            background-color: var(--dark-card);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: var(--card-shadow);
+        }
+
+        .section:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-header {
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
             font-weight: 600;
-            margin: 0;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .goals-section-title i {
-            color: #7209b7;
+        .section-title i {
+            color: #9d4edd;
         }
         
-        .goals-btn {
-            display: inline-flex;
+        .section-action {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            background-color: #7209b7;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
             gap: 8px;
-            transition: all 0.3s ease;
+            color: #9d4edd;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            padding: 8px 16px;
+            border-radius: 8px;
+            background-color: rgba(157, 78, 221, 0.08);
         }
-        
-        .goals-btn:hover {
-            background-color: #5f0799;
-            transform: translateY(-2px);
+
+        .section-action:hover {
+            background-color: rgba(157, 78, 221, 0.15);
+            transform: translateX(3px);
         }
-        
-        .goals-btn-secondary {
-            background-color: #6c757d;
+
+        .section-body {
+            padding: 25px 30px;
         }
-        
-        .goals-btn-secondary:hover {
-            background-color: #5a6268;
-        }
-        
-        .goals-btn-danger {
-            background-color: #e63946;
-        }
-        
-        .goals-btn-danger:hover {
-            background-color: #c82333;
-        }
-        
-        .goals-btn-sm {
-            padding: 6px 12px;
-            font-size: 0.85rem;
-        }
-        
+
+        /* Goal card styles */
         .goals-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
         }
         
         .goal-card {
-            background-color: #f9f9f9;
-            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
             padding: 20px;
+            transition: var(--transition);
             position: relative;
-            transition: all 0.3s ease;
-            border-left: 4px solid;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .goal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--gradient-purple);
         }
         
         .goal-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            background-color: rgba(255, 255, 255, 0.05);
         }
         
         .goal-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 15px;
         }
-        
-        .goal-info h3 {
-            margin: 0 0 8px 0;
+
+        .goal-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.2rem;
-            color: #333;
+            color: white;
+            flex-shrink: 0;
         }
-        
-        .goal-type {
+
+        .goal-type-weight .goal-icon { background: var(--gradient-blue); }
+        .goal-type-strength .goal-icon { background: var(--gradient-purple); }
+        .goal-type-endurance .goal-icon { background: var(--gradient-pink); }
+        .goal-type-workout .goal-icon { background: var(--gradient-green); }
+        .goal-type-nutrition .goal-icon { background: linear-gradient(135deg, #ff9e00, #ffcc00); }
+
+        .goal-info {
+            flex: 1;
+        }
+
+        .goal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .goal-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--gray-light);
+            margin-bottom: 5px;
+        }
+
+        .goal-badge {
             display: inline-flex;
             align-items: center;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
             font-weight: 600;
-            gap: 5px;
             color: white;
         }
+
+        .goal-badge.weight { background-color: #4361ee; }
+        .goal-badge.strength { background-color: #9d4edd; }
+        .goal-badge.endurance { background-color: #f72585; }
+        .goal-badge.workout { background-color: #06d6a0; }
+        .goal-badge.nutrition { background-color: #ff9e00; }
         
         .goal-deadline {
+            display: flex;
+            align-items: center;
+            gap: 5px;
             font-size: 0.85rem;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .goal-description {
-            margin: 0 0 16px 0;
-            color: #666;
-            font-size: 0.95rem;
+            color: var(--gray-light);
         }
         
         .goal-progress {
-            margin-bottom: 12px;
+            margin: 15px 0;
         }
         
-        .goal-progress-header {
+        .goal-progress-stats {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.85rem;
-            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
         }
         
         .goal-progress-bar {
             height: 8px;
-            background-color: #e9ecef;
+            background-color: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
             overflow: hidden;
         }
@@ -635,528 +769,1210 @@ try {
         .goal-progress-fill {
             height: 100%;
             border-radius: 4px;
-            transition: width 0.3s ease;
+            position: relative;
         }
-        
+
+        .goal-type-weight .goal-progress-fill { background: var(--gradient-blue); }
+        .goal-type-strength .goal-progress-fill { background: var(--gradient-purple); }
+        .goal-type-endurance .goal-progress-fill { background: var(--gradient-pink); }
+        .goal-type-workout .goal-progress-fill { background: var(--gradient-green); }
+        .goal-type-nutrition .goal-progress-fill { background: linear-gradient(135deg, #ff9e00, #ffcc00); }
+
+        .goal-progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: shine 1.5s infinite;
+        }
+
         .goal-actions {
             display: flex;
             gap: 10px;
+            margin-top: 15px;
         }
-        
-        .goals-form-container {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 24px;
+
+        /* Update form */
+        .update-form {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        .goals-form-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 0 0 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .goals-form-title i {
-            color: #7209b7;
-        }
-        
-        .goals-form {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        
-        .goals-form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        
-        .goals-form-group label {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .goals-form-group input, 
-        .goals-form-group textarea, 
-        .goals-form-group select {
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        .goals-form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        
-        .goals-form-row {
+
+        .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 15px;
+            margin-bottom: 15px;
         }
-        
-        .goals-form-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 8px;
+
+        .form-group {
+            margin-bottom: 15px;
         }
-        
-        .goals-form-hint {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 4px;
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+            color: var(--gray-light);
         }
-        
-        .goals-empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            text-align: center;
-            color: #666;
-        }
-        
-        .goals-empty-state i {
-            font-size: 3rem;
-            color: #ddd;
-            margin-bottom: 16px;
-        }
-        
-        .goals-empty-state h3 {
-            margin: 0 0 10px 0;
-            font-size: 1.2rem;
-            color: #333;
-        }
-        
-        .goals-empty-state p {
-            margin: 0 0 20px 0;
-            max-width: 400px;
-        }
-        
-        .completed-goal {
-            opacity: 0.7;
-        }
-        
-        .message {
-            padding: 12px 16px;
-            margin-bottom: 20px;
+
+        .form-group input[type="number"],
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
             font-size: 0.95rem;
         }
-        
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-        
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-        
-        .update-form {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid #e9ecef;
-        }
-        
-        @media (max-width: 992px) {
-            .goals-content {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .goals-header {
-                padding: 20px;
-            }
-            
-            .goals-title {
-                font-size: 1.8rem;
-            }
-            
-            .goals-subtitle {
-                font-size: 1rem;
-            }
-            
-            .goals-section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            
-            .goals-form-row {
-                grid-template-columns: 1fr;
-            }
-        }
 
-        /* Navigation Bar Styles */
-        .navbar {
-            background-color: #1E1E1E;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            position: relative;
-            z-index: 1000;
-        }
-
-        .navbar .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .navbar .logo a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: white;
-            font-family: 'Koulen', sans-serif;
-            font-size: 1.5rem;
-        }
-
-        .navbar .logo i {
-            color: #FF4D4D;
-            font-size: 1.8rem;
-        }
-
-        .navbar nav ul {
-            display: flex;
-            gap: 20px;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .navbar nav ul li a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+        .form-check {
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
             font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
         }
 
-        .navbar nav ul li a i {
-            font-size: 1.1rem;
+        .btn-primary {
+            background: var(--gradient-purple);
+            color: white;
+            box-shadow: 0 5px 15px rgba(157, 78, 221, 0.2);
         }
 
-        .navbar nav ul li a:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
+        .btn-primary:hover {
+            box-shadow: 0 8px 20px rgba(157, 78, 221, 0.3);
+            transform: translateY(-3px);
         }
 
-        .navbar nav ul li a.active {
-            background-color: #FF4D4D;
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.08);
             color: white;
         }
 
-        @media (max-width: 768px) {
-            .navbar {
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-3px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef476f, #e63946);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 8px 20px rgba(239, 71, 111, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        /* Modal styling */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 15, 26, 0.8);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--dark-card);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--gray-light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-footer {
+            padding: 15px 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Message styling */
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .message.success {
+            background-color: rgba(6, 214, 160, 0.1);
+            border-left: 4px solid var(--success);
+        }
+        
+        .message.error {
+            background-color: rgba(239, 71, 111, 0.1);
+            border-left: 4px solid var(--danger);
+        }
+
+        .message-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .message.success .message-icon {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .message.error .message-icon {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        /* Goal distribution chart */
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        /* Recommendations section */
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .recommendation-card {
+            background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recommendation-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            width: 100%;
+            background: var(--gradient-purple);
+        }
+
+        .recommendation-card:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .recommendation-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .recommendation-card p {
+            color: var(--gray-light);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .empty-state-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-text {
+            color: var(--gray-light);
+            max-width: 400px;
+            margin: 0 auto 20px;
+        }
+
+        /* Completed goals */
+        .completed-goals {
+            opacity: 0.7;
+        }
+
+        /* Animation keyframes */
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Mobile navigation */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--dark-card);
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 1000;
+        }
+
+        .mobile-nav-links {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .mobile-nav-link {
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+
+        .mobile-nav-link.active {
+            color: #9d4edd;
+        }
+
+        .mobile-nav-link i {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1200px) {
+            .metrics-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 20px;
+            }
+            
+            .page-header {
                 flex-direction: column;
-                padding: 1rem;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
             }
 
-            .navbar nav ul {
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: center;
-                margin-top: 1rem;
-                gap: 10px;
+            .mobile-nav {
+                display: block;
             }
 
-            .navbar nav ul li a {
-                padding: 6px 12px;
-                font-size: 0.9rem;
+            .main-content {
+                padding-bottom: 70px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .section-action {
+                align-self: flex-end;
+            }
+            
+            .goals-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    
-    <div class="prof-container">
-        <!-- Profile Header -->
-        <div class="prof-header">
-            <div>
-                <h1><i class="fas fa-bullseye"></i> Fitness Goals</h1>
-                <p>Set, track and achieve your fitness targets</p>
-            </div>
-            <div class="prof-stats">
-                <div class="prof-stat-item">
-                    <div class="prof-stat-value"><?= $active_goals_count ?></div>
-                    <div class="prof-stat-label">Active Goals</div>
+    <div class="dashboard">
+        <!-- Include the sidebar -->
+        <?php require_once 'sidebar.php'; ?>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Fitness Goals</h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" id="addGoalBtn">
+                        <i class="fas fa-plus"></i> Add New Goal
+                    </button>
                 </div>
-                <div class="prof-stat-item">
-                    <div class="prof-stat-value"><?= $completed_goals_count ?></div>
-                    <div class="prof-stat-label">Completed</div>
-                </div>
-                <div class="prof-stat-item">
-                    <div class="prof-stat-value"><?= isset($success_rate) ? $success_rate . '%' : '0%' ?></div>
-                    <div class="prof-stat-label">Success Rate</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Profile Navigation -->
-        <div class="prof-nav">
-            <a href="profile.php" class="prof-nav-item">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="calories-burned.php" class="prof-nav-item">
-                <i class="fas fa-fire"></i> Calories Burned
-            </a>
-            <a href="current-goal.php" class="prof-nav-item active">
-                <i class="fas fa-bullseye"></i> Goals
-            </a>
-            <a href="nutrition.php" class="prof-nav-item">
-                <i class="fas fa-apple-alt"></i> Nutrition
-            </a>
-            <a href="#" class="prof-nav-item">
-                <i class="fas fa-chart-line"></i> Progress
-            </a>
-            <a href="#" class="prof-nav-item">
-                <i class="fas fa-cog"></i> Settings
-            </a>
-        </div>
-
-        <div class="goals-container">
-            <div class="goals-header">
-                <h1 class="goals-title"><i class="fas fa-bullseye"></i> Fitness Goals</h1>
-                <p class="goals-subtitle">Set meaningful goals, track your progress, and celebrate your achievements in your fitness journey.</p>
             </div>
             
             <?php if (!empty($message)): ?>
-                <div class="message <?php echo $message_type; ?>">
-                    <?php echo $message; ?>
+                <div class="message <?= $message_type ?>">
+                    <div class="message-icon">
+                        <i class="fas <?= $message_type === 'success' ? 'fa-check' : 'fa-exclamation-triangle' ?>"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-title"><?= $message_type === 'success' ? 'Success!' : 'Error!' ?></div>
+                        <div><?= $message ?></div>
+                    </div>
                 </div>
             <?php endif; ?>
             
-            <div class="goals-content">
-                <div class="goals-active-container">
-                    <div class="goals-section">
-                        <div class="goals-section-header">
-                            <h2 class="goals-section-title"><i class="fas fa-tasks"></i> Active Goals</h2>
-                            <button class="goals-btn" onclick="document.getElementById('addGoalForm').style.display = 'block'">
-                                <i class="fas fa-plus"></i> Add New Goal
+            <!-- Goals Summary Metrics -->
+            <div class="metrics-container">
+                <div class="metric-card">
+                    <div class="metric-icon active">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="metric-value"><?= $active_goals_count ?></div>
+                    <div class="metric-label">Active Goals</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon completed">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="metric-value"><?= $completed_goals_count ?></div>
+                    <div class="metric-label">Completed Goals</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon success">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <div class="metric-value"><?= isset($success_rate) ? $success_rate : '0' ?>%</div>
+                    <div class="metric-label">Success Rate</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon streak">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="metric-value">
+                        <?php 
+                            $now = new DateTime();
+                            $earliest_active_deadline = null;
+                            foreach ($active_goals as $goal) {
+                                $deadline = new DateTime($goal['deadline']);
+                                if ($earliest_active_deadline === null || $deadline < $earliest_active_deadline) {
+                                    $earliest_active_deadline = $deadline;
+                                }
+                            }
+                            
+                            echo $earliest_active_deadline ? $now->diff($earliest_active_deadline)->days : '0';
+                        ?>
+                    </div>
+                    <div class="metric-label">Days to Next Deadline</div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div>
+                    <!-- Active Goals Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-tasks"></i> Active Goals
+                            </h2>
+                            <button class="section-action" id="viewActiveGoals">
+                                View All <i class="fas fa-chevron-right"></i>
                             </button>
                         </div>
                         
-                        <div class="goals-grid">
+                        <div class="section-body">
                             <?php if (empty($active_goals) && $goalsTableExists): ?>
-                                <div class="goals-empty-state">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">
                                     <i class="fas fa-bullseye"></i>
-                                    <h3>No active goals yet</h3>
-                                    <p>Set your first fitness goal to start tracking your progress towards success.</p>
-                                    <button class="goals-btn" onclick="document.getElementById('addGoalForm').style.display = 'block'">
-                                        <i class="fas fa-plus"></i> Add Your First Goal
+                                    </div>
+                                    <h3 class="empty-state-title">No Active Goals</h3>
+                                    <p class="empty-state-text">Set meaningful goals to track your fitness progress and stay motivated.</p>
+                                    <button class="btn btn-primary" id="startNewGoalBtn">
+                                        <i class="fas fa-plus"></i> Create Your First Goal
                                     </button>
                                 </div>
-                            <?php elseif (!$goalsTableExists): ?>
-                                <div class="goals-empty-state">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <h3>Goals table not found</h3>
-                                    <p>The goals feature is not yet set up. Please try again later or contact support.</p>
-                                </div>
                             <?php else: ?>
+                                <div class="goals-grid">
                                 <?php foreach ($active_goals as $goal): ?>
                                     <?php 
                                         $progress = calculateProgress($goal['current_value'], $goal['target_value']);
-                                        $color = getGoalTypeColor($goal['goal_type']);
-                                        $icon = getGoalTypeIcon($goal['goal_type']);
-                                        $deadline_text = formatDeadline($goal['deadline']);
+                                            $goal_type_class = 'goal-type-' . $goal['goal_type'];
                                     ?>
-                                    <div class="goal-card" style="border-color: <?php echo $color; ?>;">
+                                        <div class="goal-card <?= $goal_type_class ?>">
                                         <div class="goal-header">
                                             <div class="goal-info">
-                                                <h3><?php echo htmlspecialchars($goal['title']); ?></h3>
-                                                <div class="goal-type" style="background-color: <?php echo $color; ?>;">
-                                                    <i class="fas <?php echo $icon; ?>"></i>
-                                                    <?php echo ucfirst(htmlspecialchars($goal['goal_type'])); ?>
+                                                    <h3 class="goal-title"><?= htmlspecialchars($goal['title']) ?></h3>
+                                                    <div class="goal-meta">
+                                                        <span class="goal-badge <?= $goal['goal_type'] ?>">
+                                                            <?= ucfirst($goal['goal_type']) ?>
+                                                        </span>
                                                 </div>
                                                 <div class="goal-deadline">
-                                                    <i class="far fa-calendar-alt"></i> <?php echo $deadline_text; ?>
+                                                        <i class="fas fa-clock"></i> <?= formatDeadline($goal['deadline']) ?>
                                                 </div>
                                             </div>
+                                                <div class="goal-icon">
+                                                    <i class="fas <?= getGoalTypeIcon($goal['goal_type']) ?>"></i>
+                                            </div>
                                         </div>
-                                        
-                                        <?php if (!empty($goal['description'])): ?>
-                                            <div class="goal-description"><?php echo htmlspecialchars($goal['description']); ?></div>
-                                        <?php endif; ?>
                                         
                                         <div class="goal-progress">
-                                            <div class="goal-progress-header">
-                                                <span><?php echo $goal['current_value']; ?> / <?php echo $goal['target_value']; ?></span>
-                                                <span><?php echo round($progress); ?>% complete</span>
+                                                <div class="goal-progress-stats">
+                                                    <span><?= $goal['current_value'] ?> / <?= $goal['target_value'] ?></span>
+                                                    <span><?= round($progress) ?>%</span>
                                             </div>
                                             <div class="goal-progress-bar">
-                                                <div class="goal-progress-fill" style="width: <?php echo $progress; ?>%; background-color: <?php echo $color; ?>;"></div>
+                                                    <div class="goal-progress-fill" style="width: <?= $progress ?>%"></div>
                                             </div>
                                         </div>
                                         
-                                        <form class="update-form" method="post" action="">
-                                            <input type="hidden" name="goal_id" value="<?php echo $goal['id']; ?>">
-                                            <div class="goals-form-row">
-                                                <div class="goals-form-group">
-                                                    <label for="current_value_<?php echo $goal['id']; ?>">Current Value</label>
-                                                    <input type="number" step="0.01" name="current_value" id="current_value_<?php echo $goal['id']; ?>" value="<?php echo $goal['current_value']; ?>">
-                                                </div>
-                                                <div class="goals-form-group">
-                                                    <label for="completed_<?php echo $goal['id']; ?>">
-                                                        <input type="checkbox" name="completed" id="completed_<?php echo $goal['id']; ?>" <?php echo $goal['completed'] ? 'checked' : ''; ?>>
-                                                        Mark as Completed
-                                                    </label>
-                                                </div>
-                                            </div>
                                             <div class="goal-actions">
-                                                <button type="submit" name="update_goal" class="goals-btn goals-btn-sm">
-                                                    <i class="fas fa-save"></i> Update Progress
+                                                <button class="btn btn-secondary btn-sm update-goal-btn" data-goal-id="<?= $goal['id'] ?>">
+                                                    <i class="fas fa-edit"></i> Update
                                                 </button>
-                                                <button type="submit" name="delete_goal" class="goals-btn goals-btn-sm goals-btn-danger" onclick="return confirm('Are you sure you want to delete this goal?')">
+                                                <button class="btn btn-danger btn-sm delete-goal-btn" data-goal-id="<?= $goal['id'] ?>">
                                                     <i class="fas fa-trash"></i> Delete
                                                 </button>
                                             </div>
-                                        </form>
                                     </div>
                                 <?php endforeach; ?>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
                     
-                    <div class="goals-section">
-                        <div class="goals-section-header">
-                            <h2 class="goals-section-title"><i class="fas fa-trophy"></i> Completed Goals</h2>
+                    <!-- Goal Categories Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-layer-group"></i> Goal Categories
+                            </h2>
                         </div>
                         
+                        <div class="section-body">
                         <div class="goals-grid">
-                            <?php if (empty($completed_goals) && $goalsTableExists): ?>
-                                <div class="goals-empty-state">
-                                    <i class="fas fa-medal"></i>
-                                    <h3>No completed goals yet</h3>
-                                    <p>Complete your active goals to see them here. Keep going!</p>
+                                <!-- Weight Goals -->
+                                <div class="goal-card goal-type-weight" style="cursor: pointer;" onclick="filterGoalsByType('weight')">
+                                    <div class="goal-header">
+                                        <div class="goal-info">
+                                            <h3 class="goal-title">Weight Goals</h3>
+                                            <p class="goal-meta">Track weight loss or gain progress</p>
                                 </div>
-                            <?php elseif ($goalsTableExists): ?>
-                                <?php foreach ($completed_goals as $goal): ?>
-                                    <?php 
-                                        $color = getGoalTypeColor($goal['goal_type']);
-                                        $icon = getGoalTypeIcon($goal['goal_type']);
-                                    ?>
-                                    <div class="goal-card completed-goal" style="border-color: <?php echo $color; ?>;">
-                                        <div class="goal-header">
-                                            <div class="goal-info">
-                                                <h3><?php echo htmlspecialchars($goal['title']); ?></h3>
-                                                <div class="goal-type" style="background-color: <?php echo $color; ?>;">
-                                                    <i class="fas <?php echo $icon; ?>"></i>
-                                                    <?php echo ucfirst(htmlspecialchars($goal['goal_type'])); ?>
-                                                </div>
-                                                <div class="goal-deadline">
-                                                    <i class="fas fa-check-circle"></i> Completed on <?php echo date('M d, Y', strtotime($goal['updated_at'])); ?>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <?php if (!empty($goal['description'])): ?>
-                                            <div class="goal-description"><?php echo htmlspecialchars($goal['description']); ?></div>
-                                        <?php endif; ?>
-                                        
-                                        <div class="goal-progress">
-                                            <div class="goal-progress-header">
-                                                <span><?php echo $goal['current_value']; ?> / <?php echo $goal['target_value']; ?></span>
-                                                <span>100% complete</span>
-                                            </div>
-                                            <div class="goal-progress-bar">
-                                                <div class="goal-progress-fill" style="width: 100%; background-color: <?php echo $color; ?>;"></div>
-                                            </div>
+                                        <div class="goal-icon">
+                                            <i class="fas fa-weight"></i>
                                         </div>
                                     </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+                                    
+                                    <?php 
+                                        $weightGoalsCount = 0;
+                                        foreach ($active_goals as $goal) {
+                                            if ($goal['goal_type'] == 'weight') $weightGoalsCount++;
+                                        }
+                                    ?>
+                                    
+                                    <div class="goal-progress">
+                                        <div class="goal-progress-stats">
+                                            <span><?= $weightGoalsCount ?> active goals</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Strength Goals -->
+                                <div class="goal-card goal-type-strength" style="cursor: pointer;" onclick="filterGoalsByType('strength')">
+                                        <div class="goal-header">
+                                            <div class="goal-info">
+                                            <h3 class="goal-title">Strength Goals</h3>
+                                            <p class="goal-meta">Track lifting and muscle gain progress</p>
+                                                </div>
+                                        <div class="goal-icon">
+                                            <i class="fas fa-dumbbell"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <?php 
+                                        $strengthGoalsCount = 0;
+                                        foreach ($active_goals as $goal) {
+                                            if ($goal['goal_type'] == 'strength') $strengthGoalsCount++;
+                                        }
+                                    ?>
+                                    
+                                    <div class="goal-progress">
+                                        <div class="goal-progress-stats">
+                                            <span><?= $strengthGoalsCount ?> active goals</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                <!-- Endurance Goals -->
+                                <div class="goal-card goal-type-endurance" style="cursor: pointer;" onclick="filterGoalsByType('endurance')">
+                                    <div class="goal-header">
+                                        <div class="goal-info">
+                                            <h3 class="goal-title">Endurance Goals</h3>
+                                            <p class="goal-meta">Track cardio and stamina progress</p>
+                                        </div>
+                                        <div class="goal-icon">
+                                            <i class="fas fa-running"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <?php 
+                                        $enduranceGoalsCount = 0;
+                                        foreach ($active_goals as $goal) {
+                                            if ($goal['goal_type'] == 'endurance') $enduranceGoalsCount++;
+                                        }
+                                    ?>
+                                    
+                                    <div class="goal-progress">
+                                        <div class="goal-progress-stats">
+                                            <span><?= $enduranceGoalsCount ?> active goals</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Workout Goals -->
+                                <div class="goal-card goal-type-workout" style="cursor: pointer;" onclick="filterGoalsByType('workout')">
+                                    <div class="goal-header">
+                                        <div class="goal-info">
+                                            <h3 class="goal-title">Workout Goals</h3>
+                                            <p class="goal-meta">Track workout frequency and consistency</p>
+                                        </div>
+                                        <div class="goal-icon">
+                                            <i class="fas fa-calendar-check"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <?php 
+                                        $workoutGoalsCount = 0;
+                                        foreach ($active_goals as $goal) {
+                                            if ($goal['goal_type'] == 'workout') $workoutGoalsCount++;
+                                        }
+                                    ?>
+                                    
+                                    <div class="goal-progress">
+                                        <div class="goal-progress-stats">
+                                            <span><?= $workoutGoalsCount ?> active goals</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Goal Timeline Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-clock"></i> Goal Timeline
+                            </h2>
+                        </div>
+                        
+                        <div class="section-body">
+                            <div class="timeline">
+                                <?php 
+                                    usort($active_goals, function($a, $b) {
+                                        return strtotime($a['deadline']) - strtotime($b['deadline']);
+                                    });
+                                    
+                                    $timelineGoals = array_slice($active_goals, 0, 5); 
+                                ?>
+                                
+                                <?php if (count($timelineGoals) > 0): ?>
+                                    <?php foreach ($timelineGoals as $index => $goal): ?>
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker <?= $goal['goal_type'] ?>">
+                                                <i class="fas <?= getGoalTypeIcon($goal['goal_type']) ?>"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <div class="timeline-date">
+                                                    <?= date('M d, Y', strtotime($goal['deadline'])) ?>
+                                                </div>
+                                                <h3 class="timeline-title"><?= htmlspecialchars($goal['title']) ?></h3>
+                                                <div class="timeline-progress">
+                                                    <div class="goal-progress-bar">
+                                                        <div class="goal-progress-fill <?= $goal['goal_type'] ?>" 
+                                                            style="width: <?= calculateProgress($goal['current_value'], $goal['target_value']) ?>%">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <h3 class="empty-state-title">No Goals Timeline</h3>
+                                        <p class="empty-state-text">Add goals to see your timeline.</p>
+                                    </div>
+                                        <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="goals-form-container" id="addGoalForm" style="display: <?php echo !empty($message) && $message_type === 'error' ? 'block' : 'none'; ?>">
-                    <h2 class="goals-form-title"><i class="fas fa-plus-circle"></i> Add New Goal</h2>
+                <!-- Right Column -->
+                <div>
+                    <!-- Goal Progress Chart -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-chart-pie"></i> Goals Distribution
+                            </h2>
+                        </div>
+                        
+                        <div class="section-body">
+                            <div class="chart-container">
+                                <canvas id="goalsDistributionChart"></canvas>
+                            </div>
+                            
+                            <?php
+                                $goalsByType = [
+                                    'weight' => 0,
+                                    'strength' => 0,
+                                    'endurance' => 0,
+                                    'workout' => 0,
+                                    'nutrition' => 0
+                                ];
+                                
+                                foreach ($active_goals as $goal) {
+                                    if (isset($goalsByType[$goal['goal_type']])) {
+                                        $goalsByType[$goal['goal_type']]++;
+                                    }
+                                }
+                            ?>
+                        </div>
+                    </div>
                     
-                    <form class="goals-form" method="post" action="">
-                        <div class="goals-form-group">
-                            <label for="title">Goal Title*</label>
-                            <input type="text" name="title" id="title" required placeholder="e.g., Increase Bench Press Weight">
+                    <!-- Completed Goals -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-trophy"></i> Recent Achievements
+                            </h2>
                         </div>
                         
-                        <div class="goals-form-group">
-                            <label for="description">Description</label>
-                            <textarea name="description" id="description" placeholder="Describe your goal in detail..."></textarea>
+                        <div class="section-body">
+                            <?php if (empty($completed_goals)): ?>
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <h3 class="empty-state-title">No Completed Goals Yet</h3>
+                                    <p class="empty-state-text">Keep working on your active goals to see your achievements here!</p>
+                                </div>
+                            <?php else: ?>
+                                <div class="completed-goals">
+                                    <?php foreach ($completed_goals as $goal): ?>
+                                        <div class="goal-card goal-type-<?= $goal['goal_type'] ?>" style="opacity: 0.8;">
+                                            <div class="goal-header">
+                                                <div class="goal-info">
+                                                    <h3 class="goal-title"><?= htmlspecialchars($goal['title']) ?></h3>
+                                                    <div class="goal-meta">
+                                                        <span class="goal-badge <?= $goal['goal_type'] ?>">
+                                                            <?= ucfirst($goal['goal_type']) ?>
+                                                        </span>
+                                                    </div>
+                                                    <div class="goal-deadline">
+                                                        <i class="fas fa-check-circle"></i> Completed on <?= date('M d, Y', strtotime($goal['completed_at'])) ?>
+                                                    </div>
+                                                </div>
+                                                <div class="goal-icon">
+                                                    <i class="fas <?= getGoalTypeIcon($goal['goal_type']) ?>"></i>
+                                                </div>
+                                            </div>
+                                        
+                                        <div class="goal-progress">
+                                                <div class="goal-progress-stats">
+                                                    <span><?= $goal['current_value'] ?> / <?= $goal['target_value'] ?></span>
+                                                    <span>100%</span>
+                                            </div>
+                                            <div class="goal-progress-bar">
+                                                    <div class="goal-progress-fill" style="width: 100%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                        
-                        <div class="goals-form-row">
-                            <div class="goals-form-group">
-                                <label for="target_value">Target Value*</label>
-                                <input type="number" step="0.01" name="target_value" id="target_value" required placeholder="e.g., 100">
-                                <div class="goals-form-hint">The value you want to achieve (kg, reps, etc.)</div>
-                            </div>
-                            
-                            <div class="goals-form-group">
-                                <label for="current_value">Current Value</label>
-                                <input type="number" step="0.01" name="current_value" id="current_value" placeholder="e.g., 80">
-                                <div class="goals-form-hint">Your current progress towards this goal</div>
-                            </div>
-                        </div>
-                        
-                        <div class="goals-form-row">
-                            <div class="goals-form-group">
-                                <label for="goal_type">Goal Type*</label>
-                                <select name="goal_type" id="goal_type" required>
-                                    <option value="">Select a type</option>
-                                    <option value="weight">Weight Loss/Gain</option>
-                                    <option value="strength">Strength</option>
-                                    <option value="endurance">Endurance</option>
-                                    <option value="workout">Workout Frequency</option>
-                                    <option value="nutrition">Nutrition</option>
-                                </select>
-                            </div>
-                            
-                            <div class="goals-form-group">
-                                <label for="deadline">Deadline*</label>
-                                <input type="date" name="deadline" id="deadline" required>
-                                <div class="goals-form-hint">When do you want to achieve this goal?</div>
-                            </div>
-                        </div>
-                        
-                        <div class="goals-form-actions">
-                            <button type="button" class="goals-btn goals-btn-secondary" onclick="document.getElementById('addGoalForm').style.display = 'none'">
-                                Cancel
-                            </button>
-                            <button type="submit" name="add_goal" class="goals-btn">
-                                <i class="fas fa-plus"></i> Add Goal
-                            </button>
-                        </div>
-                    </form>
+                    </div>
+                    
+                    <!-- Goal Recommendations -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-lightbulb"></i> Goal Suggestions
+                            </h2>
                 </div>
+                
+                        <div class="section-body">
+                            <div class="recommendations-grid">
+                                <div class="recommendation-card">
+                                    <h3>Workout Frequency</h3>
+                                    <p>Aim to work out 3-5 times per week for optimal results.</p>
+                                    <button class="btn btn-secondary btn-sm add-suggested-goal" 
+                                            data-title="Workout 4x per week" 
+                                            data-type="workout" 
+                                            data-target="4" 
+                                            data-description="Complete 4 workouts each week">
+                                        <i class="fas fa-plus"></i> Add to Goals
+                                    </button>
+                                </div>
+                                
+                                <div class="recommendation-card">
+                                    <h3>Strength Building</h3>
+                                    <p>Increase your bench press by 15% in the next 8 weeks.</p>
+                                    <button class="btn btn-secondary btn-sm add-suggested-goal"
+                                            data-title="Improve bench press" 
+                                            data-type="strength" 
+                                            data-target="15" 
+                                            data-description="Increase bench press weight by 15%">
+                                        <i class="fas fa-plus"></i> Add to Goals
+                                    </button>
+                        </div>
+                        
+                                <div class="recommendation-card">
+                                    <h3>Cardio Endurance</h3>
+                                    <p>Run 5K under 30 minutes within the next 12 weeks.</p>
+                                    <button class="btn btn-secondary btn-sm add-suggested-goal"
+                                            data-title="Run 5K under 30 min" 
+                                            data-type="endurance" 
+                                            data-target="30" 
+                                            data-description="Complete a 5K run in under 30 minutes">
+                                        <i class="fas fa-plus"></i> Add to Goals
+                                    </button>
+                        </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Mobile Navigation -->
+        <nav class="mobile-nav">
+            <div class="mobile-nav-links">
+                <a href="profile.php" class="mobile-nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="workout-analytics.php" class="mobile-nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="current-goal.php" class="mobile-nav-link active">
+                    <i class="fas fa-bullseye"></i>
+                    <span>Goals</span>
+                </a>
+                <a href="quick-workout.php" class="mobile-nav-link">
+                    <i class="fas fa-stopwatch"></i>
+                    <span>Workout</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Add Goal Modal -->
+    <div class="modal" id="addGoalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Goal</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form action="current-goal.php" method="post">
+                    <input type="hidden" name="add_goal" value="1">
+                    
+                    <div class="form-group">
+                        <label for="title">Goal Title <span style="color: var(--danger);">*</span></label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="goal_type">Goal Type <span style="color: var(--danger);">*</span></label>
+                            <select id="goal_type" name="goal_type" required>
+                                <option value="">Select Goal Type</option>
+                                <option value="weight">Weight</option>
+                                <option value="strength">Strength</option>
+                                <option value="endurance">Endurance</option>
+                                <option value="workout">Workout</option>
+                                <option value="nutrition">Nutrition</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deadline">Deadline <span style="color: var(--danger);">*</span></label>
+                            <input type="date" id="deadline" name="deadline" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="target_value">Target Value <span style="color: var(--danger);">*</span></label>
+                            <input type="number" id="target_value" name="target_value" step="0.01" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="current_value">Current Value</label>
+                            <input type="number" id="current_value" name="current_value" step="0.01" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Goal</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
     
+    <!-- Update Goal Modal -->
+    <div class="modal" id="updateGoalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Update Goal</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form action="current-goal.php" method="post">
+                    <input type="hidden" name="update_goal" value="1">
+                    <input type="hidden" id="update_goal_id" name="goal_id">
+                    
+                    <div class="form-group">
+                        <label for="update_current_value">Current Value</label>
+                        <input type="number" id="update_current_value" name="current_value" step="0.01">
+                    </div>
+                    
+                    <div class="form-check">
+                        <input type="checkbox" id="completed" name="completed">
+                        <label for="completed">Mark as completed</label>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Goal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Goal Modal -->
+    <div class="modal" id="deleteGoalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Delete Goal</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <p>Are you sure you want to delete this goal? This action cannot be undone.</p>
+                
+                <form action="current-goal.php" method="post">
+                    <input type="hidden" name="delete_goal" value="1">
+                    <input type="hidden" id="delete_goal_id" name="goal_id">
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete Goal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
-        // Set minimum date for deadline to today
+
+        const modals = document.querySelectorAll('.modal');
+        const addGoalBtn = document.getElementById('addGoalBtn');
+        const startNewGoalBtn = document.getElementById('startNewGoalBtn');
+        const updateGoalBtns = document.querySelectorAll('.update-goal-btn');
+        const deleteGoalBtns = document.querySelectorAll('.delete-goal-btn');
+        const closeBtns = document.querySelectorAll('.modal-close, .close-modal');
+        
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeAllModals() {
+            modals.forEach(modal => {
+                modal.classList.remove('active');
+            });
+            document.body.style.overflow = '';
+        }
+        
+        if (addGoalBtn) {
+            addGoalBtn.addEventListener('click', () => openModal('addGoalModal'));
+        }
+        
+        if (startNewGoalBtn) {
+            startNewGoalBtn.addEventListener('click', () => openModal('addGoalModal'));
+        }
+        
+        updateGoalBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const goalId = this.dataset.goalId;
+                document.getElementById('update_goal_id').value = goalId;
+                openModal('updateGoalModal');
+            });
+        });
+        
+        deleteGoalBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const goalId = this.dataset.goalId;
+                document.getElementById('delete_goal_id').value = goalId;
+                openModal('deleteGoalModal');
+            });
+        });
+        
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', closeAllModals);
+        });
+        
+
+        window.addEventListener('click', function(event) {
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    closeAllModals();
+                }
+            });
+        });
+        
         document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('deadline').min = today;
+            const distributionCtx = document.getElementById('goalsDistributionChart');
+            
+            if (distributionCtx) {
+                const goalTypes = <?= json_encode(array_keys($goalsByType)) ?>;
+                const goalCounts = <?= json_encode(array_values($goalsByType)) ?>;
+                
+                const distributionChart = new Chart(distributionCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: goalTypes.map(type => type.charAt(0).toUpperCase() + type.slice(1)),
+                        datasets: [{
+                            data: goalCounts,
+                            backgroundColor: [
+                                '#4361ee', // weight
+                                '#9d4edd', // strength
+                                '#f72585', // endurance
+                                '#06d6a0', // workout
+                                '#ff9e00'  // nutrition
+                            ],
+                            borderWidth: 0,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    color: 'white',
+                                    font: {
+                                        family: 'Poppins',
+                                        size: 12
+                                    },
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(26, 26, 46, 0.9)',
+                                titleFont: {
+                                    family: 'Poppins',
+                                    size: 14
+                                },
+                                bodyFont: {
+                                    family: 'Poppins',
+                                    size: 13
+                                },
+                                padding: 12,
+                                boxPadding: 8
+                            }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            }
+        });
+        
+        function filterGoalsByType(type) {
+            console.log(`Filtering goals by type: ${type}`);
+        }
+
+        document.querySelectorAll('.add-suggested-goal').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modal = document.getElementById('addGoalModal');
+                const titleInput = modal.querySelector('#title');
+                const typeSelect = modal.querySelector('#goal_type');
+                const targetInput = modal.querySelector('#target_value');
+                const descriptionInput = modal.querySelector('#description');
+                
+                titleInput.value = this.dataset.title;
+                typeSelect.value = this.dataset.type;
+                targetInput.value = this.dataset.target;
+                descriptionInput.value = this.dataset.description;
+                
+                const deadlineInput = modal.querySelector('#deadline');
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + 56); 
+                const formattedDate = futureDate.toISOString().split('T')[0];
+                deadlineInput.value = formattedDate;
+                
+                openModal('addGoalModal');
+            });
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            
+            timelineItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('animated');
+                }, index * 200);
+            });
         });
     </script>
 </body>

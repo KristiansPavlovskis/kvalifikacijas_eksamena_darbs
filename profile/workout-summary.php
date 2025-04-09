@@ -1,4 +1,7 @@
 <?php
+// Include access control check for profile pages
+require_once 'profile_access_control.php';
+
 session_start();
 
 // Check if user is logged in

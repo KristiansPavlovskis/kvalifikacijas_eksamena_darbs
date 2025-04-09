@@ -1,0 +1,87 @@
+/* Dark Theme Overrides */
+:root {
+  /* Darker color palette */
+  --dark: #0a0a0a;
+  --light: #1a1a1a;
+  --gray-100: #1d1d1d;
+  --gray-200: #252525;
+  --gray-800: #e0e0e0;
+  --gray-300: #303030;
+  --primary: #ff4d4d;
+  --secondary: #4d79ff;
+}
+
+body {
+  background-color: var(--dark);
+  color: #e0e0e0;
+}
+
+/* Fix white sections */
+.features, 
+.workout-types,
+.nutrition-section,
+.membership-section {
+  background-color: var(--light);
+  color: #e0e0e0;
+}
+
+/* Fix feature cards */
+.feature-card,
+.pricing-card,
+.meal-card,
+.category-content {
+  background-color: #222;
+  border-color: #333;
+  color: #e0e0e0;
+}
+
+.feature-card:hover,
+.pricing-card:hover,
+.meal-card:hover {
+  background-color: #2a2a2a;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Fix text colors */
+.card-content p,
+.meal-content p,
+.category-content p,
+.section-header p {
+  color: #aaa;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #fff;
+}
+
+/* Fix header visibility */
+.site-header {
+  background-color: rgba(10, 10, 10, 0.95);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.nav-list a {
+  color: #e0e0e0;
+}
+
+.nav-list a:hover, 
+.nav-list a.active {
+  color: var(--primary);
+}
+
+/* Add debug outline to help troubleshoot layout issues */
+.site-header, .main-nav, .nav-list, .auth-buttons {
+  outline: 1px solid rgba(255, 77, 77, 0.3);
+}
+
+/* Fix mobile menu toggle visibility */
+.mobile-menu-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+    z-index: 1001;
+  }
+} 

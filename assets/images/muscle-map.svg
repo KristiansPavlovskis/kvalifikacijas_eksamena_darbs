@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 500" width="100%" height="100%">
+    <!-- Human body outline (front view only) -->
+    <path class="body-outline" d="M150,30 C180,30 200,50 200,80 C200,100 190,130 190,150 
+             L190,250 C190,280 200,320 200,340 C200,380 180,420 180,450 
+             L180,480 C180,490 170,500 150,500 C130,500 120,490 120,480 
+             L120,450 C120,420 100,380 100,340 C100,320 110,280 110,250 
+             L110,150 C110,130 100,100 100,80 C100,50 120,30 150,30 Z" 
+        fill="#f8f8f8" stroke="#ddd" stroke-width="2"/>
+    
+    <!-- Shoulders -->
+    <path class="muscle-group" data-name="shoulders" data-display-name="Shoulders" 
+        d="M110,90 C100,95 90,105 85,115 C95,120 105,115 110,110 Z
+           M190,90 C200,95 210,105 215,115 C205,120 195,115 190,110 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    
+    <!-- Chest -->
+    <path class="muscle-group" data-name="chest" data-display-name="Chest" 
+        d="M110,110 C125,100 175,100 190,110 C190,140 170,160 150,160 C130,160 110,140 110,110 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    
+    <!-- Biceps -->
+    <path class="muscle-group" data-name="biceps" data-display-name="Biceps" 
+        d="M85,115 C80,130 80,150 85,170 C95,165 105,140 110,120 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    <path class="muscle-group" data-name="biceps" data-display-name="Biceps" 
+        d="M215,115 C220,130 220,150 215,170 C205,165 195,140 190,120 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    
+    <!-- Forearms -->
+    <path class="muscle-group" data-name="forearms" data-display-name="Forearms" 
+        d="M85,170 C80,190 80,200 85,210 C95,205 100,190 105,175 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    <path class="muscle-group" data-name="forearms" data-display-name="Forearms" 
+        d="M215,170 C220,190 220,200 215,210 C205,205 200,190 195,175 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    
+    <!-- Abs -->
+    <path class="muscle-group" data-name="abs" data-display-name="Abdominals" 
+        d="M130,160 C140,160 160,160 170,160 C170,210 170,230 150,240 C130,230 130,210 130,160 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    
+    <!-- Obliques -->
+    <path class="muscle-group" data-name="obliques" data-display-name="Obliques" 
+        d="M110,160 C120,160 130,160 130,160 C130,210 130,220 125,230 C110,220 110,200 110,160 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    <path class="muscle-group" data-name="obliques" data-display-name="Obliques" 
+        d="M190,160 C180,160 170,160 170,160 C170,210 170,220 175,230 C190,220 190,200 190,160 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    
+    <!-- Quads -->
+    <path class="muscle-group" data-name="quads" data-display-name="Quadriceps" 
+        d="M130,250 C130,280 125,320 125,340 C125,360 135,370 145,370 C145,345 145,310 145,250 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    <path class="muscle-group" data-name="quads" data-display-name="Quadriceps" 
+        d="M170,250 C170,280 175,320 175,340 C175,360 165,370 155,370 C155,345 155,310 155,250 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    
+    <!-- Calves -->
+    <path class="muscle-group" data-name="calves" data-display-name="Calves" 
+        d="M130,390 C130,410 125,440 130,460 C140,440 140,410 135,390 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    <path class="muscle-group" data-name="calves" data-display-name="Calves" 
+        d="M170,390 C170,410 175,440 170,460 C160,440 160,410 165,390 Z" 
+        fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>
+    
+    <!-- Hover overlay to show labels on muscle hover -->
+    <g class="hover-labels" font-family="Arial, sans-serif" font-size="0" text-anchor="middle">
+        <text id="hover-label" x="150" y="20" fill="#333" font-weight="bold" class="hover-text"></text>
+    </g>
+</svg> 

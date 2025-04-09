@@ -1,0 +1,217 @@
+/* Admin Header Styles */
+.admin-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #1a1f2c 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 0.75rem 0;
+}
+
+.admin-header-container {
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.admin-header .navbar {
+    padding: 0;
+    width: 100%;
+}
+
+.admin-header .navbar-brand {
+    font-family: var(--font-family-heading);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: 2rem;
+    white-space: nowrap;
+}
+
+.admin-header .navbar-brand i {
+    color: #ff4d4d;
+}
+
+.admin-header .navbar-collapse {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+}
+
+.admin-header .nav-link {
+    color: rgba(255,255,255,0.8);
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.admin-header .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255,255,255,0.1);
+}
+
+.admin-header .nav-link.active {
+    color: #fff;
+    background-color: rgba(255,255,255,0.15);
+    font-weight: 500;
+}
+
+.admin-header .navbar-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-header .nav-item {
+    position: relative;
+}
+
+.admin-header .dropdown-menu {
+    background: #1a1f2c;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 0.5rem;
+    min-width: 200px;
+    margin-top: 0.5rem;
+    display: none;
+    position: absolute;
+}
+
+.admin-header .dropdown-menu.show {
+    display: block;
+}
+
+.admin-header .dropdown-item {
+    color: rgba(255,255,255,0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.admin-header .dropdown-item:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+.admin-header .dropdown-item i {
+    width: 20px;
+    text-align: center;
+}
+
+.admin-header .nav-user-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.admin-header .nav-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+}
+
+.admin-header .badge-primary {
+    background-color: #ff4d4d;
+    border-color: #ff4d4d;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.admin-header .section-title {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+    .admin-header .navbar-collapse {
+        display: none !important;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #1a1f2c;
+        padding: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        flex-direction: column;
+    }
+
+    .admin-header .navbar-collapse.show {
+        display: flex !important;
+    }
+
+    .admin-header .navbar-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .admin-header .nav-item {
+        width: 100%;
+    }
+
+    .admin-header .nav-link {
+        width: 100%;
+    }
+
+    .admin-header .nav-user-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        width: 100%;
+    }
+
+    .admin-header .dropdown-menu {
+        position: static;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin-left: 1rem;
+        width: 100%;
+    }
+
+    .admin-header .section-title {
+        display: none;
+    }
+}
+
+/* Dropdown Animation */
+.admin-header .dropdown-menu {
+    transform-origin: top;
+    transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.admin-header .dropdown-menu.show {
+    transform: scaleY(1);
+    opacity: 1;
+}
+
+.admin-header .dropdown-menu:not(.show) {
+    transform: scaleY(0);
+    opacity: 0;
+} 

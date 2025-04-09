@@ -1,0 +1,145 @@
+/* ==============================
+   MAIN STYLES
+   ============================== */
+
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family-base);
+    font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-dark);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+main {
+  min-height: calc(100vh - 400px); 
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-heading);
+  font-weight: 700;
+  line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 3rem;
+}
+
+h2 {
+font-size: 2.5rem;
+}
+
+h3 {
+    font-size: 2rem;
+}
+
+h4 {
+    font-size: 1.5rem;
+}
+
+h5 {
+font-size: 1.25rem;
+}
+
+h6 {
+font-size: 1rem;
+}
+
+p {
+margin-bottom: 1rem;
+}
+
+a {
+  color: var(--color-primary);
+    text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+a:hover {
+  color: var(--color-primary-light);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+ul, ol {
+    margin-bottom: 1rem;
+  padding-left: 1.25rem;
+}
+
+/* Form Elements */
+input, textarea, select, button {
+  font-family: var(--font-family-base);
+    font-size: 1rem;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background-color: #fff;
+    color: #000;
+}
+
+  a {
+    color: #0066cc;
+  }
+  
+  .no-print {
+    display: none;
+    }
+}
+
+/* Message notifications */
+.message {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+  padding: 12px 20px;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px; 
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+    opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.message.show {
+    opacity: 1;
+  transform: translateY(0);
+}
+
+.message-success {
+  background-color: #2ecc71;
+}
+
+.message-error {
+  background-color: #e74c3c;
+}
+
+.message-info {
+  background-color: #3498db;
+}
