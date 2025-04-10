@@ -1,17 +1,13 @@
 <?php
- Initialize session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
-// Database connection
+
+
 require_once "../assets/db_connection.php";
 
-// Page title and class
+
 $pageTitle = "Admin Chat";
 $bodyClass = "admin-page dark-mode";
 
-// Additional head content
 $additionalHead = '<style>
 .chat-container {
     display: flex;
@@ -316,7 +312,7 @@ $additionalHead = '<style>
 }
 </style>';
 
-// Include the sidebar layout
+
 require_once "includes/sidebar.php";
 ?>
 
@@ -565,33 +561,25 @@ require_once "includes/sidebar.php";
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Scroll to the bottom of the chat messages
     const messagesContainer = document.querySelector('.chat-messages');
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    // Toggle active state on contact items
+
     const contactItems = document.querySelectorAll('.contact-item');
     contactItems.forEach(item => {
         item.addEventListener('click', () => {
-            // Remove active class from all items
             contactItems.forEach(i => i.classList.remove('active'));
-            // Add active class to clicked item
             item.classList.add('active');
         });
     });
     
-    // Send message on button click or Enter key
     const chatInput = document.querySelector('.chat-input input');
     const sendButton = document.querySelector('.chat-input button');
     
     const sendMessage = () => {
         const message = chatInput.value.trim();
         if (message) {
-            // In a real application, you would send this to a server
-            // and then update the UI based on the response
             console.log('Sending message:', message);
             
-            // For demo purposes, let's add the message to the UI
             const now = new Date();
             const timeString = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
             
@@ -610,7 +598,6 @@ document.addEventListener('DOMContentLoaded', function() {
             messagesContainer.appendChild(newMessage);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
-            // Clear input
             chatInput.value = '';
         }
     };

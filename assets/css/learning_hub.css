@@ -584,32 +584,32 @@ h1, h2, h3, h4, h5, h6 {
     overflow: hidden;
 }
 
-.wheel-segment:hover {
+/* .wheel-segment:hover {
     transform: scale(1.05);
     z-index: 10;
-}
+} */
 
 .segment-1 {
-    top: 0;
+    top: -15%;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .segment-2 {
     top: 50%;
-    right: 0;
+    right: -15%;
     transform: translateY(-50%);
 }
 
 .segment-3 {
-    bottom: 0;
+    bottom: -15%;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .segment-4 {
     top: 50%;
-    left: 0;
+    left: -15%;
     transform: translateY(-50%);
 }
 
@@ -851,8 +851,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Active state for wheel segments */
-.wheel-segment.active {
-    transform: scale(1.1);
+.wheel-segment.active { 
     z-index: 15;
     box-shadow: 0 0 25px rgba(114, 9, 183, 0.4);
     border: 2px solid var(--accent-purple);
