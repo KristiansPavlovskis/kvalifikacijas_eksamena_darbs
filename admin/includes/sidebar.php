@@ -1,19 +1,15 @@
 <?php
-// Initialize session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Database connection
 require_once dirname(dirname(__DIR__)) . "/assets/db_connection.php";
 
-// Check if user is logged in
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: /pages/login.php");
     exit;
 }
 
-// Check user roles
 $user_id = $_SESSION["user_id"];
 $sql = "SELECT r.name FROM roles r 
         JOIN user_roles ur ON r.id = ur.role_id 
@@ -28,14 +24,12 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
-// Check if user has admin or super_admin role
 $is_admin = in_array('administrator', $user_roles) || in_array('super_admin', $user_roles);
 if (!$is_admin) {
     header("location: /pages/index.php");
     exit;
 }
 
-// Get current page name
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
@@ -82,24 +76,70 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        .admin-sidebar {
+            transition: width 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar.collapsed {
+            width: 80px;
+        }
+        
+        .admin-sidebar.collapsed .brand-text,
+        .admin-sidebar.collapsed .profile-info,
+        .admin-sidebar.collapsed .section-header,
+        .admin-sidebar.collapsed .nav-link span {
+            display: none;
+        }
+        
+        .admin-sidebar.collapsed .nav-item {
+            text-align: center;
+        }
+        
+        .admin-sidebar.collapsed .nav-link i {
+            margin-right: 0;
+            font-size: 1.2rem;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .section-toggle {
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-nav {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .sidebar-nav.collapsed {
+            max-height: 0;
+        }
+    </style>
 </head>
 <body class="admin-page">
     <div class="admin-wrapper">
-        <!-- Admin Sidebar -->
         <div class="admin-sidebar">
             <div class="brand-section">
                 <a href="/admin/index.php" class="brand">
-                    <span class="brand-text">Pro<span class="highlight">table</span></span>
+                    <span class="brand-text">Gym<span class="highlight">Verse</span></span>
                 </a>
-                <button class="sidebar-toggle">
+                <button class="sidebar-toggle" id="toggleSidebar">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
             
             <div class="user-profile">
                 <div class="profile-avatar">
-                    <!-- <img src="/assets/images/avatar.png" alt="User Avatar" onerror="this.src='/assets/images/default-avatar.png'"> -->
-                    <span class="status-dot online"></span>
+                     <span class="status-dot online"></span>
                 </div>
                 <div class="profile-info">
                     <h3><?php echo htmlspecialchars($_SESSION["username"]); ?></h3>
@@ -113,164 +153,90 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </div>
             
             <div class="sidebar-section">
-                <h4 class="section-header">MAIN</h4>
-                <ul class="sidebar-nav">
+                <h4 class="section-header" data-toggle="collapse" data-target="overview-nav">
+                    OVERVIEW
+                    <i class="fas fa-chevron-down section-toggle"></i>
+                </h4>
+                <ul class="sidebar-nav" id="overview-nav">
                     <li class="nav-item <?php echo $current_page == 'index.php' ? 'active' : ''; ?>">
                         <a href="/admin/index.php" class="nav-link">
                             <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
+                            <span>Site Statistics</span>
                         </a>
                     </li>
-                    
-                    <li class="nav-item <?php echo $current_page == 'chat.php' ? 'active' : ''; ?>">
-                        <a href="/admin/chat.php" class="nav-link">
-                            <i class="fas fa-comments"></i>
-                            <span>Chat</span>
-                            <?php if (rand(0, 1)): ?><span class="notification-dot"></span><?php endif; ?>
+                    <li class="nav-item <?php echo $current_page == 'active-users.php' ? 'active' : ''; ?>">
+                        <a href="/admin/active-users.php" class="nav-link">
+                            <i class="fas fa-users"></i>
+                            <span>Active Users</span>
                         </a>
                     </li>
-                    <li class="nav-item <?php echo $current_page == 'mail.php' ? 'active' : ''; ?>">
-                        <a href="/admin/mail.php" class="nav-link">
-                            <i class="fas fa-envelope"></i>
-                            <span>Mail</span>
-                            <?php if (rand(0, 1)): ?><span class="notification-dot green"></span><?php endif; ?>
+                    <li class="nav-item <?php echo $current_page == 'signups.php' ? 'active' : ''; ?>">
+                        <a href="/admin/signups.php" class="nav-link">
+                            <i class="fas fa-user-plus"></i>
+                            <span>New Sign-ups</span>
                         </a>
                     </li>
-                    <li class="nav-item <?php echo $current_page == 'todo.php' ? 'active' : ''; ?>">
-                        <a href="/admin/todo.php" class="nav-link">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Todo</span>
-                            <?php if (rand(0, 1)): ?><span class="notification-dot orange"></span><?php endif; ?>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'file_manager.php' ? 'active' : ''; ?>">
-                        <a href="/admin/file_manager.php" class="nav-link">
-                            <i class="fas fa-file-alt"></i>
-                            <span>File Manager</span>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'calendar.php' ? 'active' : ''; ?>">
-                        <a href="/admin/calendar.php" class="nav-link">
-                            <i class="fas fa-calendar-alt"></i>
-                            <span>Calendar</span>
+                    <li class="nav-item <?php echo $current_page == 'workout-stats.php' ? 'active' : ''; ?>">
+                        <a href="/admin/workout-stats.php" class="nav-link">
+                            <i class="fas fa-dumbbell"></i>
+                            <span>Workout Completions</span>
                         </a>
                     </li>
                 </ul>
-            </div>
-            
+            </div>    
             <div class="sidebar-section">
-                <h4 class="section-header">USER MANAGEMENT</h4>
-                <ul class="sidebar-nav">
+                <h4 class="section-header" data-toggle="collapse" data-target="user-management-nav">
+                    USER MANAGEMENT
+                    <i class="fas fa-chevron-down section-toggle"></i>
+                </h4>
+                <ul class="sidebar-nav" id="user-management-nav">
                     <li class="nav-item <?php echo $current_page == 'users.php' ? 'active' : ''; ?>">
                         <a href="/admin/users.php" class="nav-link">
                             <i class="fas fa-users"></i>
-                            <span>All Users</span>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'roles.php' ? 'active' : ''; ?>">
-                        <a href="/admin/roles.php" class="nav-link">
-                            <i class="fas fa-user-shield"></i>
-                            <span>Roles & Permissions</span>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'user-activity.php' ? 'active' : ''; ?>">
-                        <a href="/admin/user-activity.php" class="nav-link">
-                            <i class="fas fa-chart-line"></i>
-                            <span>User Activity</span>
+                            <span>User List</span>
                         </a>
                     </li>
                 </ul>
             </div>
             
             <div class="sidebar-section">
-                <h4 class="section-header">MARKETPLACE</h4>
-                <ul class="sidebar-nav">
-                    <li class="nav-item <?php echo $current_page == 'products.php' ? 'active' : ''; ?>">
-                        <a href="/admin/products.php" class="nav-link">
-                            <i class="fas fa-box"></i>
-                            <span>Products</span>
+                <h4 class="section-header" data-toggle="collapse" data-target="content-management-nav">
+                    CONTENT MANAGEMENT
+                    <i class="fas fa-chevron-down section-toggle"></i>
+                </h4>
+                <ul class="sidebar-nav" id="content-management-nav">
+                    <li class="nav-item <?php echo $current_page == 'exercise-library.php' ? 'active' : ''; ?>">
+                        <a href="/admin/exercise-library.php" class="nav-link">
+                            <i class="fas fa-running"></i>
+                            <span>Exercise Library</span>
                         </a>
                     </li>
-                    <li class="nav-item <?php echo $current_page == 'sellers.php' ? 'active' : ''; ?>">
-                        <a href="/admin/sellers.php" class="nav-link">
-                            <i class="fas fa-user-tie"></i>
-                            <span>Sellers</span>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'orders.php' ? 'active' : ''; ?>">
-                        <a href="/admin/orders.php" class="nav-link">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Orders</span>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'transactions.php' ? 'active' : ''; ?>">
-                        <a href="/admin/transactions.php" class="nav-link">
-                            <i class="fas fa-money-bill-wave"></i>
-                            <span>Transactions</span>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'merch.php' ? 'active' : ''; ?>">
-                        <a href="/admin/merch.php" class="nav-link">
-                            <i class="fas fa-tshirt"></i>
-                            <span>Merchandise</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            
-            <div class="sidebar-section">
-                <h4 class="section-header">CONTENT & DATA</h4>
-                <ul class="sidebar-nav">
-                    <li class="nav-item <?php echo $current_page == 'workouts.php' ? 'active' : ''; ?>">
-                        <a href="/admin/workouts.php" class="nav-link">
+                    <li class="nav-item <?php echo $current_page == 'equipment-guide.php' ? 'active' : ''; ?>">
+                        <a href="/admin/equipment-guide.php" class="nav-link">
                             <i class="fas fa-dumbbell"></i>
-                            <span>Workouts</span>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'nutrition.php' ? 'active' : ''; ?>">
-                        <a href="/admin/nutrition.php" class="nav-link">
-                            <i class="fas fa-apple-alt"></i>
-                            <span>Nutrition Plans</span>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'analytics.php' ? 'active' : ''; ?>">
-                        <a href="/admin/analytics.php" class="nav-link">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>Analytics</span>
+                            <span>Equipment Guide</span>
                         </a>
                     </li>
                 </ul>
             </div>
             
-            <!-- New Gamification Section -->
             <div class="sidebar-section">
-                <h4 class="section-header">GAMIFICATION</h4>
-                <ul class="sidebar-nav">
-                    <li class="nav-item <?php echo $current_page == 'leaderboards.php' ? 'active' : ''; ?>">
-                        <a href="/admin/leaderboards.php" class="nav-link">
-                            <i class="fas fa-trophy"></i>
-                            <span>Leaderboards</span>
-                        </a>
-                    </li>
-                    <li class="nav-item <?php echo $current_page == 'challenges.php' ? 'active' : ''; ?>">
-                        <a href="/admin/challenges.php" class="nav-link">
-                            <i class="fas fa-flag-checkered"></i>
-                            <span>Challenges</span>
-                        </a>
-                    </li>
+                <h4 class="section-header" data-toggle="collapse" data-target="gamification-nav">
+                    GAMIFICATION CONTROLS
+                    <i class="fas fa-chevron-down section-toggle"></i>
+                </h4>
+                <ul class="sidebar-nav" id="gamification-nav">
                     <li class="nav-item <?php echo $current_page == 'achievements.php' ? 'active' : ''; ?>">
                         <a href="/admin/achievements.php" class="nav-link">
                             <i class="fas fa-medal"></i>
-                            <span>Achievements</span>
+                            <span>Achievement System</span>
                         </a>
                     </li>
                 </ul>
             </div>
         </div>
         
-        <!-- Main Content Area -->
         <div class="main-content">
-            <!-- Top Bar -->
             <div class="admin-topbar">
                 <div class="search-container">
                     <input type="text" class="search-input" placeholder="Search">
@@ -291,5 +257,41 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 </div>
             </div>
             
-            <!-- Page Content -->
-            <div class="page-content"> 
+            <div class="page-content">
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const toggleSidebarBtn = document.getElementById('toggleSidebar');
+                    toggleSidebarBtn.addEventListener('click', function() {
+                        const sidebar = document.querySelector('.admin-sidebar');
+                        sidebar.classList.toggle('collapsed');
+                        
+                        const icon = this.querySelector('i');
+                        if (sidebar.classList.contains('collapsed')) {
+                            icon.classList.remove('fa-bars');
+                            icon.classList.add('fa-bars-staggered');
+                        } else {
+                            icon.classList.remove('fa-bars-staggered');
+                            icon.classList.add('fa-bars');
+                        }
+                    });
+                    
+                    const sectionHeaders = document.querySelectorAll('.section-header');
+                    sectionHeaders.forEach(header => {
+                        header.addEventListener('click', function() {
+                            const targetId = this.getAttribute('data-target');
+                            const targetSection = document.getElementById(targetId);
+                            
+                            targetSection.classList.toggle('collapsed');
+                            
+                            const icon = this.querySelector('.section-toggle');
+                            if (targetSection.classList.contains('collapsed')) {
+                                icon.classList.remove('fa-chevron-down');
+                                icon.classList.add('fa-chevron-right');
+                            } else {
+                                icon.classList.remove('fa-chevron-right');
+                                icon.classList.add('fa-chevron-down');
+                            }
+                        });
+                    });
+                });
+            </script> 

@@ -1,11 +1,8 @@
 <?php
-// Start session
 session_start();
 
-// Include database connection
 require_once '../assets/db_connection.php';
 
-// Check if ID parameter exists
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     header("Location: excercises.php");
     exit;
@@ -13,7 +10,6 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $exercise_id = intval($_GET['id']);
 
-// Get the exercise details
 $exercise_query = "SELECT * FROM exercises WHERE id = ?";
 $exercise_stmt = mysqli_prepare($conn, $exercise_query);
 mysqli_stmt_bind_param($exercise_stmt, 'i', $exercise_id);
@@ -27,13 +23,11 @@ if (mysqli_num_rows($exercise_result) === 0) {
 
 $exercise = mysqli_fetch_assoc($exercise_result);
 
-// Format instructions as array if they're stored as a string with newlines
 $instructions = [];
 if (!empty($exercise['instructions'])) {
     $instructions = explode("\n", $exercise['instructions']);
 }
 
-// Get common mistakes from database or use defaults
 $common_mistakes = [];
 if (!empty($exercise['common_mistakes'])) {
     $common_mistakes = explode("\n", $exercise['common_mistakes']);
@@ -46,7 +40,6 @@ if (!empty($exercise['common_mistakes'])) {
     ];
 }
 
-// Get benefits from database or use defaults
 $benefits = [];
 if (!empty($exercise['benefits'])) {
     $benefits = explode("\n", $exercise['benefits']);
@@ -59,13 +52,11 @@ if (!empty($exercise['benefits'])) {
     ];
 }
 
-// Format muscle diagram data
 $muscle_data = [];
 if (!empty($exercise['muscle_diagram_data'])) {
     $muscle_data = json_decode($exercise['muscle_diagram_data'], true);
 }
 
-// Default home alternatives
 $home_alternatives = [
     "Bodyweight Version",
     "Resistance Bands",
@@ -268,7 +259,6 @@ $home_alternatives = [
             color: var(--text-primary);
         }
         
-        /* Difficulty Indicator */
         .difficulty-indicator {
             display: flex;
             align-items: center;
@@ -314,7 +304,6 @@ $home_alternatives = [
             color: #e53935;
         }
         
-        /* Tab Navigation */
         .exercise-tabs {
             display: flex;
             background: var(--card-bg);
@@ -390,7 +379,6 @@ $home_alternatives = [
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Section Styling */
         .section-title {
             font-family: 'Koulen', sans-serif;
             font-size: 1.8rem;
@@ -418,7 +406,6 @@ $home_alternatives = [
             color: var(--primary);
         }
         
-        /* Instructions List */
         .instructions-list {
             list-style-type: none;
             counter-reset: step-counter;
@@ -511,8 +498,7 @@ $home_alternatives = [
             background: var(--element-hover);
             transform: translateY(-3px);
         }
-        
-        /* Common Mistakes Section */
+
         .mistakes-list {
             display: flex;
             flex-direction: column;
@@ -556,7 +542,6 @@ $home_alternatives = [
             font-size: 0.95rem;
         }
         
-        /* Muscle Activation */
         .muscle-diagram {
             display: flex;
             gap: var(--spacing-xl);
@@ -633,7 +618,6 @@ $home_alternatives = [
             font-size: 0.95rem;
         }
         
-        /* Equipment Guide */
         .equipment-guide {
             display: grid;
             grid-template-columns: 1fr 2fr;
@@ -705,7 +689,6 @@ $home_alternatives = [
             gap: 5px;
         }
         
-        /* Variations Section */
         .variations-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -779,7 +762,6 @@ $home_alternatives = [
             gap: 5px;
         }
         
-        /* Progress Tracking */
         .progress-section {
             display: grid;
             grid-template-columns: 1fr 2fr;
@@ -849,7 +831,6 @@ $home_alternatives = [
             text-align: center;
         }
         
-        /* Social Section */
         .social-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -900,7 +881,6 @@ $home_alternatives = [
             overflow-y: auto;
         }
         
-        /* Related Exercises */
         .related-exercises-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -960,7 +940,6 @@ $home_alternatives = [
             color: var(--text-muted);
         }
         
-        /* Video Section */
         .video-section {
             margin-bottom: var(--spacing-lg);
         }
@@ -975,7 +954,7 @@ $home_alternatives = [
         
         .video-wrapper {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
         }
@@ -1022,7 +1001,6 @@ $home_alternatives = [
             object-fit: cover;
         }
         
-        /* Responsive Styles */
         @media (max-width: 992px) {
             .exercise-header, 
             .muscle-diagram, 
@@ -1090,7 +1068,6 @@ $home_alternatives = [
             }
         }
         
-        /* Benefits Section */
         .benefit-item {
             border-left: 4px solid #4caf50;
         }
@@ -1101,7 +1078,6 @@ $home_alternatives = [
             margin-top: 3px;
         }
         
-        /* Equipment Guide */
         .equipment-guide {
             display: grid;
             grid-template-columns: 1fr 2fr;
@@ -1239,7 +1215,6 @@ $home_alternatives = [
             </div>
         </div>
 
-        <!-- Tab Navigation -->
         <div class="exercise-tabs">
             <button class="tab-button active" data-tab="instructions"><i class="fas fa-list-ol"></i> Instructions</button>
             <button class="tab-button" data-tab="muscles"><i class="fas fa-dumbbell"></i> Muscle Activation</button>
@@ -1250,7 +1225,6 @@ $home_alternatives = [
             <button class="tab-button" data-tab="related"><i class="fas fa-th"></i> Related</button>
         </div>
         
-        <!-- Tab Content -->
         <div id="instructions" class="tab-content active">
             <h2 class="section-title"><i class="fas fa-list-ol"></i> Exercise Instructions</h2>
             
@@ -1270,7 +1244,6 @@ $home_alternatives = [
             </div>
             <?php else: ?>
             <div class="instructions-list">
-                <!-- Default instructions if none are provided -->
                 <div class="instruction-step">
                     <div class="instruction-text">Set up properly with the appropriate weight and equipment.</div>
                 </div>
@@ -1286,7 +1259,6 @@ $home_alternatives = [
             </div>
             <?php endif; ?>
             
-            <!-- Common Mistakes Section -->
             <h2 class="section-title" style="margin-top: 30px;"><i class="fas fa-exclamation-triangle"></i> Common Mistakes</h2>
             <div class="mistakes-list">
                 <?php foreach($common_mistakes as $mistake): ?>
@@ -1300,7 +1272,6 @@ $home_alternatives = [
                 <?php endforeach; ?>
             </div>
             
-            <!-- Benefits Section -->
             <h2 class="section-title" style="margin-top: 30px;"><i class="fas fa-check-circle"></i> Exercise Benefits</h2>
             <div class="mistakes-list benefits-list">
                 <?php foreach($benefits as $benefit): ?>
@@ -1319,13 +1290,11 @@ $home_alternatives = [
             <h2 class="section-title"><i class="fas fa-dumbbell"></i> Muscle Activation</h2>
             
             <div class="muscle-diagram">
-                <div class="diagram-container">
-                    <!-- Placeholder for interactive muscle diagram -->
+                <div class="diagram-container"> 
                     <img src="../assets/images/muscle-diagram-placeholder.jpg" alt="Muscle Activation Diagram" style="max-height: 100%; max-width: 100%; object-fit: contain;">
                 </div>
                 <div class="muscle-info">
                     <?php 
-                    // Parse muscles worked into array
                     $primary_muscles = [];
                     $secondary_muscles = [];
                     
@@ -1337,7 +1306,6 @@ $home_alternatives = [
                         $secondary_muscles = array_map('trim', explode(',', $exercise['secondary_muscles'] ?? ''));
                     }
                     
-                    // Display primary muscles
                     if (!empty($primary_muscles)):
                         foreach($primary_muscles as $muscle):
                     ?>
@@ -1348,8 +1316,7 @@ $home_alternatives = [
                     <?php 
                         endforeach;
                     endif;
-                    
-                    // Display secondary muscles
+                     
                     if (!empty($secondary_muscles)):
                         foreach($secondary_muscles as $muscle):
                     ?>
@@ -1360,8 +1327,7 @@ $home_alternatives = [
                     <?php 
                         endforeach;
                     endif;
-                    
-                    // If no muscles specified, show defaults
+                        
                     if (empty($primary_muscles) && empty($secondary_muscles)):
                     ?>
                     <div class="muscle-card primary">
@@ -1391,7 +1357,6 @@ $home_alternatives = [
             
             <div class="equipment-guide">
                 <div class="equipment-image">
-                    <!-- Placeholder for equipment image -->
                     <img src="../assets/images/equipment-placeholder.jpg" alt="Exercise Equipment" style="max-height: 100%; max-width: 100%; object-fit: contain;">
                 </div>
                 <div class="equipment-details">
@@ -1584,7 +1549,6 @@ $home_alternatives = [
                     </div>
                     <?php endif; ?>
                     
-                    <!-- Sample reviews -->
                     <div style="background: var(--element-hover); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                             <p style="margin: 0; font-weight: 600;">Mike J.</p>
@@ -1630,7 +1594,6 @@ $home_alternatives = [
             <h2 class="section-title"><i class="fas fa-th"></i> Related Exercises</h2>
             
             <div class="related-exercises-grid">
-                <!-- Sample related exercises - in production, these would be dynamically generated -->
                 <a href="#" class="related-exercise-card">
                     <div class="related-exercise-image" style="background-image: url('../assets/images/exercise-placeholder.jpg');"></div>
                     <div class="related-exercise-content">
@@ -1729,7 +1692,6 @@ $home_alternatives = [
     </div>
 
     <?php require_once '../includes/footer.php'; ?>
-    <!-- Include the exercise details JavaScript file -->
     <script src="../assets/js/exercise-details.js"></script>
 </body>
 </html>

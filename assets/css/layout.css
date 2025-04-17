@@ -317,7 +317,7 @@ section:nth-child(even) {
   position: sticky;
   top: 0;
   width: 100%;
-  /* background-color: var(--color-dark); */
+  background-color: var(--color-dark);
   padding: 16px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   z-index: 1000;

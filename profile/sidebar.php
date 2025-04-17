@@ -1,8 +1,7 @@
 <?php
-// Include access control check for profile pages
+
 require_once 'profile_access_control.php';
 
-// Get user information if not already set
 if (!isset($user_id)) {
     $user_id = $_SESSION["user_id"] ?? null;
 }
@@ -13,15 +12,12 @@ if (!isset($email)) {
     $email = $_SESSION["email"] ?? null;
 }
 
-// Get user roles as a formatted string if not already set
 if (!isset($roles_string) && isset($_SESSION["user_roles"]) && !empty($_SESSION["user_roles"])) {
     $roles_string = implode(", ", $_SESSION["user_roles"]);
 }
 
-// Get current page for highlighting active nav item
 $current_page = basename($_SERVER['PHP_SELF']);
 
-// Get join date if not set
 if (!isset($join_date) && isset($conn)) {
     $join_date_query = "SELECT DATE_FORMAT(created_at, '%M %Y') as join_date FROM users WHERE id = ?";
     $stmt = mysqli_prepare($conn, $join_date_query);
@@ -34,9 +30,15 @@ if (!isset($join_date) && isset($conn)) {
         }
     }
 }
+
+$user_level = 1;
+$user_xp = "0/100";
+$fit_coins = 0;
+
+if (isset($conn) && isset($user_id)) {
+}
 ?>
 
-<!-- Sidebar Styles -->
 <style>
     .sidebar {
         width: var(--sidebar-width, 260px);
@@ -51,11 +53,15 @@ if (!isset($join_date) && isset($conn)) {
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
         z-index: 1000;
         transition: all 0.3s ease;
+        overflow-y: auto;
     }
 
     .sidebar-header {
         padding: 20px;
         border-bottom: 1px solid var(--border-color, #333);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .sidebar-logo {
@@ -117,7 +123,7 @@ if (!isset($join_date) && isset($conn)) {
 
     .sidebar-nav {
         flex: 1;
-        padding: 20px 0;
+        padding: 10px 0;
         overflow-y: auto;
     }
 
@@ -128,13 +134,28 @@ if (!isset($join_date) && isset($conn)) {
         text-transform: uppercase;
         letter-spacing: 1px;
         padding: 0 20px;
-        margin-bottom: 10px;
+        margin: 15px 0 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .sidebar-nav-title i {
+        transition: transform 0.3s ease;
     }
 
     .sidebar-nav-items {
         list-style: none;
         padding: 0;
-        margin: 0 0 20px 0;
+        margin: 0 0 10px 0;
+        max-height: 1000px;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .sidebar-nav-items.collapsed {
+        max-height: 0;
     }
 
     .sidebar-nav-link {
@@ -193,6 +214,26 @@ if (!isset($join_date) && isset($conn)) {
         color: var(--light, #f5f5f5);
     }
 
+    .user-status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-color, #333);
+    }
+
+    .user-status-item {
+        font-size: 12px;
+    }
+
+    .collapse-toggle {
+        background: transparent;
+        border: none;
+        color: var(--light, #f5f5f5);
+        cursor: pointer;
+    }
+
     @media (max-width: 992px) {
         .sidebar {
             transform: translateX(-100%);
@@ -204,10 +245,12 @@ if (!isset($join_date) && isset($conn)) {
     }
 </style>
 
-<!-- Sidebar Structure -->
 <aside class="sidebar">
     <div class="sidebar-header">
-        <a href="/pages/index.php" class="sidebar-logo">GYMVERSE</a>
+        <a href="/pages/index.php" class="sidebar-logo">MY FITNESS</a>
+        <button class="collapse-toggle" id="toggleSidebar">
+            <i class="fas fa-chevron-left"></i>
+        </button>
     </div>
     
     <div class="sidebar-profile">
@@ -221,55 +264,110 @@ if (!isset($join_date) && isset($conn)) {
             <i class="fas fa-calendar-alt"></i> Member since <?= $join_date ?>
         </div>
         <?php endif; ?>
+        <div class="user-status">
+            <div class="user-status-item">
+                <strong>Level:</strong> <?= $user_level ?>
+            </div>
+            <div class="user-status-item">
+                <strong>XP:</strong> <?= $user_xp ?>
+            </div>
+            <div class="user-status-item">
+                <strong>Fit Coins:</strong> <?= $fit_coins ?>
+            </div>
+        </div>
     </div>
     
     <nav class="sidebar-nav">
-        <div class="sidebar-nav-title">Dashboard</div>
-        <ul class="sidebar-nav-items">
+        <div class="sidebar-nav-title" data-toggle="collapse" data-target="dashboard-nav">
+            My Fitness <i class="fas fa-chevron-down"></i>
+        </div>
+        <ul class="sidebar-nav-items" id="dashboard-nav">
             <li class="sidebar-nav-item">
                 <a href="profile.php" class="sidebar-nav-link <?= $current_page === 'profile.php' ? 'active' : '' ?>">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
             </li>
             <li class="sidebar-nav-item">
-                <a href="workout-analytics.php" class="sidebar-nav-link <?= $current_page === 'workout-analytics.php' ? 'active' : '' ?>">
-                    <i class="fas fa-chart-line"></i> Analytics
+                <a href="profile-settings.php" class="sidebar-nav-link <?= $current_page === 'profile-settings.php' ? 'active' : '' ?>">
+                    <i class="fas fa-cog"></i> Profile Settings
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-nav-title" data-toggle="collapse" data-target="workouts-nav">
+            Workouts <i class="fas fa-chevron-down"></i>
+        </div>
+        <ul class="sidebar-nav-items" id="workouts-nav">
+            <li class="sidebar-nav-item">
+                <a href="active-workout.php" class="sidebar-nav-link <?= $current_page === 'active-workout.php' ? 'active' : '' ?>">
+                    <i class="fas fa-play-circle"></i> Active Workout
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="workout-templates.php" class="sidebar-nav-link <?= $current_page === 'workout-templates.php' ? 'active' : '' ?>">
+                    <i class="fas fa-clipboard-list"></i> My Templates
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="workout-history.php" class="sidebar-nav-link <?= $current_page === 'workout-history.php' ? 'active' : '' ?>">
+                    <i class="fas fa-history"></i> Workout History
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-nav-title" data-toggle="collapse" data-target="progress-nav">
+            Progress <i class="fas fa-chevron-down"></i>
+        </div>
+        <ul class="sidebar-nav-items" id="progress-nav">
+            <li class="sidebar-nav-item">
+                <a href="stats-overview.php" class="sidebar-nav-link <?= $current_page === 'stats-overview.php' ? 'active' : '' ?>">
+                    <i class="fas fa-chart-line"></i> Stats Overview
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="body-measurements.php" class="sidebar-nav-link <?= $current_page === 'body-measurements.php' ? 'active' : '' ?>">
+                    <i class="fas fa-ruler"></i> Body Measurements
                 </a>
             </li>
             <li class="sidebar-nav-item">
                 <a href="current-goal.php" class="sidebar-nav-link <?= $current_page === 'current-goal.php' ? 'active' : '' ?>">
-                    <i class="fas fa-bullseye"></i> Goals
+                    <i class="fas fa-bullseye"></i> Setting Goals
                 </a>
             </li>
         </ul>
         
-        <div class="sidebar-nav-title">Training</div>
-        <ul class="sidebar-nav-items">
+        <div class="sidebar-nav-title" data-toggle="collapse" data-target="challenges-nav">
+            Challenges <i class="fas fa-chevron-down"></i>
+        </div>
+        <ul class="sidebar-nav-items" id="challenges-nav">
             <li class="sidebar-nav-item">
-                <a href="quick-workout.php" class="sidebar-nav-link <?= $current_page === 'quick-workout.php' ? 'active' : '' ?>">
-                    <i class="fas fa-stopwatch"></i> Quick Workout
-                </a>
-            </li>
-            <!-- <li class="sidebar-nav-item">
-                <a href="../workouts.php" class="sidebar-nav-link <?= $current_page === 'workouts.php' ? 'active' : '' ?>">
-                    <i class="fas fa-dumbbell"></i> Workouts
+                <a href="active-challenges.php" class="sidebar-nav-link <?= $current_page === 'active-challenges.php' ? 'active' : '' ?>">
+                    <i class="fas fa-flag"></i> Active Challenges
                 </a>
             </li>
             <li class="sidebar-nav-item">
-                <a href="calories-burned.php" class="sidebar-nav-link <?= $current_page === 'calories-burned.php' ? 'active' : '' ?>">
-                    <i class="fas fa-fire"></i> Calories Burned
+                <a href="leaderboards.php" class="sidebar-nav-link <?= $current_page === 'leaderboards.php' ? 'active' : '' ?>">
+                    <i class="fas fa-medal"></i> Leaderboards
                 </a>
-            </li> -->
+            </li>
+            
+            <li class="sidebar-nav-item">
+                <a href="create-challenge.php" class="sidebar-nav-link <?= $current_page === 'create-challenge.php' ? 'active' : '' ?>">
+                    <i class="fas fa-plus"></i> Create Challenge
+                </a>
+            </li>
         </ul>
         
-        <!-- <div class="sidebar-nav-title">Nutrition</div>
-        <ul class="sidebar-nav-items">
+        <div class="sidebar-nav-title" data-toggle="collapse" data-target="achievements-nav">
+            Achievements <i class="fas fa-chevron-down"></i>
+        </div>
+        <ul class="sidebar-nav-items" id="achievements-nav">
             <li class="sidebar-nav-item">
-                <a href="nutrition.php" class="sidebar-nav-link <?= $current_page === 'nutrition.php' ? 'active' : '' ?>">
-                    <i class="fas fa-apple-alt"></i> Nutrition Tracker
+                <a href="badges.php" class="sidebar-nav-link <?= $current_page === 'badges.php' ? 'active' : '' ?>">
+                    <i class="fas fa-certificate"></i> Badge Collection
                 </a>
             </li>
-        </ul> -->
+        </ul>
     </nav>
     
     <div class="sidebar-footer">
@@ -282,16 +380,13 @@ if (!isset($join_date) && isset($conn)) {
     </div>
 </aside>
 
-<!-- Sidebar Toggle Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile sidebar toggle functionality
     const toggleSidebar = () => {
         const sidebar = document.querySelector('.sidebar');
         sidebar.classList.toggle('active');
     };
 
-    // Add mobile toggle button if it doesn't exist
     if (!document.querySelector('.mobile-sidebar-toggle')) {
         const toggleButton = document.createElement('button');
         toggleButton.className = 'mobile-sidebar-toggle';
@@ -301,7 +396,40 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButton.addEventListener('click', toggleSidebar);
     }
 
-    // Close sidebar when clicking outside on mobile
+    const sectionTitles = document.querySelectorAll('.sidebar-nav-title');
+    sectionTitles.forEach(title => {
+        title.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const targetSection = document.getElementById(targetId);
+            
+            targetSection.classList.toggle('collapsed');
+            
+            const icon = this.querySelector('i');
+            if (targetSection.classList.contains('collapsed')) {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-down');
+            }
+        });
+    });
+
+    const toggleSidebarBtn = document.getElementById('toggleSidebar');
+    toggleSidebarBtn.addEventListener('click', function() {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.toggle('collapsed');
+        
+        const icon = this.querySelector('i');
+        if (sidebar.classList.contains('collapsed')) {
+            icon.classList.remove('fa-chevron-left');
+            icon.classList.add('fa-chevron-right');
+        } else {
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-left');
+        }
+    });
+
     document.addEventListener('click', function(event) {
         if (window.innerWidth <= 992) {
             const sidebar = document.querySelector('.sidebar');

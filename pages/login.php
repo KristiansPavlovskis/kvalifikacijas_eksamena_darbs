@@ -594,7 +594,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     </a>
     
     <script>
-        // Show loading animation when form is submitted
         document.querySelector('.login-form').addEventListener('submit', function() {
             document.getElementById('login-text').style.display = 'none';
             document.getElementById('login-loading').style.display = 'block';

@@ -1,19 +1,16 @@
 <?php
-// Initialize session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Check if user is logged in and is an admin
+
 // if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || !isset($_SESSION["is_admin"]) || $_SESSION["is_admin"] !== true) {
 //     header("location: /pages/login.php");
 //     exit;
 // }
 
-// Database connection
 require_once "../assets/db_connection.php";
 
-// Check if required admin tables exist
 $requiredTables = ['achievements', 'challenges', 'leaderboards'];
 $missingTables = [];
 
@@ -25,9 +22,8 @@ foreach ($requiredTables as $table) {
 }
 
 $pageTitle = "Admin Dashboard";
-$bodyClass = "admin-page dark-mode"; // Enable dark mode by default
+$bodyClass = "admin-page dark-mode"; 
 
-// Additional head content for dashboard-specific styles
 $additionalHead = '<style>
 .stat-icon {
     width: 48px;
@@ -164,16 +160,15 @@ $additionalHead = '<style>
 }
 </style>';
 
-// Include the sidebar layout (which includes the header content)
+
 require_once "includes/sidebar.php";
 ?>
 
-<!-- Dashboard Header -->
 <div class="dashboard-header">
     <div class="dashboard-title">
         <h1>Dashboard Overview</h1>
         <p>Welcome back, <?php echo htmlspecialchars($_SESSION["username"]); ?></p>
-            </div>
+    </div>
     <div>
         <select class="form-control custom-select" id="time-period">
             <option value="today">Today</option>
@@ -181,97 +176,41 @@ require_once "includes/sidebar.php";
             <option value="month">This Month</option>
             <option value="year">This Year</option>
         </select>
-            </div>
-        </div>
-        
-        <?php if (!empty($missingTables)): ?>
-        <!-- Database Setup Alert -->
-<div class="system-status-bar" data-aos="fade-up" data-aos-delay="50" style="background-color: rgba(255, 86, 48, 0.1); color: #ff5630; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-            <div class="status-indicator">
-        <span class="health-indicator critical"></span>
-                <strong>Database Setup Required</strong>
-            </div>
-    <div style="margin: 0.5rem 0;">
-                Missing tables: <?php echo implode(', ', $missingTables); ?>
-            </div>
-            <div>
-        <a href="admin_setup_db.php" class="btn btn-sm btn-danger">
-                    <i class="fas fa-database"></i> Setup Database Tables
-                </a>
-            </div>
-        </div>
-<?php endif; ?>
-
-<!-- System Status -->
-<div class="chart-card" style="margin-bottom: 1.5rem;">
-    <div class="chart-header">
-        <h3><i class="fas fa-server"></i> SYSTEM STATUS</h3>
-        <div class="timestamp">Last updated: <?php echo date('H:i:s'); ?></div>
     </div>
-    <div class="chart-body">
-        <div class="metrics-container">
-            <div class="metric-card">
-                <div class="health-indicator healthy"></div>
-                <div class="metric-label">Server Load</div>
-                <div class="metric-value">23%</div>
-            </div>
-            <div class="metric-card">
-                <div class="health-indicator healthy"></div>
-                <div class="metric-label">API Status</div>
-                <div class="metric-value">Online</div>
-            </div>
-            <div class="metric-card">
-                <div class="health-indicator healthy"></div>
-                <div class="metric-label">Database</div>
-                <div class="metric-value">Connected</div>
-            </div>
-            <div class="metric-card">
-                <div class="health-indicator healthy"></div>
-                <div class="metric-label">Last Backup</div>
-                <div class="metric-value">3h ago</div>
-            </div>
-        </div>
-    </div>
-        </div>
-
-<!-- Key Performance Metrics -->
+</div>
 <div class="dashboard-cards">
-    <!-- Users Metric -->
-            <div class="stats-card">
+    <div class="stats-card">
         <div class="stats-card-header">
             <div class="stat-icon blue">
-                    <i class="fas fa-users"></i>
-                </div>
-            <h3>ACTIVE USERS</h3>
-                    </div>
+                <i class="fas fa-users"></i>
+            </div>
+                <h3>ACTIVE USERS</h3>
+        </div>
         <div class="stats-card-value">1,245</div>
-        <div class="stats-card-trend trend-up">
-            <i class="fas fa-arrow-up trend-icon"></i> +16% than last week
-                </div>
+            <div class="stats-card-trend trend-up">
+                <i class="fas fa-arrow-up trend-icon"></i> +16% than last week
+            </div>
         <div class="stats-card-chart">
             <canvas class="sparkline-canvas" height="50"></canvas>
-                </div>
-            </div>
-            
-    <!-- Revenue Metric -->
-            <div class="stats-card">
+        </div>
+    </div>
+        
+     <div class="stats-card">
         <div class="stats-card-header">
             <div class="stat-icon green">
                 <i class="fas fa-dollar-sign"></i>
-                </div>
-            <h3>WEEKLY REVENUE</h3>
-                    </div>
+            </div>
+                <h3>WEEKLY REVENUE</h3>
+        </div>
         <div class="stats-card-value">$8,632</div>
         <div class="stats-card-trend trend-up">
             <i class="fas fa-arrow-up trend-icon"></i> +8% than last week
-                </div>
+        </div>
         <div class="stats-card-chart">
             <canvas class="sparkline-canvas" height="50"></canvas>
-                </div>
-            </div>
-            
-    <!-- Workouts Metric -->
-            <div class="stats-card">
+        </div>
+    </div>
+    <div class="stats-card">
         <div class="stats-card-header">
             <div class="stat-icon orange">
                 <i class="fas fa-dumbbell"></i>
@@ -279,16 +218,15 @@ require_once "includes/sidebar.php";
             <h3>WORKOUTS COMPLETED</h3>
         </div>
         <div class="stats-card-value">5,879</div>
-        <div class="stats-card-trend trend-up">
-            <i class="fas fa-arrow-up trend-icon"></i> +12% than last week
-        </div>
+            <div class="stats-card-trend trend-up">
+                <i class="fas fa-arrow-up trend-icon"></i> +12% than last week
+            </div>
         <div class="stats-card-chart">
             <canvas class="sparkline-canvas" height="50"></canvas>
-                </div>
-                    </div>
-                </div>
+        </div>
+    </div>
+</div>
 
-<!-- Marketplace Performance -->
 <div class="chart-card highlight-card" style="margin-bottom: 1.5rem;">
     <div class="chart-header">
         <h3><i class="fas fa-store"></i> MARKETPLACE PERFORMANCE</h3>
@@ -323,9 +261,7 @@ require_once "includes/sidebar.php";
     </div>
             </div>
             
-<!-- User Activity and Community -->
 <div class="chart-row">
-    <!-- User Activity -->
     <div class="chart-card">
         <div class="chart-header">
             <h3><i class="fas fa-chart-line"></i> USER ENGAGEMENT</h3>
@@ -335,7 +271,6 @@ require_once "includes/sidebar.php";
         </div>
             </div>
             
-    <!-- Community Metrics -->
     <div class="chart-card">
         <div class="chart-header">
             <h3><i class="fas fa-trophy"></i> ACHIEVEMENTS & CHALLENGES</h3>
@@ -388,9 +323,7 @@ require_once "includes/sidebar.php";
                     </div>
                 </div>
                 
-<!-- Content Analytics -->
 <div class="chart-row">
-    <!-- Workout Analytics -->
     <div class="chart-card">
         <div class="chart-header">
             <h3><i class="fas fa-dumbbell"></i> FITNESS CONTENT</h3>
@@ -429,7 +362,6 @@ require_once "includes/sidebar.php";
             </div>
         </div>
         
-    <!-- Nutrition Analytics -->
     <div class="chart-card">
         <div class="chart-header">
             <h3><i class="fas fa-apple-alt"></i> NUTRITION ANALYTICS</h3>
@@ -469,7 +401,6 @@ require_once "includes/sidebar.php";
                     </div>
                 </div>
 
-<!-- Revenue Breakdown -->
 <div class="chart-card" style="margin-top: 1.5rem;">
     <div class="chart-header">
         <h3><i class="fas fa-money-bill-wave"></i> REVENUE BREAKDOWN</h3>
@@ -526,34 +457,28 @@ require_once "includes/sidebar.php";
     </div>
 </div>
 
-</div> <!-- End of page-content -->
-</div> <!-- End of main-content -->
-</div> <!-- End of admin-wrapper -->
+</div> 
+</div> 
+</div> 
 
-<!-- Chart.js for charts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 
-<!-- Custom Scripts -->
 <script src="/assets/js/admin-sidebar.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize AOS animation library
     AOS.init({
         duration: 800,
         once: true
     });
     
-    // User Data
     const userData = [980, 1020, 1050, 1080, 1150, 1190, 1245];
     const revenueData = [7200, 7400, 7900, 8100, 8300, 8500, 8632];
     const workoutData = [4800, 5100, 5300, 5450, 5600, 5750, 5879];
     
-    // Draw sparklines
     drawSparkline(document.querySelectorAll('.sparkline-canvas')[0], userData, '#3366ff');
     drawSparkline(document.querySelectorAll('.sparkline-canvas')[1], revenueData, '#36b37e');
     drawSparkline(document.querySelectorAll('.sparkline-canvas')[2], workoutData, '#ffab00');
     
-    // Marketplace Chart
     const marketplaceCtx = document.getElementById('marketplaceChart').getContext('2d');
     new Chart(marketplaceCtx, {
         type: 'line',
@@ -604,7 +529,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // User Engagement Chart
     const engagementCtx = document.getElementById('engagementChart').getContext('2d');
     new Chart(engagementCtx, {
         type: 'bar',
@@ -649,7 +573,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Workout Types Chart
     const workoutTypesCtx = document.getElementById('workoutTypesChart').getContext('2d');
     new Chart(workoutTypesCtx, {
         type: 'doughnut',
@@ -673,7 +596,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Nutrition Chart
     const nutritionCtx = document.getElementById('nutritionChart').getContext('2d');
     new Chart(nutritionCtx, {
         type: 'pie',
@@ -696,7 +618,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Revenue Chart
     const revenueCtx = document.getElementById('revenueChart').getContext('2d');
     new Chart(revenueCtx, {
         type: 'bar',
@@ -771,7 +692,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Function to draw sparklines
 function drawSparkline(canvas, data, color) {
     const ctx = canvas.getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);

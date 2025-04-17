@@ -45,7 +45,6 @@ $additionalHead = <<<HTML
     </style>
 HTML;
 
-// Additional scripts for this page
 $additionalScripts = <<<HTML
     <script src="/assets/js/pages/exercises.js"></script>
     <script src="/assets/js/muscle-map.js"></script>
@@ -53,18 +52,14 @@ $additionalScripts = <<<HTML
     <script src="/assets/js/quick-view.js"></script>
 HTML;
 
-// Include the header
 require_once '../includes/header.php';
 
-// Include database connection
 require_once '../assets/db_connection.php';
 
-// Get exercises data
 $exercisesQuery = "SELECT * FROM exercises ORDER BY name ASC";
 $exercisesResult = mysqli_query($conn, $exercisesQuery);
 $totalExercises = mysqli_num_rows($exercisesResult);
 
-// Get exercise types, muscles, and equipment for filters
 $typesQuery = "SELECT DISTINCT exercise_type FROM exercises ORDER BY exercise_type ASC";
 $typesResult = mysqli_query($conn, $typesQuery);
 
@@ -89,11 +84,9 @@ if (!$equipmentResult) {
     $equipmentResult = false;
 }
 
-// Get user achievements if logged in
 $user_achievements = [];
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
-    // Check if table exists first
     $table_check = mysqli_query($conn, "SHOW TABLES LIKE 'user_achievements'");
     if (mysqli_num_rows($table_check) > 0) {
         $sql = "SELECT * FROM user_achievements WHERE user_id = ? AND achievement_type = 'exercise'";
@@ -107,8 +100,7 @@ if (isset($_SESSION['user_id'])) {
     }
 }
 
-// Get popular/trending exercises (for the badge indicators)
-$trending_exercises = [5, 10, 15]; // Example IDs, replace with actual logic
+$trending_exercises = [5, 10, 15]; 
 ?>
 
 <div class="container exercises-container">
@@ -248,7 +240,6 @@ $trending_exercises = [5, 10, 15]; // Example IDs, replace with actual logic
             <div id="exercise-results" class="exercise-results-grid">
                 <?php if (mysqli_num_rows($exercisesResult) > 0): ?>
                     <?php 
-                    // Array of background patterns for exercise cards
                     $patterns = [
                         'linear-gradient(45deg, var(--bg-element) 25%, transparent 25%, transparent 75%, var(--bg-element) 75%)',
                         'linear-gradient(60deg, rgba(255,255,255,.05) 25%, transparent 25%)',
@@ -257,7 +248,6 @@ $trending_exercises = [5, 10, 15]; // Example IDs, replace with actual logic
                     ?>
                     
                     <?php while($exercise = mysqli_fetch_assoc($exercisesResult)): 
-                        // Select a random pattern for variety
                         $randomPattern = $patterns[array_rand($patterns)];
                     ?>
                         <div class="exercise-card" 
@@ -336,6 +326,5 @@ $trending_exercises = [5, 10, 15]; // Example IDs, replace with actual logic
 <script src="../assets/js/exercises.js"></script>
 
 <?php
-// Include the footer
 require_once '../includes/footer.php';
 ?>

@@ -1,26 +1,21 @@
 <?php
 include 'assets/connect_db.php';
 
-// Get equipment ID from URL parameter
-$equipment_id = isset($_GET['id']) ? $_GET['id'] : 1; // Default to 1 if not provided
+$equipment_id = isset($_GET['id']) ? $_GET['id'] : 1; 
 
-// Get equipment details
 $sql_equipment = "SELECT * FROM equipment WHERE id = $equipment_id";
 $result_equipment = mysqli_query($savienojums, $sql_equipment);
 
 if (mysqli_num_rows($result_equipment) > 0) {
     $equipment = mysqli_fetch_assoc($result_equipment);
 } else {
-    // Redirect to equipment list if equipment not found
     header("Location: equipment.php");
     exit();
 }
 
-// Get equipment features
 $sql_features = "SELECT * FROM equipment_features WHERE equipment_id = $equipment_id";
 $result_features = mysqli_query($savienojums, $sql_features);
 
-// Get safety tips
 $sql_safety = "SELECT * FROM equipment_safety WHERE equipment_id = $equipment_id";
 $result_safety = mysqli_query($savienojums, $sql_safety);
 ?>
@@ -102,19 +97,12 @@ $result_safety = mysqli_query($savienojums, $sql_safety);
             <button class="view-button" onclick="toggleView('back')">Back View</button>
         </div>
         <svg viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
-            <!-- Front view human silhouette -->
             <g id="human-front">
-              <!-- Head -->
-              <circle cx="200" cy="60" r="40" fill="#333"/>
+            <circle cx="200" cy="60" r="40" fill="#333"/>      
+            <rect x="185" y="100" width="30" height="30" fill="#333"/>
+            <path d="M150 130 L250 130 L260 300 L140 300 Z" fill="#333"/>
               
-              <!-- Neck -->
-              <rect x="185" y="100" width="30" height="30" fill="#333"/>
-              
-              <!-- Torso -->
-              <path d="M150 130 L250 130 L260 300 L140 300 Z" fill="#333"/>
-              
-              <!-- Arms -->
-              <g id="arms">
+            <g id="arms">
                 <path id="deltoids" d="M150 130 L110 160 L120 180 L150 160 Z" fill="#333"/>
                 <path id="deltoids-right" d="M250 130 L290 160 L280 180 L250 160 Z" fill="#333"/>
                 
@@ -123,9 +111,8 @@ $result_safety = mysqli_query($savienojums, $sql_safety);
                 
                 <rect id="forearms" x="110" y="240" width="30" height="70" fill="#333"/>
                 <rect id="forearms-right" x="260" y="240" width="30" height="70" fill="#333"/>
-              </g>
+            </g>
               
-              <!-- Legs -->
               <g id="legs">
                 <path id="quadriceps" d="M140 300 L180 300 L175 400 L145 400 Z" fill="#ff4444"/>
                 <path id="quadriceps-right" d="M220 300 L260 300 L255 400 L225 400 Z" fill="#ff4444"/>
@@ -135,23 +122,16 @@ $result_safety = mysqli_query($savienojums, $sql_safety);
               </g>
             </g>
           
-            <!-- Back view human silhouette -->
             <g id="human-back" transform="translate(0, 0)" style="display: none">
-              <!-- Similar structure as front but for back muscles -->
-              <!-- Head -->
               <circle cx="200" cy="60" r="40" fill="#333"/>
               
-              <!-- Neck -->
               <rect x="185" y="100" width="30" height="30" fill="#333"/>
               
-              <!-- Torso -->
               <path d="M150 130 L250 130 L260 300 L140 300 Z" fill="#333"/>
               
-              <!-- Back Muscles -->
               <path id="upper-back" d="M160 140 L240 140 L235 200 L165 200 Z" fill="#333"/>
               <path id="lower-back" d="M165 200 L235 200 L240 280 L160 280 Z" fill="#333"/>
               
-              <!-- Arms -->
               <g id="back-arms">
                 <path id="triceps" d="M150 130 L110 160 L120 180 L150 160 Z" fill="#333"/>
                 <path id="triceps-right" d="M250 130 L290 160 L280 180 L250 160 Z" fill="#333"/>
@@ -163,7 +143,6 @@ $result_safety = mysqli_query($savienojums, $sql_safety);
                 <rect x="260" y="240" width="30" height="70" fill="#333"/>
               </g>
               
-              <!-- Legs -->
               <g id="back-legs">
                 <path id="hamstrings" d="M140 300 L180 300 L175 400 L145 400 Z" fill="#ff4444"/>
                 <path id="hamstrings-right" d="M220 300 L260 300 L255 400 L225 400 Z" fill="#ff4444"/>

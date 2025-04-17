@@ -528,13 +528,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     </a>
     
     <script>
-        // Password strength meter
         document.getElementById('password').addEventListener('input', function() {
             const password = this.value;
             const meter = document.getElementById('password-strength-meter');
             const text = document.getElementById('password-strength-text');
             
-            // Reset
             meter.className = 'password-strength-meter';
             text.textContent = '';
             
@@ -542,35 +540,28 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                 return;
             }
             
-            // Calculate strength
             let strength = 0;
             
-            // Length
             if (password.length >= 8) {
                 strength += 1;
             }
             
-            // Lowercase letters
             if (password.match(/[a-z]/)) {
                 strength += 1;
             }
             
-            // Uppercase letters
             if (password.match(/[A-Z]/)) {
                 strength += 1;
             }
             
-            // Numbers
             if (password.match(/[0-9]/)) {
                 strength += 1;
             }
             
-            // Special characters
             if (password.match(/[^a-zA-Z0-9]/)) {
                 strength += 1;
             }
             
-            // Update UI
             switch (strength) {
                 case 0:
                 case 1:
@@ -593,7 +584,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         });
         
-        // Show loading animation when form is submitted
         document.querySelector('.register-form').addEventListener('submit', function() {
             document.getElementById('register-text').style.display = 'none';
             document.getElementById('register-loading').style.display = 'block';

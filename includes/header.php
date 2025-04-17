@@ -31,28 +31,22 @@ $is_admin = in_array('administrator', $user_roles) || in_array('super_admin', $u
     <meta name="description" content="GYMVERSE - Your ultimate fitness platform for workouts, nutrition, and performance tracking">
     <title><?php echo isset($pageTitle) ? "$pageTitle | GYMVERSE" : "GYMVERSE | Explore The Universe of Fitness"; ?></title>
     
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
     
-    <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="GYMVERSE | Explore The Universe of Fitness">
     <meta property="og:description" content="Your ultimate fitness platform for workouts, nutrition, and performance tracking">
     <meta property="og:image" content="/assets/images/social-share.jpg">
     <meta property="og:url" content="https://gymverse.com">
     <meta property="og:type" content="website">
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Animation library -->
     <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
     
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="/assets/css/normalize.css">
     <link rel="stylesheet" href="/assets/css/variables.css">
     <link rel="stylesheet" href="/assets/css/main.css">
@@ -63,12 +57,10 @@ $is_admin = in_array('administrator', $user_roles) || in_array('super_admin', $u
     <link rel="stylesheet" href="/assets/css/pages.css">
     <link rel="stylesheet" href="/assets/css/animations.css">
     
-    <!-- Admin styles (only loaded for admin pages) -->
     <?php if (isset($bodyClass) && strpos($bodyClass, 'admin-page') !== false): ?>
     <link rel="stylesheet" href="/assets/css/admin.css">
     <?php endif; ?>
     
-    <!-- AOS Library -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     
     <?php if (isset($additionalHead)) echo $additionalHead; ?>
@@ -281,6 +273,88 @@ $is_admin = in_array('administrator', $user_roles) || in_array('super_admin', $u
             animation: progress 1.5s ease-in-out forwards;
         }
         
+        .user-profile-menu {
+            position: relative;
+        }
+        
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            padding: 8px 16px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid rgba(230, 22, 22, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .profile-button:hover {
+            background-color: rgba(230, 22, 22, 0.1);
+            border-color: rgba(230, 22, 22, 0.5);
+        }
+        
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 200px;
+            background-color: var(--dark-bg-surface);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+        
+        .user-profile-menu.active .profile-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .profile-dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.75rem 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-dropdown a:hover {
+            background-color: rgba(230, 22, 22, 0.1);
+        }
+        
+        .profile-dropdown i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 0.5rem 0;
+        }
+        
+        .dropdown-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .user-profile-menu.active .dropdown-icon {
+            transform: rotate(180deg);
+        }
+        
         @keyframes progress {
             0% { width: 0%; }
             100% { width: 100%; }
@@ -342,11 +416,24 @@ $is_admin = in_array('administrator', $user_roles) || in_array('super_admin', $u
                 justify-content: center;
                 padding: 0.75rem 1rem;
             }
+            
+            .profile-dropdown {
+                position: static;
+                width: 100%;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                margin-top: 0.5rem;
+                display: none;
+            }
+            
+            .user-profile-menu.active .profile-dropdown {
+                display: block;
+            }
         }
     </style>
 </head>
 <body class="<?php echo isset($bodyClass) ? $bodyClass : ''; ?>">
-    <!-- Modern Loading Screen -->
     <div class="loading-screen">
         <div class="loading-content">
             <div class="loading-logo">
@@ -360,7 +447,6 @@ $is_admin = in_array('administrator', $user_roles) || in_array('super_admin', $u
         </div>
     </div>
 
-    <!-- Improved Header -->
     <header class="site-header">
         <div class="container">
             <nav class="main-nav" aria-label="Main navigation">
@@ -392,15 +478,39 @@ $is_admin = in_array('administrator', $user_roles) || in_array('super_admin', $u
                                 if(isset($_SESSION["user_roles"])) {
                                     $is_admin = in_array('administrator', $_SESSION["user_roles"]) || in_array('super_admin', $_SESSION["user_roles"]);
                                 }
-                             
+                                
                                 $profile_link = $is_admin ? "/admin/index.php" : "/profile/profile.php";
                                 ?>
-                                <a href="<?php echo $profile_link; ?>" class="btn btn-outline">
-                                    <i class="fas fa-user"></i> <?php echo htmlspecialchars($_SESSION["username"]); ?>
-                                </a>
-                                <a href="/pages/logout.php" class="btn btn-outline">
-                                    <i class="fas fa-sign-out-alt"></i> Logout
-                                </a>
+                                <div class="user-profile-menu">
+                                    <button class="profile-button">
+                                        <i class="fas fa-user"></i>
+                                        <span><?php echo htmlspecialchars($_SESSION["username"]); ?></span>
+                                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                                    </button>
+                                    <div class="profile-dropdown">
+                                        <a href="<?php echo $profile_link; ?>">
+                                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                                        </a>
+                                        <a href="/profile/profile-settings.php">
+                                            <i class="fas fa-user-circle"></i> Profile Settings
+                                        </a>
+                                        <?php if ($is_admin): ?>
+                                        <a href="/admin/index.php">
+                                            <i class="fas fa-shield-alt"></i> Admin Panel
+                                        </a>
+                                        <?php endif; ?>
+                                        <a href="/profile/workout-history.php">
+                                            <i class="fas fa-history"></i> Workout History
+                                        </a>
+                                        <a href="/profile/statistics.php">
+                                            <i class="fas fa-chart-bar"></i> Statistics
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                        <a href="/pages/logout.php" class="logout-link">
+                                            <i class="fas fa-sign-out-alt"></i> Logout
+                                        </a>
+                                    </div>
+                                </div>
                             <?php else: ?>
                                 <a href="/pages/login.php" class="btn btn-outline">Login</a>
                                 <a href="/pages/register.php" class="btn btn-primary">Register</a>
@@ -423,6 +533,22 @@ $is_admin = in_array('administrator', $user_roles) || in_array('super_admin', $u
                 loadingScreen.style.opacity = '0';
                 loadingScreen.style.visibility = 'hidden';
             }, 1800);
+            
+            const profileButton = document.querySelector('.profile-button');
+            if (profileButton) {
+                profileButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const profileMenu = this.closest('.user-profile-menu');
+                    profileMenu.classList.toggle('active');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    const profileMenu = document.querySelector('.user-profile-menu');
+                    if (profileMenu && !profileMenu.contains(e.target)) {
+                        profileMenu.classList.remove('active');
+                    }
+                });
+            }
         });
     </script>
 </body>

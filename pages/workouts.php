@@ -12,9 +12,7 @@ $username = $logged_in ? $_SESSION["username"] : "";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitness Learning Hub | Master Your Training</title>
     <link rel="stylesheet" href="../assets/css/learning_hub.css">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="dark-theme">
@@ -33,14 +31,12 @@ $username = $logged_in ? $_SESSION["username"] : "";
                     </div>
                     
                     <div class="split-elements">
-                        <!-- Inspirational Quote -->
                         <div class="split-quote">
                             <i class="fas fa-quote-left"></i>
                             <p>"The last three or four reps is what makes the muscle grow. This area of pain divides a champion from someone who is not a champion."</p>
                             <span class="quote-author">— Arnold Schwarzenegger</span>
                         </div>
                         
-                        <!-- Stats Display -->
                         <div class="split-stats">
                             <div class="stat-circle">
                                 <span class="stat-number">250+</span>
@@ -56,7 +52,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
                             </div>
                         </div>
                         
-                        <!-- Feature Grid -->
                         <div class="split-features">
                             <div class="feature-item">
                                 <i class="fas fa-video"></i>
@@ -75,8 +70,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
                                 <span>Injury Prevention</span>
                             </div>
                         </div>
-                        
-                        <!-- Call to Action -->
                         <div class="split-action">
                             <span class="split-button">Explore Exercises</span>
                             <span class="action-detail">Access our complete library of exercise tutorials</span>
@@ -85,8 +78,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
                 </div>
             </div>
         </a>
-        
-        <!-- Right Side - Equipment Arsenal -->
         <a href="equipment.php">
             <div class="split-side equipment-side">
                 <div class="split-overlay"></div>
@@ -99,14 +90,12 @@ $username = $logged_in ? $_SESSION["username"] : "";
                     </div>
                     
                     <div class="split-elements">
-                        <!-- Inspirational Quote -->
                         <div class="split-quote">
                             <i class="fas fa-quote-left"></i>
                             <p>"It's not about having the right equipment, it's about having the knowledge to use what you have effectively."</p>
                             <span class="quote-author">— Mark Rippetoe</span>
                         </div>
                         
-                        <!-- Stats Display -->
                         <div class="split-stats">
                             <div class="stat-circle">
                                 <span class="stat-number">120+</span>
@@ -122,7 +111,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
                             </div>
                         </div>
                         
-                        <!-- Feature Grid -->
                         <div class="split-features">
                             <div class="feature-item">
                                 <i class="fas fa-tools"></i>
@@ -142,7 +130,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
                             </div>
                         </div>
                         
-                        <!-- Call to Action -->
                         <div class="split-action">
                             <span class="split-button">Discover Equipment</span>
                             <span class="action-detail">Learn how to maximize your fitness tools</span>
@@ -152,13 +139,10 @@ $username = $logged_in ? $_SESSION["username"] : "";
             </div>
         </a>
     </section>
-
-    <!-- Interactive Training Methodology Section -->
     <section class="training-methodology-section">
         <h2 class="section-title">Training Methodology</h2>
         
         <div class="methodology-container">
-            <!-- Interactive Wheel -->
             <div class="methodology-wheel">
                 <div class="wheel-center">
                     <i class="fas fa-brain center-icon"></i>
@@ -198,9 +182,7 @@ $username = $logged_in ? $_SESSION["username"] : "";
                 </div>
             </div>
             
-            <!-- Methodology Detail Panel -->
             <div class="methodology-detail">
-                <!-- Detail Panel 1: Proper Form -->
                 <div class="detail-content active" id="methodology-1">
                     <div class="detail-header">
                         <i class="fas fa-check-double"></i>
@@ -221,7 +203,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
                     </a>
                 </div>
                 
-                <!-- Detail Panel 2: Equipment Selection -->
                 <div class="detail-content" id="methodology-2">
                     <div class="detail-header">
                         <i class="fas fa-dumbbell"></i>
@@ -242,7 +223,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
                     </a>
                 </div>
                 
-                <!-- Detail Panel 3: Progressive Overload -->
                 <div class="detail-content" id="methodology-3">
                     <div class="detail-header">
                         <i class="fas fa-chart-line"></i>
@@ -263,7 +243,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
                     </a>
                 </div>
                 
-                <!-- Detail Panel 4: Workout Structure -->
                 <div class="detail-content" id="methodology-4">
                     <div class="detail-header">
                         <i class="fas fa-project-diagram"></i>
@@ -287,7 +266,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
         </div>
     </section>
 
-    <!-- Fitness Journey Visualizer -->
     <section class="journey-section">
         <h2 class="section-title">Your Fitness Journey</h2>
         
@@ -320,7 +298,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
         </div>
     </section>
 
-    <!-- Quick Start Guides -->
     <section class="quickstart-section">
         <h2 class="section-title">Quick Start Guides</h2>
         
@@ -380,7 +357,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
         </div>
     </section>
 
-    <!-- Learning Resources -->
     <section class="resources-section">
         <h2 class="section-title">Learning Resources</h2>
         
@@ -425,7 +401,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
         </div>
     </section>
 
-    <!-- Community Showcase -->
     <section class="community-section">
         <h2 class="section-title">Community Showcase</h2>
         
@@ -497,18 +472,12 @@ $username = $logged_in ? $_SESSION["username"] : "";
                     </div>
                 </div>
             </div>
-            
-            <div class="join-cta">
-                <h2>Join Our Learning Community</h2>
-                <p>Connect with fellow fitness enthusiasts, share your progress, and learn from others on the same journey. Get access to exclusive content and personalized advice.</p>
-                <a href="community.php" class="join-btn">Join Today</a>
-            </div>
+
         </div>
     </section>
 
     <?php include '../includes/footer.php'; ?>
 
-    <!-- JavaScript for interactivity -->
     <script src="../assets/js/learning_hub.js"></script>
 </body>
 </html> 

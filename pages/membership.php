@@ -1,8 +1,6 @@
 <?php
-// Initialize the session
 session_start();
 
-// Check if the user is logged in
 $logged_in = isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true;
 $username = $logged_in ? $_SESSION["username"] : "";
 ?>
@@ -652,15 +650,14 @@ $username = $logged_in ? $_SESSION["username"] : "";
             </div>
         </div>
 
-        <div class="cta-section">
+        <!-- <div class="cta-section">
             <h2 class="cta-title">READY TO TRANSFORM YOUR FITNESS?</h2>
             <p class="cta-subtitle">Join thousands of members who have already taken their fitness to the next level with GYMVERSE premium memberships.</p>
             <a href="#" class="cta-button">Get Started Today</a>
-        </div>
+        </div> -->
     </div>
     <?php require_once '../includes/footer.php'; ?>
     <script>
-        // Initialize Stripe with your publishable key
         const stripe = Stripe('pk_test_51NSmyBJcCgClprXkJYxiTNHkRm3GqQINWJM9S64wGQ0k5ZFzLanviduScEbhB5260gzFJDVk73WbAYhmv2k3diT500CkGhny91');
 
         function checkout(priceId) {
@@ -684,7 +681,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
             });
         }
 
-        // FAQ accordion functionality
         document.addEventListener('DOMContentLoaded', function() {
             const faqItems = document.querySelectorAll('.faq-item');
             
@@ -692,10 +688,8 @@ $username = $logged_in ? $_SESSION["username"] : "";
                 const question = item.querySelector('.faq-question');
                 
                 question.addEventListener('click', () => {
-                    // Toggle active class on the clicked item
                     item.classList.toggle('active');
                     
-                    // Close other items
                     faqItems.forEach(otherItem => {
                         if (otherItem !== item) {
                             otherItem.classList.remove('active');

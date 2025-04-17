@@ -1263,7 +1263,7 @@ try {
                                         </div>
                                     <?php endwhile; ?>
                                 </div>
-                                <a href="../workouts.php" class="view-all-link">
+                                <a href="workout-history.php" class="view-all-link">
                                     View All Workouts <i class="fas fa-arrow-right"></i>
                                 </a>
                             <?php else: ?>
