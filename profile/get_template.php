@@ -46,8 +46,8 @@ try {
             e.name as exercise_name,
             wte.sets,
             wte.rest_time,
-            wte.position,
-            wte.notes
+            wte.notes,
+            e.primary_muscle as target_muscles
         FROM workout_template_exercises wte
         JOIN exercises e ON wte.exercise_id = e.id
         WHERE wte.workout_template_id = ?
@@ -62,23 +62,32 @@ try {
         throw new Exception("Execute failed: " . $stmt->error);
     }
 
-    $exercises = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $result = $stmt->get_result();
+    $exercisesData = $result->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 
-    if (!$exercises) {
+    $exercises = [];
+    $exerciseMap = [];
+    
+$exercises = [];
+foreach ($exercisesData as $row) {
+    $exercises[] = [
+        'exercise_name' => $row['exercise_name'],
+        'sets' => $row['sets'] ?? 3,
+        'rest_time' => $row['rest_time'] ?? 90,
+        'position' => $row['position'],
+        'notes' => $row['notes'] ?? '',
+        'target_muscles' => $row['target_muscles'] ? [$row['target_muscles']] : ['General']
+    ];
+}
+
+    foreach ($exercises as &$exercise) {
+        $exercise['target_muscles'] = implode(', ', $exercise['target_muscles']);
+    }
+    
+    if (empty($exercises)) {
         $exercises = [];
     }
-
-    $exercises = array_map(function($exercise) {
-        return [
-            'exercise_name' => $exercise['exercise_name'],
-            'sets' => $exercise['sets'] ?? 3,
-            'reps' => 10,
-            'rest_time' => $exercise['rest_time'] ?? 60,
-            'position' => $exercise['position'],
-            'notes' => $exercise['notes'] ?? ''
-        ];
-    }, $exercises);
 
     $response = [
         'success' => true,

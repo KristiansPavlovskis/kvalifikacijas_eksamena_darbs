@@ -649,12 +649,6 @@ $username = $logged_in ? $_SESSION["username"] : "";
                 </div>
             </div>
         </div>
-
-        <!-- <div class="cta-section">
-            <h2 class="cta-title">READY TO TRANSFORM YOUR FITNESS?</h2>
-            <p class="cta-subtitle">Join thousands of members who have already taken their fitness to the next level with GYMVERSE premium memberships.</p>
-            <a href="#" class="cta-button">Get Started Today</a>
-        </div> -->
     </div>
     <?php require_once '../includes/footer.php'; ?>
     <script>

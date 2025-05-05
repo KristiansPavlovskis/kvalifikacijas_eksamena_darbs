@@ -299,7 +299,7 @@ if (isset($conn) && isset($user_id)) {
         </div>
         <ul class="sidebar-nav-items" id="workouts-nav">
             <li class="sidebar-nav-item">
-                <a href="active-workout.php" class="sidebar-nav-link <?= $current_page === 'active-workout.php' ? 'active' : '' ?>">
+                <a href="workout.php" class="sidebar-nav-link <?= $current_page === 'workout.php' ? 'active' : '' ?>">
                     <i class="fas fa-play-circle"></i> Active Workout
                 </a>
             </li>

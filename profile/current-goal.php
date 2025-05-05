@@ -261,7 +261,6 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Core variables and base styling */
         :root {
             --primary: #4361ee;
             --primary-light: #4cc9f0;
@@ -308,179 +307,6 @@ try {
             min-height: 100vh;
         }
 
-        /* Sidebar styling */
-        .sidebar {
-            background-color: var(--dark-card);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 30px 20px;
-            position: fixed;
-            width: var(--sidebar-width);
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            padding-bottom: 25px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 25px;
-        }
-
-        .sidebar-logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: white;
-            text-decoration: none;
-            font-family: 'Koulen', sans-serif;
-            background: var(--gradient-blue);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .sidebar-profile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .sidebar-avatar {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            margin-bottom: 15px;
-            position: relative;
-            background-color: var(--gray-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            overflow: hidden;
-            border: 3px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .sidebar-avatar::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            bottom: -2px;
-            left: -2px;
-            background: var(--gradient-purple);
-            z-index: -1;
-            border-radius: 50%;
-        }
-
-        .sidebar-user-name {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .sidebar-user-email {
-            font-size: 0.9rem;
-            color: var(--gray-light);
-            margin-bottom: 15px;
-        }
-
-        .sidebar-user-since {
-            font-size: 0.85rem;
-            color: var(--gray-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .sidebar-nav {
-            margin-bottom: 30px;
-            flex-grow: 1;
-        }
-
-        .sidebar-nav-title {
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: var(--gray-light);
-            margin-bottom: 15px;
-            padding-left: 10px;
-        }
-
-        .sidebar-nav-items {
-            list-style: none;
-        }
-
-        .sidebar-nav-item {
-            margin-bottom: 8px;
-        }
-
-        .sidebar-nav-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            border-radius: 10px;
-            color: white;
-            text-decoration: none;
-            transition: var(--transition);
-            font-weight: 500;
-        }
-
-        .sidebar-nav-link:hover, 
-        .sidebar-nav-link.active {
-            background-color: rgba(157, 78, 221, 0.1);
-            color: var(--primary-light);
-        }
-
-        .sidebar-nav-link.active {
-            background-color: #9d4edd;
-            color: white;
-            box-shadow: 0 5px 10px rgba(157, 78, 221, 0.3);
-        }
-
-        .sidebar-nav-link i {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .sidebar-footer {
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .sidebar-footer-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.05);
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-        }
-
-        .sidebar-footer-button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Main content styling */
         .main-content {
             flex: 1;
             padding: 30px 40px;
@@ -506,7 +332,6 @@ try {
             gap: 15px;
         }
 
-        /* Goals dashboard metrics */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -582,7 +407,6 @@ try {
             border-radius: 0 0 0 100%;
         }
 
-        /* Dashboard layout */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -590,7 +414,6 @@ try {
             margin-bottom: 40px;
         }
 
-        /* Section styling */
         .section {
             background-color: var(--dark-card);
             border-radius: 20px;
@@ -648,7 +471,6 @@ try {
             padding: 25px 30px;
         }
 
-        /* Goal card styles */
         .goals-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -800,7 +622,6 @@ try {
             margin-top: 15px;
         }
 
-        /* Update form */
         .update-form {
             margin-top: 15px;
             padding-top: 15px;
@@ -847,7 +668,6 @@ try {
             margin-bottom: 15px;
         }
 
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -898,7 +718,6 @@ try {
             font-size: 0.85rem;
         }
 
-        /* Modal styling */
         .modal {
             position: fixed;
             top: 0;
@@ -975,7 +794,6 @@ try {
             gap: 10px;
         }
 
-        /* Message styling */
         .message {
             padding: 15px;
             border-radius: 10px;
@@ -1024,13 +842,11 @@ try {
             margin-bottom: 3px;
         }
 
-        /* Goal distribution chart */
         .chart-container {
             height: 300px;
             position: relative;
         }
 
-        /* Recommendations section */
         .recommendations-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1075,7 +891,6 @@ try {
             margin-bottom: 15px;
         }
 
-        /* Empty state */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -1103,18 +918,15 @@ try {
             margin: 0 auto 20px;
         }
 
-        /* Completed goals */
         .completed-goals {
             opacity: 0.7;
         }
 
-        /* Animation keyframes */
         @keyframes shine {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
 
-        /* Mobile navigation */
         .mobile-nav {
             display: none;
             position: fixed;
@@ -1150,7 +962,6 @@ try {
             margin-bottom: 5px;
         }
 
-        /* Responsive styles */
         @media (max-width: 1200px) {
             .metrics-container {
                 grid-template-columns: repeat(2, 1fr);
@@ -1214,10 +1025,8 @@ try {
 </head>
 <body>
     <div class="dashboard">
-        <!-- Include the sidebar -->
         <?php require_once 'sidebar.php'; ?>
         
-        <!-- Main Content -->
         <main class="main-content">
             <div class="page-header">
                 <h1 class="page-title">Fitness Goals</h1>
@@ -1240,7 +1049,6 @@ try {
                 </div>
             <?php endif; ?>
             
-            <!-- Goals Summary Metrics -->
             <div class="metrics-container">
                 <div class="metric-card">
                     <div class="metric-icon active">
@@ -1288,11 +1096,8 @@ try {
                 </div>
             </div>
             
-            <!-- Dashboard Grid -->
             <div class="dashboard-grid">
-                <!-- Left Column -->
                 <div>
-                    <!-- Active Goals Section -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1365,7 +1170,6 @@ try {
                         </div>
                     </div>
                     
-                    <!-- Goal Categories Section -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1375,7 +1179,6 @@ try {
                         
                         <div class="section-body">
                         <div class="goals-grid">
-                                <!-- Weight Goals -->
                                 <div class="goal-card goal-type-weight" style="cursor: pointer;" onclick="filterGoalsByType('weight')">
                                     <div class="goal-header">
                                         <div class="goal-info">
@@ -1400,8 +1203,7 @@ try {
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Strength Goals -->
+
                                 <div class="goal-card goal-type-strength" style="cursor: pointer;" onclick="filterGoalsByType('strength')">
                                         <div class="goal-header">
                                             <div class="goal-info">
@@ -1427,7 +1229,6 @@ try {
                                             </div>
                                         </div>
                                         
-                                <!-- Endurance Goals -->
                                 <div class="goal-card goal-type-endurance" style="cursor: pointer;" onclick="filterGoalsByType('endurance')">
                                     <div class="goal-header">
                                         <div class="goal-info">
@@ -1453,7 +1254,6 @@ try {
                                     </div>
                                 </div>
                                 
-                                <!-- Workout Goals -->
                                 <div class="goal-card goal-type-workout" style="cursor: pointer;" onclick="filterGoalsByType('workout')">
                                     <div class="goal-header">
                                         <div class="goal-info">
@@ -1482,7 +1282,6 @@ try {
                         </div>
                     </div>
 
-                    <!-- Goal Timeline Section -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1535,9 +1334,7 @@ try {
                     </div>
                 </div>
                 
-                <!-- Right Column -->
                 <div>
-                    <!-- Goal Progress Chart -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1568,7 +1365,6 @@ try {
                         </div>
                     </div>
                     
-                    <!-- Completed Goals -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1622,7 +1418,6 @@ try {
                         </div>
                     </div>
                     
-                    <!-- Goal Recommendations -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1674,7 +1469,6 @@ try {
             </div>
         </main>
         
-        <!-- Mobile Navigation -->
         <nav class="mobile-nav">
             <div class="mobile-nav-links">
                 <a href="profile.php" class="mobile-nav-link">
@@ -1697,7 +1491,6 @@ try {
         </nav>
     </div>
     
-    <!-- Add Goal Modal -->
     <div class="modal" id="addGoalModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1759,7 +1552,6 @@ try {
         </div>
     </div>
     
-    <!-- Update Goal Modal -->
     <div class="modal" id="updateGoalModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1791,7 +1583,6 @@ try {
         </div>
     </div>
     
-    <!-- Delete Goal Modal -->
     <div class="modal" id="deleteGoalModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1815,7 +1606,6 @@ try {
         </div>
     </div>
     
-    <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
@@ -1893,11 +1683,11 @@ try {
                         datasets: [{
                             data: goalCounts,
                             backgroundColor: [
-                                '#4361ee', // weight
-                                '#9d4edd', // strength
-                                '#f72585', // endurance
-                                '#06d6a0', // workout
-                                '#ff9e00'  // nutrition
+                                '#4361ee',
+                                '#9d4edd',
+                                '#f72585',
+                                '#06d6a0',
+                                '#ff9e00'
                             ],
                             borderWidth: 0,
                             hoverOffset: 10
@@ -1975,5 +1765,6 @@ try {
             });
         });
     </script>
+    <?php require_once 'mobile-nav.php'; ?>
 </body>
 </html> 

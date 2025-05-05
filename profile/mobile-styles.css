@@ -1,0 +1,280 @@
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+    }
+    .breadcrumb, .steps-container, .page-actions{
+        display: none !important;
+    }
+    .page-header{
+        justify-content: center !important;
+        color: var(--primary);
+        margin: 20px;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+        margin-bottom: 70px; /* Space for mobile footer */
+    }
+
+    /* Step 1: Template Selection */
+    .workout-layout {
+        grid-template-columns: 1fr !important;
+        gap: 0 !important;
+    }
+
+    .categories-panel {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        margin: -15px -15px 15px;
+        border-radius: 0;
+        background: var(--dark);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .panel-header {
+        padding: 15px;
+    }
+
+    .panel-content {
+        padding: 15px;
+        max-height: 700px;
+    }
+
+    .categories-panel{
+        margin: 15px 0;
+    }
+
+    .category-list {
+        display: flex;
+        flex-direction: row !important;
+        overflow-x: auto;
+        gap: 10px; 
+        margin: -5px -15px;
+    }
+
+    .category-item {
+        flex: 0 0 auto;
+        padding: 8px 15px;
+        background: var(--dark-card);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        white-space: nowrap;
+    }
+
+    .category-item.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        transform: none;
+    }
+
+    .category-item:hover {
+        transform: none;
+    }
+
+    .category-name {
+        font-size: 0.9rem;
+    }
+
+    .category-count {
+        display: none;
+    }
+
+    .filters-section {
+        display: none !important;
+    }
+
+    /* Templates Panel */
+    .templates-panel {
+        border-radius: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none; 
+    }
+
+    .template-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding-right: 0;
+    }
+
+    .template-card {
+        margin-bottom: 10px;
+    }
+
+    .template-list-item {
+        margin-bottom: 10px;
+    }
+
+    .selected-panel { 
+        position: fixed;
+        bottom: 80px; 
+        left: 0;
+        right: 0;
+        z-index: 1000; 
+        max-height: 500;
+        border-radius: 20px 20px 0 0;
+        margin: 0;
+        background: var(--dark-card);
+    }
+/* 
+    .selected-panel.active {
+        transform: translateY(0);
+    }
+
+    .selected-panel::before {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+    }  */
+
+    .selected-template {
+        height: 85vh;
+        overflow-y: auto;
+        padding-top: 20px;
+    }
+
+    .selected-template-header {
+        padding: 0 20px 20px;
+    }
+
+    .selected-template-body {
+        padding: 20px;
+    }
+
+    .selected-template-footer {
+        position: sticky;
+        bottom: 0;
+        background: var(--dark-card);
+        padding: 15px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Search box styling */
+    .search-box {
+        margin: -5px -15px 15px;
+        padding: 0 15px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 12px 15px 12px 40px;
+        background: var(--dark-card);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .search-icon {
+        left: 25px;
+    }
+
+    /* Hide view toggle in mobile */
+    .panel-actions {
+        display: none;
+    }
+
+    /* Step 2: Workout Tracking */
+    .workout-tracking-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .current-exercise-panel {
+        margin: -15px -15px 15px;
+        border-radius: 0;
+        padding: 20px;
+    }
+
+    .rest-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 70px;
+        background: var(--dark);
+        z-index: 1000;
+    }
+
+    .rest-message {
+        margin-bottom: 40px;
+    }
+
+    .rest-timer-display {
+        font-size: 5rem;
+        margin-bottom: 40px;
+    }
+
+    /* RPE Selection */
+    .rpe-selection {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .rpe-button {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        background: var(--dark-card);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.2s ease;
+    }
+
+    .rpe-button.selected {
+        border-color: var(--primary);
+        background: var(--primary);
+    }
+
+    /* Next Exercise Preview */
+    .next-exercise-preview {
+        background: var(--dark-card);
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 20px;
+    }
+
+    .next-exercise-preview h3 {
+        font-size: 1rem;
+        color: var(--gray-light);
+        margin-bottom: 10px;
+    }
+
+    /* Step 3: Workout Summary */
+    .workout-summary-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .workout-chart-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* Mobile-specific buttons */
+    .mobile-action-btn {
+        width: 100%;
+        padding: 15px;
+        border-radius: 8px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+} 

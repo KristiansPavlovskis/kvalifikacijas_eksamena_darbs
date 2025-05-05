@@ -492,7 +492,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             50% { opacity: 1; transform: scale(1.3); }
         }
         
-        /* Home Button */
         .home-button {
             position: fixed;
             top: 20px;
@@ -588,7 +587,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
     
-    <!-- Home Button -->
     <a href="index.php" class="home-button">
         <i class="fas fa-home" style="font-size: 20px;"></i>
     </a>

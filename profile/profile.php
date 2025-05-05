@@ -232,7 +232,6 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../lietotaja-view.css">
     <style>
-        /* Core variables and base styling */
         :root {
             --primary: #4361ee;
             --primary-light: #4cc9f0;
@@ -279,179 +278,6 @@ try {
             min-height: 100vh;
         }
 
-        /* Sidebar styling */
-        .sidebar {
-            background-color: var(--dark-card);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 30px 20px;
-            position: fixed;
-            width: var(--sidebar-width);
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            padding-bottom: 25px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 25px;
-        }
-
-        .sidebar-logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: white;
-            text-decoration: none;
-            font-family: 'Koulen', sans-serif;
-            background: var(--gradient-blue);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .sidebar-profile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .sidebar-avatar {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            margin-bottom: 15px;
-            position: relative;
-            background-color: var(--gray-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            overflow: hidden;
-            border: 3px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .sidebar-avatar::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            bottom: -2px;
-            left: -2px;
-            background: var(--gradient-blue);
-            z-index: -1;
-            border-radius: 50%;
-        }
-
-        .sidebar-user-name {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .sidebar-user-email {
-            font-size: 0.9rem;
-            color: var(--gray-light);
-            margin-bottom: 15px;
-        }
-
-        .sidebar-user-since {
-            font-size: 0.85rem;
-            color: var(--gray-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .sidebar-nav {
-            margin-bottom: 30px;
-            flex-grow: 1;
-        }
-
-        .sidebar-nav-title {
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: var(--gray-light);
-            margin-bottom: 15px;
-            padding-left: 10px;
-        }
-
-        .sidebar-nav-items {
-            list-style: none;
-        }
-
-        .sidebar-nav-item {
-            margin-bottom: 8px;
-        }
-
-        .sidebar-nav-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            border-radius: 10px;
-            color: white;
-            text-decoration: none;
-            transition: var(--transition);
-            font-weight: 500;
-        }
-
-        .sidebar-nav-link:hover, 
-        .sidebar-nav-link.active {
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary-light);
-        }
-
-        .sidebar-nav-link.active {
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 5px 10px rgba(67, 97, 238, 0.3);
-        }
-
-        .sidebar-nav-link i {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .sidebar-footer {
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .sidebar-footer-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.05);
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-        }
-
-        .sidebar-footer-button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Main content styling */
         .main-content {
             flex: 1;
             padding: 30px 40px;
@@ -511,7 +337,6 @@ try {
             background-color: rgba(255, 255, 255, 0.12);
         }
 
-        /* Stats summary section */
         .stats-summary {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -603,7 +428,6 @@ try {
             border-radius: 0 0 0 100%;
         }
 
-        /* Dashboard grid layout */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -617,7 +441,6 @@ try {
             }
         }
 
-        /* Section styling */
         .section {
             background-color: var(--dark-card);
             border-radius: 20px;
@@ -675,7 +498,6 @@ try {
             padding: 25px 30px;
         }
 
-        /* Recent workouts section */
         .workout-list {
             display: flex;
             flex-direction: column;
@@ -799,7 +621,6 @@ try {
             background-color: rgba(255, 255, 255, 0.08);
         }
 
-        /* Goals section */
         .goals-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -892,7 +713,6 @@ try {
             animation: shine 1.5s infinite;
         }
 
-        /* Personal stats section */
         .personal-stats {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -934,7 +754,6 @@ try {
             font-weight: 600;
         }
 
-        /* Activity calendar section */
         .activity-calendar {
             margin-top: 20px;
             display: grid;
@@ -971,7 +790,6 @@ try {
             background-color: rgba(67, 97, 238, 0.3);
         }
 
-        /* Quick actions section */
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -1031,7 +849,6 @@ try {
             font-size: 0.95rem;
         }
 
-        /* Empty state styling */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -1078,13 +895,11 @@ try {
             transform: translateY(-3px);
         }
 
-        /* Animation keyframes */
         @keyframes shine {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
 
-        /* Improved responsive styles */
         @media (max-width: 1200px) {
             .stats-summary {
                 grid-template-columns: repeat(2, 1fr);
@@ -1150,10 +965,8 @@ try {
 </head>
 <body>
     <div class="dashboard">
-        <!-- Include the sidebar -->
         <?php require_once 'sidebar.php'; ?>
         
-        <!-- Main Content -->
         <main class="main-content">
             <div class="page-header">
                 <h1 class="page-title">Fitness Dashboard</h1>
@@ -1167,7 +980,6 @@ try {
                 </div>
             </div>
             
-            <!-- Stats Summary -->
             <div class="stats-summary">
                 <div class="stat-card">
                     <div class="stat-icon workout">
@@ -1214,11 +1026,8 @@ try {
                 </div>
             </div>
             
-            <!-- Dashboard Grid -->
             <div class="dashboard-grid">
-                <!-- Left Column -->
                 <div>
-                    <!-- Recent Workouts Section -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1281,7 +1090,6 @@ try {
                         </div>
                     </div>
 
-                    <!-- Fitness Goals Section -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1362,9 +1170,7 @@ try {
                     </div>
                 </div>
                 
-                <!-- Right Column -->
                 <div>
-                    <!-- Personal Stats Section -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1412,7 +1218,6 @@ try {
                         </div>
                     </div>
                     
-                    <!-- Activity Calendar -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1457,7 +1262,6 @@ try {
                         </div>
                     </div>
                     
-                    <!-- Quick Actions Section -->
                     <div class="section">
                         <div class="section-header">
                             <h2 class="section-title">
@@ -1499,48 +1303,12 @@ try {
                     </div>
                 </div>
             </div>
-            
-            <!-- Mobile-only Navigation (visible when sidebar is hidden) -->
-            <div class="mobile-nav" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--dark-card); padding: 15px; border-top: 1px solid rgba(255, 255, 255, 0.05); z-index: 1000;">
-                <div style="display: flex; justify-content: space-around;">
-                    <a href="profile.php" style="color: var(--primary); display: flex; flex-direction: column; align-items: center; text-decoration: none; font-size: 0.8rem;">
-                        <i class="fas fa-home" style="font-size: 1.2rem; margin-bottom: 5px;"></i>
-                        Home
-                    </a>
-                    <a href="quick-workout.php" style="color: white; display: flex; flex-direction: column; align-items: center; text-decoration: none; font-size: 0.8rem;">
-                        <i class="fas fa-dumbbell" style="font-size: 1.2rem; margin-bottom: 5px;"></i>
-                        Workout
-                    </a>
-                    <a href="current-goal.php" style="color: white; display: flex; flex-direction: column; align-items: center; text-decoration: none; font-size: 0.8rem;">
-                        <i class="fas fa-bullseye" style="font-size: 1.2rem; margin-bottom: 5px;"></i>
-                        Goals
-                    </a>
-                    <a href="#" style="color: white; display: flex; flex-direction: column; align-items: center; text-decoration: none; font-size: 0.8rem;">
-                        <i class="fas fa-bars" style="font-size: 1.2rem; margin-bottom: 5px;"></i>
-                        Menu
-                    </a>
-                </div>
-            </div>
+
         </main>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            function checkScreenSize() {
-                const mobileNav = document.querySelector('.mobile-nav');
-                if (window.innerWidth <= 992 && mobileNav) {
-                    mobileNav.style.display = 'block';
-                    document.querySelector('.main-content').style.paddingBottom = '70px';
-                } else if (mobileNav) {
-                    mobileNav.style.display = 'none';
-                    document.querySelector('.main-content').style.paddingBottom = '0';
-                }
-            }
-            
-            checkScreenSize();
-            
-            window.addEventListener('resize', checkScreenSize);
-            
             const statCards = document.querySelectorAll('.stat-card, .goal-card, .personal-stat-card');
             statCards.forEach(card => {
                 card.addEventListener('mouseenter', function() {
@@ -1573,64 +1341,6 @@ try {
             if (newWorkoutBtn) {
                 newWorkoutBtn.addEventListener('click', function() {
                     window.location.href = 'quick-workout.php';
-                });
-            }
-            
-            const menuToggle = document.querySelector('.mobile-nav a:last-child');
-            if (menuToggle) {
-                menuToggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const overlay = document.createElement('div');
-                    overlay.style.position = 'fixed';
-                    overlay.style.top = '0';
-                    overlay.style.left = '0';
-                    overlay.style.right = '0';
-                    overlay.style.bottom = '0';
-                    overlay.style.backgroundColor = 'rgba(15, 15, 26, 0.95)';
-                    overlay.style.zIndex = '2000';
-                    overlay.style.padding = '20px';
-                    overlay.style.overflowY = 'auto';
-                    
-                    overlay.innerHTML = `
-                        <div style="display: flex; justify-content: flex-end;">
-                            <button id="close-menu" style="background: none; border: none; color: white; font-size: 1.5rem;">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div style="margin-top: 30px;">
-                            <h2 style="font-size: 1.8rem; margin-bottom: 20px;">GYMVERSE</h2>
-                            <nav>
-                                <div style="margin-bottom: 30px;">
-                                    <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--gray-light); margin-bottom: 15px;">Dashboard</h3>
-                                    <ul style="list-style: none;">
-                                        <li style="margin-bottom: 15px;"><a href="profile.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                                        <li style="margin-bottom: 15px;"><a href="workout-analytics.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-chart-line"></i> Analytics</a></li>
-                                        <li style="margin-bottom: 15px;"><a href="current-goal.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-bullseye"></i> Goals</a></li>
-                                    </ul>
-                                </div>
-                                <div style="margin-bottom: 30px;">
-                                    <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--gray-light); margin-bottom: 15px;">Training</h3>
-                                    <ul style="list-style: none;">
-                                        <li style="margin-bottom: 15px;"><a href="quick-workout.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-stopwatch"></i> Quick Workout</a></li>
-                                        <li style="margin-bottom: 15px;"><a href="../workouts.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-dumbbell"></i> Workouts</a></li>
-                                        <li style="margin-bottom: 15px;"><a href="calories-burned.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-fire"></i> Calories Burned</a></li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--gray-light); margin-bottom: 15px;">Nutrition</h3>
-                                    <ul style="list-style: none;">
-                                        <li style="margin-bottom: 15px;"><a href="nutrition.php" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 1.1rem;"><i class="fas fa-apple-alt"></i> Nutrition Tracker</a></li>
-                                    </ul>
-                                </div>
-                            </nav>
-                        </div>
-                    `;
-                    
-                    document.body.appendChild(overlay);
-                    
-                    document.getElementById('close-menu').addEventListener('click', function() {
-                        document.body.removeChild(overlay);
-                    });
                 });
             }
         });

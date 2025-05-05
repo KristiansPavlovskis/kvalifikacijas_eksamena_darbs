@@ -522,7 +522,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
     
-    <!-- Home Button -->
     <a href="index.php" class="home-button" style="position: fixed; top: 20px; left: 20px; background-color: rgba(25, 25, 25, 0.8); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; transition: all 0.3s ease;">
         <i class="fas fa-home" style="font-size: 20px;"></i>
     </a>

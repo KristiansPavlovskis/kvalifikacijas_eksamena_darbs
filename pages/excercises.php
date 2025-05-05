@@ -107,7 +107,6 @@ $trending_exercises = [5, 10, 15];
     <h1 class="page-title">Exercise Library</h1>
     
     <div class="exercise-filter-layout">
-        <!-- Left Column - Filters -->
         <div class="filters-column">
             <div class="search-container">
                 <span class="search-icon"><i class="fas fa-search"></i></span>
@@ -119,7 +118,6 @@ $trending_exercises = [5, 10, 15];
                 <button id="resetAllFilters" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset</button>
             </div>
             
-            <!-- Exercise Type Filter -->
             <div class="filter-group">
                 <div class="filter-header">
                     <h3><i class="fas fa-dumbbell"></i> Exercise Type</h3>
@@ -145,7 +143,6 @@ $trending_exercises = [5, 10, 15];
                 </div>
             </div>
             
-            <!-- Muscle Filter -->
             <div class="filter-group">
                 <div class="filter-header">
                     <h3><i class="fas fa-running"></i> Muscle Group</h3>
@@ -171,7 +168,6 @@ $trending_exercises = [5, 10, 15];
                 </div>
             </div>
             
-            <!-- Equipment Filter -->
             <div class="filter-group">
                 <div class="filter-header">
                     <h3><i class="fas fa-cogs"></i> Equipment</h3>
@@ -197,7 +193,6 @@ $trending_exercises = [5, 10, 15];
                 </div>
             </div>
             
-            <!-- Difficulty Filter -->
             <div class="filter-group">
                 <div class="filter-header">
                     <h3><i class="fas fa-chart-line"></i> Difficulty</h3>
@@ -220,7 +215,6 @@ $trending_exercises = [5, 10, 15];
             </div>
         </div>
         
-        <!-- Right Column - Exercise Results -->
         <div class="results-column">
             <div class="results-header">
                 <div class="filtering-by">
