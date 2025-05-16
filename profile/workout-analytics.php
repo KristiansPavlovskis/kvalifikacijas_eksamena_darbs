@@ -35,30 +35,9 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/variables.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-light: #4cc9f0;
-            --primary-dark: #3a56d4;
-            --secondary: #f72585;
-            --secondary-light: #ff5c8a;
-            --success: #06d6a0;
-            --warning: #ffd166;
-            --danger: #ef476f;
-            --dark: #0f0f1a;
-            --dark-card: #1a1a2e;
-            --gray-dark: #2b2b3d;
-            --gray-light: rgba(255, 255, 255, 0.7);
-            --gradient-blue: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-            --gradient-purple: linear-gradient(135deg, #9d4edd, #c77dff);
-            --gradient-pink: linear-gradient(135deg, #f72585, #ff5c8a);
-            --gradient-green: linear-gradient(135deg, #06d6a0, #64dfdf);
-            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --sidebar-width: 280px;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -254,7 +233,6 @@ try {
             background-color: rgba(255, 255, 255, 0.1);
         }
 
-        /* Main content styling */
         .main-content {
             flex: 1;
             padding: 30px 40px;
@@ -280,7 +258,6 @@ try {
             gap: 15px;
         }
 
-        /* Analytics-specific styles */
         .metrics-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -428,7 +405,6 @@ try {
             position: relative;
         }
 
-        /* Muscle group analysis section */
         .muscle-analysis {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -454,7 +430,6 @@ try {
             min-height: 350px;
         }
 
-        /* Workout timeline */
         .workout-timeline {
             position: relative;
             padding-left: 2rem;
@@ -504,7 +479,6 @@ try {
             font-size: 0.9rem;
         }
 
-        /* Goal tracker */
         .goal-container {
             background-color: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
@@ -549,7 +523,6 @@ try {
             animation: shine 1.5s infinite;
         }
 
-        /* Recommendations grid */
         .recommendations-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -582,13 +555,11 @@ try {
             font-size: 0.9rem;
         }
 
-        /* Animation keyframes */
         @keyframes shine {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
 
-        /* Mobile-only Navigation */
         .mobile-nav {
             display: none;
             position: fixed;
@@ -624,7 +595,6 @@ try {
             margin-bottom: 5px;
         }
 
-        /* Responsive styles */
         @media (max-width: 1200px) {
             .metrics-container {
                 grid-template-columns: repeat(2, 1fr);
@@ -684,10 +654,8 @@ try {
 </head>
 <body>
     <div class="dashboard">
-        <!-- Include the sidebar -->
         <?php require_once 'sidebar.php'; ?>
         
-        <!-- Main Content -->
         <main class="main-content">
             <div class="page-header">
                 <h1 class="page-title">Workout Analytics</h1>
@@ -698,7 +666,6 @@ try {
                 </div>
             </div>
             
-            <!-- Summary Metrics -->
             <div class="metrics-container">
                 <div class="metric-card">
                     <div class="metric-icon workout">
@@ -733,7 +700,6 @@ try {
                 </div>
             </div>
             
-            <!-- Performance Trends -->
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">
@@ -753,7 +719,6 @@ try {
                 </div>
             </div>
             
-            <!-- Muscle Group Analysis -->
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">
@@ -764,7 +729,6 @@ try {
                 <div class="section-body">
                     <div class="muscle-analysis">
                         <div class="body-map">
-                            <!-- Body map visualization would go here -->
                             <canvas id="bodyMap"></canvas>
                         </div>
                         <div class="muscle-stats">
@@ -774,7 +738,6 @@ try {
                 </div>
             </div>
             
-            <!-- Workout History -->
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">
@@ -802,7 +765,6 @@ try {
                 </div>
             </div>
             
-            <!-- Goal Tracker -->
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">
@@ -821,7 +783,6 @@ try {
                 </div>
             </div>
             
-            <!-- Recommendations -->
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">
@@ -851,7 +812,6 @@ try {
                 </div>
             </div>
             
-            <!-- Mobile Navigation -->
             <div class="mobile-nav">
                 <div class="mobile-nav-links">
                     <a href="profile.php" class="mobile-nav-link">

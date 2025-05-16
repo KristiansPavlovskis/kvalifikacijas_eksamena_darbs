@@ -78,13 +78,13 @@ try {
 }
 
 try {
-    if (tableExists($conn, 'exercise_library')) {
-        $common_exercises_query = "SELECT exercise_name, 
-                              el.muscle_group_id as muscle_group, 
-                              el.equipment_id as equipment_needed 
-                              FROM exercise_library el
-                              ORDER BY popularity DESC 
-                                ";
+    if (tableExists($conn, 'exercises')) {
+        $common_exercises_query = "SELECT name as exercise_name, 
+                              primary_muscle as muscle_group, 
+                              equipment as equipment_needed 
+                              FROM exercises
+                              ORDER BY id DESC 
+                              LIMIT 10";
         $common_exercises = mysqli_query($conn, $common_exercises_query);
         if ($common_exercises === false) {
             throw new Exception("Failed to fetch common exercises: " . mysqli_error($conn));
@@ -97,31 +97,7 @@ try {
     $common_exercises = false;
 }
 
-try {
-    if (tableExists($conn, 'user_favorite_exercises') && tableExists($conn, 'exercise_library')) {
-        $favorites_query = "SELECT el.exercise_name 
-                        FROM user_favorite_exercises uf
-                        JOIN exercise_library el ON uf.exercise_id = el.id
-                        WHERE uf.user_id = ?";
-        $stmt = mysqli_prepare($conn, $favorites_query);
-        if ($stmt === false) {
-            throw new Exception("Failed to prepare favorites query: " . mysqli_error($conn));
-        }
-        mysqli_stmt_bind_param($stmt, "i", $user_id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        
-        $favorite_exercises = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $favorite_exercises[] = $row;
-        }
-    } else {
-        $favorite_exercises = false;
-    }
-} catch (Exception $e) {
-    error_log("Error fetching favorite exercises: " . $e->getMessage());
-    $favorite_exercises = false;
-}
+$favorite_exercises = false;
 
 function calculateWorkoutIntensity($exercises) {
     if (empty($exercises)) {
@@ -209,8 +185,9 @@ try {
         
         $strength_templates_count_query = "SELECT COUNT(*) as count FROM workout_templates 
                                          WHERE user_id = ? AND 
-                                         (LOWER(name) LIKE '%strength%' OR 
-                                          LOWER(description) LIKE '%strength%')";
+                                         (category = 'Strength Training' OR
+                                         LOWER(name) LIKE '%strength%' OR 
+                                         LOWER(description) LIKE '%strength%')";
         $stmt = mysqli_prepare($conn, $strength_templates_count_query);
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
@@ -219,10 +196,11 @@ try {
         
         $hiit_templates_count_query = "SELECT COUNT(*) as count FROM workout_templates 
                                      WHERE user_id = ? AND 
-                                     (LOWER(name) LIKE '%hiit%' OR 
-                                      LOWER(description) LIKE '%hiit%' OR
-                                      LOWER(name) LIKE '%interval%' OR
-                                      LOWER(description) LIKE '%interval%')";
+                                     (category = 'hiit' OR
+                                     LOWER(name) LIKE '%hiit%' OR 
+                                     LOWER(description) LIKE '%hiit%' OR
+                                     LOWER(name) LIKE '%interval%' OR
+                                     LOWER(description) LIKE '%interval%')";
         $stmt = mysqli_prepare($conn, $hiit_templates_count_query);
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
@@ -231,8 +209,9 @@ try {
         
         $cardio_templates_count_query = "SELECT COUNT(*) as count FROM workout_templates 
                                        WHERE user_id = ? AND 
-                                       (LOWER(name) LIKE '%cardio%' OR 
-                                        LOWER(description) LIKE '%cardio%')";
+                                       (category = 'cardio' OR
+                                       LOWER(name) LIKE '%cardio%' OR 
+                                       LOWER(description) LIKE '%cardio%')";
         $stmt = mysqli_prepare($conn, $cardio_templates_count_query);
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
@@ -258,1537 +237,94 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Start Workout - GYMVERSE</title>
+    <title>GYMVERSE - Desktop Workout</title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/variables.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="desktop-workout.css">
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-light: #4cc9f0;
-            --primary-dark: #3a56d4;
-            --secondary: #f72585;
-            --secondary-light: #ff5c8a;
-            --success: #06d6a0;
-            --warning: #ffd166;
-            --danger: #ef476f;
-            --dark: #0f0f1a;
-            --dark-card: #1a1a2e;
-            --gray-dark: #2b2b3d;
-            --gray-light: rgba(255, 255, 255, 0.7);
-            --gradient-blue: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-            --gradient-purple: linear-gradient(135deg, #9d4edd, #c77dff);
-            --gradient-pink: linear-gradient(135deg, #f72585, #ff5c8a);
-            --gradient-green: linear-gradient(135deg, #06d6a0, #64dfdf);
-            --gradient-orange: linear-gradient(135deg, #fb8500, #ffb703);
-            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --sidebar-width: 280px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: var(--dark);
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.6;
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(67, 97, 238, 0.05) 0%, transparent 200px),
-                radial-gradient(circle at 70% 80%, rgba(67, 97, 238, 0.05) 0%, transparent 200px);
-            width: 100%;
-            overflow-x: hidden;
-        }
-
-        .dashboard {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px 40px;
-            margin-left: var(--sidebar-width);
-            width: calc(100% - var(--sidebar-width));
-            max-width: 100%;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .page-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-        }
-
-        .page-actions {
-            display: flex;
-            gap: 15px;
-        }
-
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            font-size: 0.9rem;
-            color: var(--gray-light);
-        }
-
-        .breadcrumb a {
-            color: var(--gray-light);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        .breadcrumb a:hover {
-            color: white;
-        }
-
-        .breadcrumb-separator {
-            margin: 0 10px;
-            color: var(--gray-light);
-        }
-
-        .breadcrumb-current {
-            color: var(--secondary);
-            font-weight: 500;
-        }
-
-        .workout-layout {
-            display: grid;
-            grid-template-columns: 3fr 7fr 4fr;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .categories-panel, .templates-panel, .selected-panel {
-            background-color: var(--dark-card);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: var(--card-shadow);
-            overflow: hidden;
-        }
-
-        .panel-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .panel-title i {
-            color: var(--primary);
-        }
-
-        .panel-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .panel-content {
-            padding: 20px;
-        }
-
-        .category-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .category-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
+        .exercise-list-item {
             cursor: pointer;
-            transition: var(--transition);
-            border-left: 3px solid transparent;
-        }
-
-        .category-item:hover, .category-item.active {
-            background-color: rgba(255, 255, 255, 0.07);
-            border-left-color: var(--primary);
-            transform: translateX(5px);
-        }
-
-        .category-name {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-weight: 500;
-        }
-
-        .category-name i {
-            color: var(--primary);
-        }
-
-        .category-count {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .filters-section {
-            margin-top: 30px;
-        }
-
-        .filter-group {
-            margin-bottom: 20px;
-        }
-
-        .filter-label {
-            font-size: 0.9rem;
-            color: var(--gray-light);
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .filter-select {
-            width: 100%;
-            padding: 10px 15px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 16px;
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .view-toggle {
-            display: flex;
-            margin-bottom: 20px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 5px;
-        }
-
-        .view-toggle-btn {
-            flex: 1;
-            background: none;
-            border: none;
-            color: var(--gray-light);
-            padding: 8px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .view-toggle-btn.active {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .search-box {
             position: relative;
-            margin-bottom: 20px;
         }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 20px 12px 45px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray-light);
-        }
-
-        .template-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            max-height: 500px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .template-grid::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .template-grid::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .template-grid::-webkit-scrollbar-thumb {
-            background: rgba(67, 97, 238, 0.3);
-            border-radius: 10px;
-        }
-
-        .template-grid::-webkit-scrollbar-thumb:hover {
-            background: rgba(67, 97, 238, 0.5);
-        }
-
-        .template-card {
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            overflow: hidden;
-            transition: var(--transition);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .template-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            border-color: rgba(67, 97, 238, 0.3);
-        }
-
-        .template-card-header {
-            padding: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .template-card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .template-card-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-size: 0.8rem;
-            color: var(--gray-light);
-        }
-
-        .template-card-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .template-card-body {
-            padding: 15px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .template-card-exercises {
-            margin-bottom: 15px;
-        }
-
-        .template-card-exercise {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .template-card-exercise i {
-            color: var(--primary);
-            font-size: 0.8rem;
-        }
-
-        .template-card-footer {
-            padding: 10px 15px;
-            background-color: rgba(255, 255, 255, 0.02);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .template-card-date {
-            font-size: 0.8rem;
-            color: var(--gray-light);
-        }
-
-        .template-card-action {
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .template-card-action:hover {
-            background-color: rgba(67, 97, 238, 0.2);
-        }
-
-        .template-list {
-            max-height: 500px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .template-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .template-list::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .template-list::-webkit-scrollbar-thumb {
-            background: rgba(67, 97, 238, 0.3);
-            border-radius: 10px;
-        }
-
-        .template-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(67, 97, 238, 0.5);
-        }
-
-        .template-list-item {
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            transition: var(--transition);
-            cursor: pointer;
-            border-left: 3px solid transparent;
-        }
-
-        .template-list-item:hover {
-            background-color: rgba(255, 255, 255, 0.07);
-            transform: translateX(5px);
-            border-left-color: var(--primary);
-        }
-
-        .template-list-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .template-list-item-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .template-list-item-difficulty {
-            font-size: 0.8rem;
-            padding: 3px 10px;
-            border-radius: 20px;
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-        }
-
-        .template-list-item-meta {
-            display: flex;
-            gap: 15px;
-            color: var(--gray-light);
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-
-        .template-list-item-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .template-list-item-exercises {
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-
-        .selected-template {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .selected-template-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .selected-template-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .selected-template-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            font-size: 0.9rem;
-            color: var(--gray-light);
-        }
-
-        .selected-template-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .selected-template-body {
-            padding: 20px;
-            flex-grow: 1;
-        }
-
-        .selected-template-description {
-            margin-bottom: 20px;
-            color: var(--gray-light);
-            line-height: 1.6;
-        }
-
-        .selected-template-exercises {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            padding-right: 10px;
-        }
-
-        .selected-template-exercises::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .selected-template-exercises::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .selected-template-exercises::-webkit-scrollbar-thumb {
-            background: rgba(67, 97, 238, 0.3);
-            border-radius: 10px;
-        }
-
-        .selected-template-exercises::-webkit-scrollbar-thumb:hover {
-            background: rgba(67, 97, 238, 0.5);
-        }
-
-        .exercise-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .exercise-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .exercise-list::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .exercise-list::-webkit-scrollbar-thumb {
-            background: rgba(67, 97, 238, 0.3);
-            border-radius: 10px;
-        }
-
-        .exercise-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(67, 97, 238, 0.5);
-        }
-
-        .previous-sets-section {
-            margin-bottom: 30px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .previous-sets-section::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .previous-sets-section::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .previous-sets-section::-webkit-scrollbar-thumb {
-            background: rgba(67, 97, 238, 0.3);
-            border-radius: 10px;
-        }
-
-        .previous-sets-section::-webkit-scrollbar-thumb:hover {
-            background: rgba(67, 97, 238, 0.5);
-        }
-
-        .selected-template-exercise {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .selected-template-exercise-name {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-        }
-
-        .selected-template-exercise-name i {
-            color: var(--primary);
-        }
-
-        .selected-template-exercise-details {
-            color: var(--gray-light);
-            font-size: 0.9rem;
-        }
-
-        .selected-template-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            height: 100%;
-            padding: 30px;
-            color: var(--gray-light);
-        }
-
-        .selected-template-placeholder i {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .selected-template-footer {
-            padding: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .begin-workout-btn {
-            width: 100%;
-            padding: 15px;
-            background: var(--gradient-blue);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
-        }
-
-        .begin-workout-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
-        }
-
-        .modify-template-btn {
-            width: 100%;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .modify-template-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .empty-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--gray-light);
-        }
-
-        .empty-message i {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        .empty-message p {
-            margin-bottom: 20px;
-        }
-
-        .steps-container {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-            margin: 0 auto;
-            max-width: 800px;
-        }
-
-        .steps-container::before {
-            content: '';
-            position: absolute;
-            top: 24px;
-            left: 60px;
-            right: 60px;
-            height: 2px;
-            background-color: rgba(255, 255, 255, 0.1);
-            z-index: 1;
-        }
-
-        .step-item {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            width: 120px;
-        }
-
-        .step-number {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: var(--dark-card);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            margin-bottom: 10px;
-            transition: var(--transition);
-        }
-
-        .step-label {
-            font-size: 0.9rem;
-            color: var(--gray-light);
-            transition: var(--transition);
-        }
-
-        .step-item.active .step-number {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(67, 97, 238, 0.5);
-        }
-
-        .step-item.active .step-label {
-            color: white;
-            font-weight: 500;
-        }
-
-        .step-item.completed .step-number {
-            background-color: var(--success);
-            border-color: var(--success);
-        }
-
-        .step-content {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .step-content.active {
-            display: block;
+        
+        .exercise-drag-handle {
+            color: #888;
+            margin-right: 10px;
+            cursor: grab;
+            opacity: 0.7;
+        }
+        
+        .exercise-list-item:hover .exercise-drag-handle {
             opacity: 1;
         }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 10px;
-            color: white;
-            z-index: 1000;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            animation: slide-in 0.3s ease forwards, fade-out 0.3s ease 4.7s forwards;
-            max-width: 350px;
+        
+        .exercise-list-item.dragging {
+            opacity: 0.5;
         }
-
-        .notification.success {
-            background: var(--gradient-green);
-        }
-
-        .notification.error {
-            background: var(--gradient-pink);
-        }
-
-        @keyframes slide-in {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes fade-out {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
-        }
-
-        @media (max-width: 1200px) {
-            .workout-layout {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 20px;
-            }
-        }
-
-        .workout-tracking-layout {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .workout-header {
-            background-color: var(--dark-card);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: var(--card-shadow);
-            display: none;
-        }
-
-        .workout-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .workout-progress {
+        
+        .exercise-reorder-controls {
+            margin-top: 15px;
             display: flex;
             align-items: center;
-            gap: 20px;
-        }
-
-        .timer-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            min-width: 100px;
-        }
-
-        .progress-bar {
-            flex: 1;
-            height: 8px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-fill {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            background: linear-gradient(to right, #ef476f, #ff5c8a);
-            border-radius: 4px;
-        }
-
-        .progress-percentage {
-            font-size: 0.9rem;
-            color: var(--gray-light);
-            min-width: 100px;
-            text-align: right;
-        }
-
-        .overview-panel, .current-exercise-panel, .next-exercise-panel {
-            background-color: var(--dark-card);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: var(--card-shadow);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .panel-section {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .panel-section:last-child {
-            border-bottom: none;
-        }
-
-        .panel-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .exercise-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .exercise-list-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 15px;
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            transition: var(--transition);
-            cursor: pointer;
-            border-left: 3px solid transparent;
-        }
-
-        .exercise-list-item.completed {
-            border-left-color: var(--success);
-        }
-
-        .exercise-list-item.current {
-            border-left-color: var(--primary);
-            background-color: rgba(67, 97, 238, 0.1);
-        }
-
-        .exercise-list-item:hover:not(.current) {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .exercise-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            color: var(--gray-light);
-        }
-
-        .exercise-status.completed {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .exercise-status.current {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .exercise-name {
-            flex: 1;
-            font-weight: 500;
-        }
-
-        .exercise-progress {
-            font-size: 0.85rem;
-            color: var(--gray-light);
-        }
-
-        .workout-notes {
-            width: 100%;
-            height: 120px;
-            padding: 12px 15px;
-            background-color: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            resize: vertical;
-        }
-
-        .workout-notes:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .exercise-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .exercise-target {
-            font-size: 1rem;
-            color: var(--gray-light);
-            margin-bottom: 25px;
-        }
-
-        .current-set-section, .previous-sets-section {
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--gray-light);
-        }
-
-        .input-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 8px;
         }
-
-        .input-group label {
-            font-size: 0.9rem;
-            color: var(--gray-light);
-        }
-
-        .exercise-input {
-            padding: 12px 15px;
-            background-color: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.2rem;
-            text-align: center;
-        }
-
-        .exercise-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .complete-set-btn {
+        
+        .reorder-instructions {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 8px;
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(to right, #ef476f, #ff5c8a);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
         }
-
-        .complete-set-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(239, 71, 111, 0.3);
-        }
-
-        .sets-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .sets-table th {
-            text-align: left;
-            padding: 10px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--gray-light);
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .sets-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .sets-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .rest-screen {
+        
+        .rest-timer-controls {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 50px 20px;
-            height: 100%;
-            text-align: center;
-        }
-
-        .rest-message {
-            margin-bottom: 30px;
-        }
-
-        .rest-message h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .rest-message p {
-            color: var(--gray-light);
-        }
-
-        .rest-timer-display {
-            font-size: 4rem;
-            font-weight: 700;
-            margin-bottom: 30px;
-            font-family: 'Courier New', monospace;
-            color: #ef476f;
-        }
-
-        .rest-controls {
-            display: flex;
             gap: 15px;
+            margin: 15px 0;
         }
-
-        .skip-rest-btn {
-            padding: 12px 25px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .skip-rest-btn:hover {
+        
+        .timer-adjust-btn {
             background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .next-exercise-card {
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .next-exercise-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #ef476f;
-        }
-
-        .next-exercise-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .next-exercise-details {
-            font-size: 0.9rem;
-            color: var(--gray-light);
-        }
-
-        .timer-display {
-            font-size: 3rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 20px;
-            font-family: 'Courier New', monospace;
-            color: #ef476f;
-        }
-
-        .timer-controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .timer-preset-btn {
-            padding: 8px 15px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
             color: white;
-            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: background-color 0.2s;
         }
-
-        .timer-preset-btn:hover, .timer-preset-btn.active {
-            background-color: rgba(239, 71, 111, 0.2);
-            border-color: rgba(239, 71, 111, 0.3);
+        
+        .timer-adjust-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
         }
-
+        
         .stats-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
         }
-
+        
         .stat-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 6px;
         }
-
+        
         .stat-label {
-            color: var(--gray-light);
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
-
+        
         .stat-value {
             font-weight: 600;
-        }
-
-        .workout-footer {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .footer-btn {
-            padding: 12px 25px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .footer-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .footer-btn.danger {
-            background-color: rgba(239, 71, 111, 0.1);
-            border-color: rgba(239, 71, 111, 0.2);
-            color: #ff5c8a;
-        }
-
-        .footer-btn.danger:hover {
-            background-color: rgba(239, 71, 111, 0.2);
-        }
-
-        @media (max-width: 1200px) {
-            .workout-tracking-layout {
-                grid-template-columns: 1fr 1fr;
-                grid-template-rows: auto;
-            }
-            
-            .next-exercise-panel {
-                grid-column: span 2;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .workout-tracking-layout {
-                grid-template-columns: 1fr;
-            }
-            
-            .next-exercise-panel {
-                grid-column: span 1;
-            }
-            
-            .workout-footer {
-                flex-direction: column;
-            }
-        }
-
-        #step3-content {
-            animation: fade-in 0.5s ease-out;
-            max-height: calc(100vh - 200px);
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        #step3-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #step3-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        #step3-content::-webkit-scrollbar-thumb {
-            background: rgba(67, 97, 238, 0.3);
-            border-radius: 10px;
-        }
-
-        #step3-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(67, 97, 238, 0.5);
-        }
-
-        .workout-complete-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .workout-complete-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-
-        .workout-complete-date {
-            font-size: 1rem;
-            color: var(--gray-light);
-        }
-
-        .workout-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .summary-stat-card {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .summary-stat-label {
-            font-size: 0.9rem;
-            color: var(--gray-light);
-            margin-bottom: 10px;
-        }
-
-        .summary-stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .summary-stat-comparison {
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .summary-stat-comparison.positive {
-            color: var(--success);
-        }
-
-        .summary-stat-comparison.neutral {
-            color: var(--gray-light);
-        }
-
-        .summary-stat-comparison.negative {
-            color: var(--danger);
-        }
-
-        .workout-chart-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .chart-container {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            min-height: 300px;
-        }
-
-        .chart-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .exercise-breakdown {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 30px;
-        }
-
-        .exercise-breakdown-list {
-            margin-top: 15px;
-        }
-
-        .exercise-breakdown-item {
-            padding: 15px;
-            border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.03);
-            margin-bottom: 10px;
-        }
-
-        .exercise-breakdown-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .exercise-icon {
-            width: 40px;
-            height: 40px;
-            background-color: rgba(67, 97, 238, 0.1);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            margin-right: 15px;
-        }
-
-        .exercise-detail {
-            flex: 1;
-        }
-
-        .exercise-name {
-            font-weight: 600;
-            margin-bottom: 3px;
-        }
-
-        .exercise-sets {
-            font-size: 0.85rem;
-            color: var(--gray-light);
-        }
-
-        .exercise-volume {
-            font-weight: 600;
-        }
-
-        .exercise-comparison {
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .exercise-comparison.positive {
-            color: var(--success);
-        }
-
-        .summary-actions {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .save-workout-btn, .save-template-btn {
-            flex: 1;
-            padding: 15px;
-            border-radius: 8px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: var(--transition);
-        }
-
-        .save-workout-btn {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .save-workout-btn:hover {
-            background-color: var(--primary-dark);
-        }
-
-        .save-template-btn {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .save-template-btn:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-        }
-
-        .workout-notes-container {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 30px;
         }
     </style>
 </head>
@@ -1805,15 +341,6 @@ try {
                     </button>
                 </div>
             </div>
-            
-            <div class="breadcrumb">
-                <a href="dashboard.php">Home</a>
-                <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
-                <a href="workout-history.php">Workouts</a>
-                <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
-                <span class="breadcrumb-current">Start Workout</span>
-            </div>
-
            
             <div class="step-content active" id="step1-content">
                 <div class="workout-layout">
@@ -1831,7 +358,7 @@ try {
                                     </div>
                                     <div class="category-count"><?php echo $all_templates_count; ?></div>
                                 </div>
-                                <div class="category-item" data-category="strength">
+                                <div class="category-item" data-category="Strength Training">
                                     <div class="category-name">
                                         <i class="fas fa-dumbbell"></i> Strength Training
                                     </div>
@@ -1937,7 +464,9 @@ try {
                                             $categoryClasses .= ' template-cardio';
                                         }
                                     ?>
-                                    <div class="template-card <?php echo $categoryClasses . ' ' . $difficultyClass . ' ' . $durationClass; ?>" data-id="<?php echo $template['id']; ?>">
+                                    <div class="template-card <?php echo $categoryClasses . ' ' . $difficultyClass . ' ' . $durationClass; ?>" 
+                                         data-id="<?php echo $template['id']; ?>"
+                                         data-category="<?php echo htmlspecialchars($template['category'] ?? ''); ?>">
                                         <div class="template-card-header">
                                             <div class="template-card-title"><?php echo htmlspecialchars($template['name']); ?></div>
                                             <div class="template-card-meta">
@@ -2004,7 +533,9 @@ try {
                                             $categoryClasses .= ' template-cardio';
                                         }
                                     ?>
-                                    <div class="template-list-item <?php echo $categoryClasses . ' ' . $difficultyClass . ' ' . $durationClass; ?>" data-id="<?php echo $template['id']; ?>">
+                                    <div class="template-list-item <?php echo $categoryClasses . ' ' . $difficultyClass . ' ' . $durationClass; ?>" 
+                                         data-id="<?php echo $template['id']; ?>"
+                                         data-category="<?php echo htmlspecialchars($template['category'] ?? ''); ?>">
                                         <div class="template-list-item-header">
                                             <div class="template-list-item-title"><?php echo htmlspecialchars($template['name']); ?></div>
                                             <div class="template-list-item-difficulty"><?php echo ucfirst($template['difficulty'] ?: 'Beginner'); ?></div>
@@ -2075,11 +606,15 @@ try {
                             <h2 class="panel-title">Workout Overview</h2>
                             <div class="exercise-list" id="exercise-list">
                             </div>
-                        </div>
-                        
-                        <div class="panel-section">
-                            <h2 class="panel-title">Notes</h2>
-                            <textarea class="workout-notes" id="workout-notes" placeholder="Add notes about your workout..."></textarea>
+                            <div class="exercise-reorder-controls">
+                                <p class="reorder-instructions">Drag exercises to reorder or use buttons:</p>
+                                <button class="btn btn-sm" id="move-exercise-up-btn" disabled>
+                                    <i class="fas fa-arrow-up"></i> Move Up
+                                </button>
+                                <button class="btn btn-sm" id="move-exercise-down-btn" disabled>
+                                    <i class="fas fa-arrow-down"></i> Move Down
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -2137,6 +672,15 @@ try {
                             
                             <div class="rest-timer-display" id="rest-timer-display">00:00</div>
                             
+                            <div class="rest-timer-controls">
+                                <button class="timer-adjust-btn" id="decrease-rest-btn">
+                                    <i class="fas fa-minus"></i> 15s
+                                </button>
+                                <button class="timer-adjust-btn" id="increase-rest-btn">
+                                    <i class="fas fa-plus"></i> 15s
+                                </button>
+                            </div>
+                            
                             <div class="next-exercise-preview">
                                 <h3>Next Up</h3>
                                 <div id="rest-next-exercise"></div>
@@ -2155,8 +699,6 @@ try {
                             </div>
                         </div>
                         
-                        
-                        
                         <div class="panel-section">
                             <h2 class="panel-title">Workout Stats</h2>
                             <div class="stats-grid">
@@ -2169,8 +711,12 @@ try {
                                     <div class="stat-value" id="stats-volume">0 kg</div>
                                 </div>
                                 <div class="stat-row">
+                                    <div class="stat-label">Elapsed Time</div>
+                                    <div class="stat-value" id="stats-elapsed-time">00:00:00</div>
+                                </div>
+                                <div class="stat-row">
                                     <div class="stat-label">Calories Burned</div>
-                                    <div class="stat-value" id="stats-time-remaining">0 kcal</div>
+                                    <div class="stat-value" id="stats-calories-burned">0 kcal</div>
                                 </div>
                             </div>
                         </div>
@@ -2239,6 +785,87 @@ try {
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            <?php if (isset($_SESSION['active_template_id']) && isset($_SESSION['start_workout_directly']) && $_SESSION['start_workout_directly']): ?>
+            console.log("Auto-start detected!");
+            const templateId = <?= $_SESSION['active_template_id'] ?>;
+            console.log("Template ID:", templateId);
+            
+            <?php if (isset($_SESSION['skip_template_selection']) && $_SESSION['skip_template_selection']): ?>
+                console.log("Skip template selection enabled - starting workout immediately");
+                
+                fetch(`get_template.php?id=${templateId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log("Template data loaded successfully, starting workout");
+                            workoutState = {
+                                templateId: templateId,
+                                templateName: data.template.name,
+                                exercises: data.exercises.map(ex => ({
+                                    ...ex,
+                                    completedSets: 0,
+                                    sets: Array(parseInt(ex.sets)).fill().map(() => ({
+                                        weight: 0,
+                                        reps: 0,
+                                        rpe: null,
+                                        completed: false
+                                    }))
+                                })),
+                                currentExerciseIndex: 0,
+                                currentSet: 1,
+                                startTime: Date.now(),
+                                endTime: null,
+                                timerInterval: null,
+                                restTimerInterval: null,
+                                restTime: parseInt(data.template.rest_time) || 90,
+                                totalVolume: 0,
+                                totalSets: data.exercises.reduce((acc, ex) => acc + parseInt(ex.sets), 0),
+                                completedSets: 0,
+                                notes: '',
+                                peakWeight: 0,
+                                caloriesBurned: 0
+                            };
+                            
+                            workoutState.timerInterval = setInterval(updateWorkoutTimer, 1000);
+                            
+                            document.getElementById('workout-title').textContent = data.template.name;
+                            
+                            initializeWorkoutTracking();
+                            updateWorkoutStats();
+                            
+                            goToStep(2);
+                        } else {
+                            console.error("Auto-start error: Template data could not be loaded", data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error auto-starting workout:", error);
+                        showNotification("Error auto-starting workout. Please try again.", "error");
+                    });
+            <?php else: ?>
+            console.log("Normal auto-start - selecting template and clicking start");
+            const templateElements = document.querySelectorAll('[data-id="' + templateId + '"]');
+            console.log("Found template elements:", templateElements.length);
+            if (templateElements.length > 0) {
+                templateElements[0].click();
+                console.log("Template selected");
+                
+                setTimeout(() => {
+                    const startBtn = document.querySelector('.begin-workout-btn');
+                    console.log("Start button found:", !!startBtn);
+                    if (startBtn) {
+                        startBtn.click();
+                        console.log("Start button clicked");
+                    }
+                }, 500);
+            }
+            <?php endif; ?>
+            
+            <?php 
+                unset($_SESSION['start_workout_directly']);
+                unset($_SESSION['skip_template_selection']);
+            ?>
+            <?php endif; ?>
 
             let workoutState = {
                 templateId: null,
@@ -2331,8 +958,19 @@ try {
                 allTemplates.forEach(template => {
                     let showTemplate = true;
 
-                    if (activeCategory !== 'all' && !template.classList.contains(`template-${activeCategory}`)) {
-                        showTemplate = false;
+                    if (activeCategory !== 'all') {
+                        const templateCategory = template.getAttribute('data-category');
+                        if (templateCategory && templateCategory === activeCategory) {
+                        } 
+                        else if (activeCategory === 'Strength Training' && template.classList.contains('template-strength')) {
+                        } 
+                        else if (activeCategory === 'hiit' && template.classList.contains('template-hiit')) {
+                        }
+                        else if (activeCategory === 'cardio' && template.classList.contains('template-cardio')) {
+                        }
+                        else {
+                            showTemplate = false;
+                        }
                     }
 
                     if (selectedDuration !== 'any') {
@@ -2469,7 +1107,27 @@ try {
                 if (modifyTemplateBtn) {
                     modifyTemplateBtn.addEventListener('click', function() {
                         const templateId = this.dataset.templateId;
-                        window.location.href = `workout-templates.php?edit=${templateId}`;
+                        
+                        fetch(`get_template.php?id=${templateId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    localStorage.setItem('edit_template_data', JSON.stringify({
+                                        id: templateId,
+                                        template: data.template,
+                                        exercises: data.exercises
+                                    }));
+                                    
+                                    localStorage.setItem('open_edit_template_modal', 'true');
+                                    
+                                    window.location.href = 'workout-templates.php';
+                                } else {
+                                    showNotification('Failed to get template data: ' + data.error, 'error');
+                                }
+                            })
+                            .catch(error => {
+                                showNotification('Error: ' + error.message, 'error');
+                            });
                     });
                 }
             }
@@ -2526,23 +1184,167 @@ try {
                 const hours = String(Math.floor(elapsed / 3600)).padStart(2, '0');
                 const minutes = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
                 const seconds = String(elapsed % 60).padStart(2, '0');
-                document.getElementById('workout-timer').textContent = `${hours}:${minutes}:${seconds}`;
+                const timeString = `${hours}:${minutes}:${seconds}`;
+                
+                document.getElementById('workout-timer').textContent = timeString;
+                document.getElementById('stats-elapsed-time').textContent = timeString;
             }
 
             function initializeWorkoutTracking() {
-                const exerciseList = document.getElementById('exercise-list');
-                exerciseList.innerHTML = workoutState.exercises.map((ex, index) => `
-                    <div class="exercise-list-item ${index === 0 ? 'current' : ''}">
-                        <div class="exercise-status ${index === 0 ? 'current' : ''}">${index + 1}</div>
-                        <div class="exercise-name">${ex.exercise_name}</div>
-                        <div class="exercise-progress">0/${ex.sets.length} sets</div>
-                    </div>
-                `).join('');
-
+                updateExerciseList();
                 updateCurrentExerciseDisplay();
                 updateNextExercisePreview();
+                initExerciseReordering();
             }
-
+            
+            function updateExerciseList() {
+                const exerciseList = document.getElementById('exercise-list');
+                exerciseList.innerHTML = workoutState.exercises.map((ex, index) => `
+                    <div class="exercise-list-item ${index === workoutState.currentExerciseIndex ? 'current' : ''}" 
+                         data-index="${index}" draggable="true">
+                        <div class="exercise-drag-handle"><i class="fas fa-grip-vertical"></i></div>
+                        <div class="exercise-status ${index === workoutState.currentExerciseIndex ? 'current' : ''}">${index + 1}</div>
+                        <div class="exercise-name">${ex.exercise_name}</div>
+                        <div class="exercise-progress">
+                            ${ex.completedSets}/${ex.sets.length} sets
+                        </div>
+                    </div>
+                `).join('');
+                
+                updateReorderButtonsState();
+            }
+            
+            function initExerciseReordering() {
+                const moveUpBtn = document.getElementById('move-exercise-up-btn');
+                const moveDownBtn = document.getElementById('move-exercise-down-btn');
+                
+                moveUpBtn.addEventListener('click', moveCurrentExerciseUp);
+                moveDownBtn.addEventListener('click', moveCurrentExerciseDown);
+                
+                const exerciseList = document.getElementById('exercise-list');
+                exerciseList.addEventListener('dragstart', handleDragStart);
+                exerciseList.addEventListener('dragover', handleDragOver);
+                exerciseList.addEventListener('drop', handleDrop);
+                exerciseList.addEventListener('dragend', handleDragEnd);
+                
+                exerciseList.addEventListener('click', function(e) {
+                    const item = e.target.closest('.exercise-list-item');
+                    if (item) {
+                        const index = parseInt(item.dataset.index);
+                        if (index !== workoutState.currentExerciseIndex) {
+                            workoutState.currentExerciseIndex = index;
+                            workoutState.currentSet = 1;
+                            updateCurrentExerciseDisplay();
+                            updateNextExercisePreview();
+                            updateReorderButtonsState();
+                        }
+                    }
+                });
+                
+                updateReorderButtonsState();
+            }
+            
+            function updateReorderButtonsState() {
+                const moveUpBtn = document.getElementById('move-exercise-up-btn');
+                const moveDownBtn = document.getElementById('move-exercise-down-btn');
+                
+                moveUpBtn.disabled = workoutState.currentExerciseIndex === 0;
+                moveDownBtn.disabled = workoutState.currentExerciseIndex === workoutState.exercises.length - 1;
+            }
+            
+            function moveCurrentExerciseUp() {
+                if (workoutState.currentExerciseIndex > 0) {
+                    const tempExercise = workoutState.exercises[workoutState.currentExerciseIndex];
+                    workoutState.exercises[workoutState.currentExerciseIndex] = workoutState.exercises[workoutState.currentExerciseIndex - 1];
+                    workoutState.exercises[workoutState.currentExerciseIndex - 1] = tempExercise;
+                    
+                    workoutState.currentExerciseIndex--;
+                    
+                    updateExerciseList();
+                    updateCurrentExerciseDisplay();
+                    updateNextExercisePreview();
+                    
+                    showNotification('Exercise moved up', 'success');
+                }
+            }
+            
+            function moveCurrentExerciseDown() {
+                if (workoutState.currentExerciseIndex < workoutState.exercises.length - 1) {
+                    const tempExercise = workoutState.exercises[workoutState.currentExerciseIndex];
+                    workoutState.exercises[workoutState.currentExerciseIndex] = workoutState.exercises[workoutState.currentExerciseIndex + 1];
+                    workoutState.exercises[workoutState.currentExerciseIndex + 1] = tempExercise;
+                    
+                    workoutState.currentExerciseIndex++;
+                    
+                    updateExerciseList();
+                    updateCurrentExerciseDisplay();
+                    updateNextExercisePreview();
+                    
+                    showNotification('Exercise moved down', 'success');
+                }
+            }
+            
+            let draggedItem = null;
+            
+            function handleDragStart(e) {
+                const item = e.target.closest('.exercise-list-item');
+                if (item) {
+                    draggedItem = item;
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/html', item.innerHTML);
+                    item.classList.add('dragging');
+                }
+            }
+            
+            function handleDragOver(e) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                e.dataTransfer.dropEffect = 'move';
+                return false;
+            }
+            
+            function handleDrop(e) {
+                e.preventDefault();
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                
+                const dropTarget = e.target.closest('.exercise-list-item');
+                if (dropTarget && draggedItem !== dropTarget) {
+                    const fromIndex = parseInt(draggedItem.dataset.index);
+                    const toIndex = parseInt(dropTarget.dataset.index);
+                    
+                    const [movedExercise] = workoutState.exercises.splice(fromIndex, 1);
+                    workoutState.exercises.splice(toIndex, 0, movedExercise);
+                    
+                    if (workoutState.currentExerciseIndex === fromIndex) {
+                        workoutState.currentExerciseIndex = toIndex;
+                    } else if (
+                        (fromIndex < workoutState.currentExerciseIndex && toIndex >= workoutState.currentExerciseIndex) ||
+                        (fromIndex > workoutState.currentExerciseIndex && toIndex <= workoutState.currentExerciseIndex)
+                    ) {
+                        workoutState.currentExerciseIndex += fromIndex < toIndex ? -1 : 1;
+                    }
+                    
+                    updateExerciseList();
+                    updateCurrentExerciseDisplay();
+                    updateNextExercisePreview();
+                    
+                    showNotification('Exercise order updated', 'success');
+                }
+                
+                return false;
+            }
+            
+            function handleDragEnd() {
+                const items = document.querySelectorAll('.exercise-list-item');
+                items.forEach(item => {
+                    item.classList.remove('dragging');
+                });
+                draggedItem = null;
+            }
+            
             function updateCurrentExerciseDisplay() {
                 const currentExercise = workoutState.exercises[workoutState.currentExerciseIndex];
                 
@@ -2570,6 +1372,7 @@ try {
                 });
                 
                 updateSetsTable();
+                updateReorderButtonsState();
             }
 
             function updateNextExercisePreview() {
@@ -2946,7 +1749,7 @@ try {
                     `${workoutState.totalVolume.toFixed(1)} kg`;
                 
                 const caloriesBurned = calculateCaloriesBurned();
-                document.getElementById('stats-time-remaining').textContent = 
+                document.getElementById('stats-calories-burned').textContent = 
                     `${Math.round(caloriesBurned)} kcal`;
             }
 
@@ -3084,13 +1887,36 @@ try {
                         }
                     });
                 });
+                
+                const increaseRestBtn = document.getElementById('increase-rest-btn');
+                const decreaseRestBtn = document.getElementById('decrease-rest-btn');
+                
+                increaseRestBtn.addEventListener('click', () => {
+                    restTimeRemaining += 15;
+                    updateRestTimerDisplay();
+                    showNotification('Added 15 seconds to rest timer', 'success');
+                });
+                
+                decreaseRestBtn.addEventListener('click', () => {
+                    restTimeRemaining = Math.max(0, restTimeRemaining - 15);
+                    updateRestTimerDisplay();
+                    if (restTimeRemaining === 0) {
+                        clearInterval(workoutState.restTimerInterval);
+                        document.getElementById('rest-screen').style.display = 'none';
+                        document.getElementById('current-exercise-container').style.display = 'block';
+                    } else {
+                        showNotification('Reduced rest timer by 15 seconds', 'success');
+                    }
+                });
             }
                 
             function showRestScreen() {
                 document.getElementById('current-exercise-container').style.display = 'none';
                 document.getElementById('rest-screen').style.display = 'flex';
                 
-                restTimeRemaining = workoutState.restTime;
+                const currentExercise = workoutState.exercises[workoutState.currentExerciseIndex];
+                restTimeRemaining = parseInt(currentExercise.rest_time) || workoutState.restTime;
+                
                 updateRestTimerDisplay();
                 
                 let nextExercise = "";

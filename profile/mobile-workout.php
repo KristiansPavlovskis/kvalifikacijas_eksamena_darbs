@@ -8,7 +8,46 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
+error_log("MOBILE-WORKOUT DEBUG - GET params: " . json_encode($_GET));
+error_log("MOBILE-WORKOUT DEBUG - POST params: " . json_encode($_POST));
+
 $user_id = $_SESSION["user_id"];
+
+$template_id = null;
+$auto_start = false;
+$start_step = null;
+
+if (isset($_POST['template_id']) && !empty($_POST['template_id'])) {
+    $template_id = $_POST['template_id'];
+    $auto_start = isset($_POST['auto_start']) && $_POST['auto_start'] == 1;
+    $start_step = isset($_POST['start_step']) ? intval($_POST['start_step']) : null;
+}
+
+if ($template_id === null && isset($_GET['template_id']) && !empty($_GET['template_id'])) {
+    $template_id = $_GET['template_id'];
+    $auto_start = isset($_GET['auto_start']) && $_GET['auto_start'] == 1;
+    $start_step = isset($_GET['start_step']) ? intval($_GET['start_step']) : null;
+}
+
+if ($template_id !== null) {
+    $_SESSION['active_template_id'] = $template_id;
+    
+    if ($auto_start) {
+        $_SESSION['start_workout_directly'] = true;
+        $_SESSION['skip_template_selection'] = true;
+        
+        if ($start_step !== null && $start_step > 0) {
+            $_SESSION['start_step'] = $start_step;
+            error_log("MOBILE-WORKOUT DEBUG - Setting start_step in session to: " . $start_step);
+        }
+    }
+}
+
+error_log("MOBILE-WORKOUT DEBUG - SESSION after processing: " . 
+          "active_template_id=" . (isset($_SESSION['active_template_id']) ? $_SESSION['active_template_id'] : 'null') . ", " . 
+          "start_workout_directly=" . (isset($_SESSION['start_workout_directly']) ? 'true' : 'false') . ", " . 
+          "skip_template_selection=" . (isset($_SESSION['skip_template_selection']) ? 'true' : 'false') . ", " . 
+          "start_step=" . (isset($_SESSION['start_step']) ? $_SESSION['start_step'] : 'null'));
 
 try {
     if (tableExists($conn, 'workout_templates')) {
@@ -54,16 +93,12 @@ function formatLastUsed($lastUsedDate) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>GYMVERSE - Mobile Workout</title>
+    <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/variables.css" rel="stylesheet">
     <style>
-        :root {
-            --dark-bg: #171a21;
-            --dark-card: #282c34;
-            --primary: #e74c3c;
-            --gray-light: #9aa0a6;
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -232,32 +267,6 @@ function formatLastUsed($lastUsedDate) {
             flex: 1;
             overflow-y: auto;
             padding: 0 1rem 1rem;
-        }
-        
-        .mobile-empty-workout {
-            background: var(--dark-card);
-            border: 1px dashed rgba(255, 255, 255, 0.2);
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            text-align: center;
-            cursor: pointer;
-        }
-        
-        .empty-workout-plus {
-            font-size: 2rem;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .empty-workout-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-        
-        .empty-workout-subtitle {
-            color: var(--gray-light);
-            font-size: 0.9rem;
         }
 
         .mobile-template-card {
@@ -615,12 +624,6 @@ function formatLastUsed($lastUsedDate) {
                 </div>
 
                 <div class="mobile-templates">
-                    <div class="mobile-empty-workout" id="empty-workout">
-                        <div class="empty-workout-plus">+</div>
-                        <div class="empty-workout-title">Empty Workout</div>
-                        <div class="empty-workout-subtitle">Start from scratch</div>
-                    </div>
-                    
                     <?php if ($templates && mysqli_num_rows($templates) > 0): ?>
                         <?php while ($template = mysqli_fetch_assoc($templates)): 
                             $lastUsed = formatLastUsed($template['last_used']);
@@ -954,6 +957,7 @@ function formatLastUsed($lastUsedDate) {
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            window.autoStartInProgress = false;
             
             let currentStep = 1;
             let workoutData = {
@@ -974,9 +978,208 @@ function formatLastUsed($lastUsedDate) {
                 overallRating: 3,
                 workoutTimerRAF: null
             };
+
+            <?php if (isset($_SESSION['active_template_id']) && isset($_SESSION['start_workout_directly']) && $_SESSION['start_workout_directly']): ?>
+            console.log("Mobile - Auto-start detected!");
+            const templateId = <?= $_SESSION['active_template_id'] ?>;
+            console.log("Mobile - Template ID:", templateId);
+            
+            window.autoStartInProgress = true;
+            
+            <?php if (isset($_SESSION['start_step']) && $_SESSION['start_step'] > 1): ?>
+            const targetStep = <?= $_SESSION['start_step'] ?>;
+            console.log("Mobile - Starting at step:", targetStep);
+            
+            document.getElementById('step1').classList.remove('step-active');
+            document.getElementById('step1').classList.add('step-previous');
+            const targetStepElement = document.getElementById('step' + targetStep);
+            targetStepElement.classList.remove('step-next');
+            targetStepElement.classList.add('step-active');
+            
+            currentStep = targetStep;
+            
+            if (targetStep === 2) {
+                console.log("Mobile - Auto-triggering workout start for step 2");
+                fetch('get_template.php?id=' + templateId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log("Mobile - Template data loaded successfully");
+                            
+                            workoutData.title = data.template.name;
+                            workoutData.templateId = templateId;
+                            workoutData.exercises = data.exercises.map(ex => ({
+                                name: ex.exercise_name,
+                                sets: parseInt(ex.sets) || 3,
+                                restTime: parseInt(ex.rest_time) || 90,
+                                currentSetData: [],
+                                image: `../assets/images/exercises/${ex.exercise_name.toLowerCase().replace(/ /g, '-')}.jpg`,
+                                notes: ex.notes || '',
+                                lastWeight: 0,
+                                lastReps: 8
+                            }));
+                            
+                            if (workoutData.exercises.length > 0) {
+                                workoutData.restTime = workoutData.exercises[0].restTime;
+                                workoutData.currentExercise = 0;
+                                workoutData.currentSet = 0;
+                            }
+            
+                            workoutData.totalSets = workoutData.exercises.reduce((total, exercise) => total + exercise.sets, 0);
+                            
+                            initializeWorkoutTimer();
+                            workoutTitle.textContent = workoutData.title;
+                            
+                            loadCurrentExercise();
+                            
+                            startWorkout();
+                        } else {
+                            console.error("Error loading template data:", data.message);
+                            alert("Error starting workout. Please try again.");
+                            window.autoStartInProgress = false;
+                            resetStepStates();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error auto-starting workout at step 2:", error);
+                        alert("Error starting workout. Please try again.");
+                        window.autoStartInProgress = false;
+                        resetStepStates();
+                    });
+            }
+            
+            <?php 
+                unset($_SESSION['start_step']);
+            ?>
+            <?php 
+
+            else:
+            
+            if (isset($_SESSION['skip_template_selection']) && $_SESSION['skip_template_selection']): ?>
+                console.log("Mobile - Skip template selection enabled - starting workout immediately");
+                
+                document.getElementById('step1').classList.remove('step-active');
+                document.getElementById('step1').classList.add('step-previous');
+                const step2Element = document.getElementById('step2');
+                step2Element.classList.remove('step-next');
+                step2Element.classList.add('step-active');
+                
+                currentStep = 2;
+                
+                fetch(`get_template.php?id=${templateId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log("Mobile - Template data loaded successfully, starting workout");
+                            console.log("Mobile - Template name:", data.template.name);
+                            console.log("Mobile - Exercise count:", data.exercises.length);
+                            
+                            workoutData.title = data.template.name;
+                            workoutData.templateId = templateId;
+                            workoutData.exercises = data.exercises.map(ex => ({
+                                name: ex.exercise_name,
+                                sets: parseInt(ex.sets) || 3,
+                                restTime: parseInt(ex.rest_time) || 90,
+                                currentSetData: [],
+                                image: `../assets/images/exercises/${ex.exercise_name.toLowerCase().replace(/ /g, '-')}.jpg`,
+                                notes: ex.notes || '',
+                                lastWeight: 0,
+                                lastReps: 8
+                            }));
+                            
+                            if (workoutData.exercises.length > 0) {
+                                workoutData.restTime = workoutData.exercises[0].restTime;
+                                workoutData.currentExercise = 0;
+                                workoutData.currentSet = 0;
+                            }
+                            
+                            workoutData.totalSets = workoutData.exercises.reduce((total, exercise) => total + exercise.sets, 0);
+                            
+                            initializeWorkoutTimer();
+                            workoutTitle.textContent = workoutData.title;
+                            
+                            loadCurrentExercise();
+                            
+                            if (!document.getElementById('step2').classList.contains('step-active')) {
+                                console.log("Step 2 was reset - forcing it active again");
+                                document.getElementById('step1').classList.remove('step-active');
+                                document.getElementById('step1').classList.add('step-previous');
+                                document.getElementById('step2').classList.remove('step-next');
+                                document.getElementById('step2').classList.add('step-active');
+                                currentStep = 2;
+                            }
+                            
+                            console.log("Mobile - Workout initialization complete");
+                        } else {
+                            console.error("Error loading template data:", data.message);
+                            alert("Error starting workout. Please try again.");
+                            window.autoStartInProgress = false;
+                            resetStepStates();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error auto-starting workout:", error);
+                        alert("Error starting workout. Please try again.");
+                        window.autoStartInProgress = false;
+                        resetStepStates();
+                    });
+                    
+                <?php 
+                    unset($_SESSION['start_workout_directly']);
+                    unset($_SESSION['skip_template_selection']);
+                    unset($_SESSION['active_template_id']);
+                    unset($_SESSION['start_step']);
+                ?>
+            <?php 
+            endif;
+            endif; 
+            endif; 
+            ?>
+            
+            if (!window.autoStartInProgress) {
+                resetStepStates();
+            }
+            
+            function resetStepStates() {
+                console.log("Resetting all steps to initial state");
+                const steps = document.querySelectorAll('.step-container');
+                steps.forEach(step => {
+                    step.classList.remove('step-active', 'step-previous', 'step-next');
+                    const targetStep = parseInt(step.id.replace('step', ''));
+                    if (targetStep === 1) {
+                        step.classList.add('step-active');
+                    } else {
+                        step.classList.add('step-next');
+                    }
+                });
+                currentStep = 1;
+            }
+            
+            function showStep(stepNumber) {
+                console.log(`Transitioning to step ${stepNumber}`);
+                const steps = document.querySelectorAll('.step-container');
+                
+                steps.forEach(step => {
+                    const targetStep = parseInt(step.id.replace('step', ''));
+                    step.classList.remove('step-active', 'step-previous', 'step-next');
+                    
+                    if (targetStep === stepNumber) {
+                        step.classList.add('step-active');
+                    } else if (targetStep < stepNumber) {
+                        step.classList.add('step-previous');
+                    } else {
+                        step.classList.add('step-next');
+                    }
+                });
+                
+                currentStep = stepNumber;
+                
+                if (stepNumber === 2 && !workoutData.startTime) {
+                    startWorkout();
+                }
+            }
             
             const beginWorkoutBtn = document.getElementById('begin-workout-btn');
-            const emptyWorkout = document.getElementById('empty-workout');
             const templateCards = document.querySelectorAll('.mobile-template-card');
             const tabs = document.querySelectorAll('.mobile-tab');
             const backToTemplates = document.getElementById('back-to-templates');
@@ -1013,34 +1216,9 @@ function formatLastUsed($lastUsedDate) {
             const previewName = document.querySelector('.preview-name');
             const previewDetail = document.querySelector('.preview-detail');
 
-            function showStep(stepNumber) {
-                console.log(`Transitioning to step ${stepNumber}`);
-                const steps = document.querySelectorAll('.step-container');
-                
-                steps.forEach(step => {
-                    const targetStep = parseInt(step.id.replace('step', ''));
-                    step.classList.remove('step-active', 'step-previous', 'step-next');
-                    
-                    if (targetStep === stepNumber) {
-                        step.classList.add('step-active');
-                    } else if (targetStep < stepNumber) {
-                        step.classList.add('step-previous');
-                    } else {
-                        step.classList.add('step-next');
-                    }
-                });
-                
-                currentStep = stepNumber;
-                
-                if (stepNumber === 2) {
-                    startWorkout();
-                }
-            }
-
             templateCards.forEach(card => {
                 card.addEventListener('click', function() {
                     templateCards.forEach(c => c.classList.remove('selected'));
-                    emptyWorkout.classList.remove('selected');
                     
                     this.classList.add('selected');
                     
@@ -1051,22 +1229,10 @@ function formatLastUsed($lastUsedDate) {
                 });
             });
             
-            emptyWorkout.addEventListener('click', function() {
-                templateCards.forEach(c => c.classList.remove('selected'));
-                
-                workoutData.templateId = null;
-                workoutData.title = 'Quick Workout';
-                
-                beginWorkoutBtn.removeAttribute('disabled');
-                
-                this.classList.add('selected');
-            });
-            
             beginWorkoutBtn.addEventListener('click', function() {
                 if (workoutData.templateId) {
                     fetchTemplateExercises(workoutData.templateId);
                 } else if (emptyWorkout.classList.contains('selected')) {
-                    createEmptyWorkout();
                     showStep(2);
                 }
             });
@@ -1321,11 +1487,42 @@ document.body.addEventListener('click', function(e) {
             }
 
             function startWorkout() {
+                console.log("Starting workout...");
+                
                 if (!workoutData.startTime) {
+                    console.log("Initializing workout timer");
                     initializeWorkoutTimer();
                 }
                 
+                if (!workoutData.title || !workoutData.exercises || workoutData.exercises.length === 0) {
+                    console.error("Cannot start workout - missing required data");
+                    return;
+                }
+                
+                console.log("Setting workout title:", workoutData.title);
                 workoutTitle.textContent = workoutData.title;
+                
+                if (window.autoStartInProgress && !document.getElementById('step2').classList.contains('step-active')) {
+                    console.log("Auto-start: Re-activating step 2");
+                    document.getElementById('step1').classList.remove('step-active');
+                    document.getElementById('step1').classList.add('step-previous');
+                    document.getElementById('step2').classList.remove('step-next');
+                    document.getElementById('step2').classList.add('step-active');
+                    currentStep = 2;
+                }
+
+                else if (!window.autoStartInProgress && currentStep !== 2) {
+                    console.log("Transitioning to step 2");
+                    showStep(2);
+                }
+                
+                if (workoutData.currentExercise === undefined) {
+                    console.log("Initializing current exercise");
+                    workoutData.currentExercise = 0;
+                    workoutData.currentSet = 0;
+                }
+                
+                console.log("Loading current exercise");
                 loadCurrentExercise();
             }
             
@@ -1363,7 +1560,6 @@ document.body.addEventListener('click', function(e) {
                         } else {
                             console.warn('No exercises found in template, creating empty workout');
                             alert('No exercises found in this template. Creating an empty workout.');
-                            createEmptyWorkout();
                             showStep(2);
                         }
                     })
@@ -1398,22 +1594,31 @@ document.body.addEventListener('click', function(e) {
                     });
             }
             
-            function createEmptyWorkout() {
-                workoutData.exercises = [{
-                    name: 'Custom Exercise 1',
-                    sets: 3,
-                    lastWeight: 0,
-                    lastReps: 8,
-                    currentSetData: [],
-                    image: '../assets/images/exercises/default.jpg',
-                    restTime: 90
-                }];
-                workoutData.totalSets = 3;
-                workoutData.restTime = 90;
-            }
-            
             function loadCurrentExercise() {
+                console.log("Loading current exercise...");
+                
+                if (!workoutData.exercises || workoutData.exercises.length === 0) {
+                    console.error("No exercises available");
+                    return;
+                }
+                
+                if (workoutData.currentExercise === undefined || workoutData.currentExercise < 0) {
+                    console.log("Initializing current exercise to 0");
+                    workoutData.currentExercise = 0;
+                }
+                
+                if (workoutData.currentSet === undefined || workoutData.currentSet < 0) {
+                    console.log("Initializing current set to 0");
+                    workoutData.currentSet = 0;
+                }
+                
                 const exercise = workoutData.exercises[workoutData.currentExercise];
+                if (!exercise) {
+                    console.error("Invalid exercise index:", workoutData.currentExercise);
+                    return;
+                }
+                
+                console.log("Loading exercise:", exercise.name);
                 
                 exerciseName.textContent = exercise.name;
                 setCounter.textContent = `Set ${workoutData.currentSet + 1}/${exercise.sets}`;
@@ -1422,29 +1627,38 @@ document.body.addEventListener('click', function(e) {
                 const currentExerciseNumber = workoutData.currentExercise + 1;
                 workoutProgressText.textContent = `${currentExerciseNumber}/${totalExercises} Exercises`;
                 
-                if (workoutData.currentSet > 0 && exercise.currentSetData.length > 0) {
+                if (workoutData.currentSet > 0 && exercise.currentSetData && exercise.currentSetData.length > 0) {
                     const prevSet = exercise.currentSetData[workoutData.currentSet - 1];
-                    previousSetInfo.textContent = `${prevSet.weight} kg × ${prevSet.reps} reps`;
-                    previousSetInfo.parentElement.style.display = 'flex';
-                    
-                    weightInput.value = prevSet.weight.toFixed(1);
-                    repsInput.value = prevSet.reps;
+                    if (prevSet) {
+                        previousSetInfo.textContent = `${prevSet.weight} kg × ${prevSet.reps} reps`;
+                        previousSetInfo.parentElement.style.display = 'flex';
+                        
+                        weightInput.value = prevSet.weight.toFixed(1);
+                        repsInput.value = prevSet.reps;
+                    } else {
+                        previousSetInfo.parentElement.style.display = 'none';
+                        weightInput.value = (exercise.lastWeight || 0).toFixed(1);
+                        repsInput.value = exercise.lastReps || 8;
+                    }
                 } else {
                     previousSetInfo.parentElement.style.display = 'none';
-                    
                     weightInput.value = (exercise.lastWeight || 0).toFixed(1);
                     repsInput.value = exercise.lastReps || 8;
                 }
-                
+
                 weightHint.textContent = `last time was ${exercise.lastWeight || 0}kg`;
                 repsHint.textContent = `last time was ${exercise.lastReps || 8} reps for ${exercise.lastWeight || 0}kg`;
-                exerciseImage.src = 'https://cdn.pixabay.com/photo/2016/07/07/16/46/dice-1502706_640.jpg';
+                
+                exerciseImage.src = exercise.image || 'https://cdn.pixabay.com/photo/2016/07/07/16/46/dice-1502706_640.jpg';
+                exerciseImage.onerror = function() {
+                    this.src = 'https://cdn.pixabay.com/photo/2016/07/07/16/46/dice-1502706_640.jpg';
+                };
                 
                 updateWeightInput();
                 updateRepsInput();
                 
-                console.log(`Loading exercise: ${exercise.name} - Set ${workoutData.currentSet + 1}/${exercise.sets}`);
-                console.log(`Input values initialized: weight=${weightInput.value}, reps=${repsInput.value}`);
+                console.log(`Exercise loaded: ${exercise.name} - Set ${workoutData.currentSet + 1}/${exercise.sets}`);
+                console.log(`Input values set: weight=${weightInput.value}, reps=${repsInput.value}`);
             }
             
             function showRestTimer() {

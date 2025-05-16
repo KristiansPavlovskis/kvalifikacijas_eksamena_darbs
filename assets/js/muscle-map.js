@@ -82,49 +82,39 @@ document.addEventListener('DOMContentLoaded', function() {
     function getMuscleInfo(muscleName) {
         const muscleData = {
             'chest': {
-                name: 'Chest (Pectoralis)',
-                description: 'Targeting the chest helps with pushing movements and upper body strength. Filter to see chest exercises.',
-                exercises: ['Bench Press', 'Push-ups', 'Chest Fly', 'Dips']
+                name: 'Chest',
+                description: 'Chest exercises for building upper body strength.',
+                exercises: []
             },
             'back': {
-                name: 'Back (Latissimus Dorsi)',
-                description: 'Back muscles support pulling movements and posture. Filter to see back exercises.',
-                exercises: ['Pull-ups', 'Rows', 'Lat Pulldowns', 'Deadlifts']
+                name: 'Back',
+                description: 'Back exercises for improving posture and strength.',
+                exercises: []
             },
             'shoulders': {
-                name: 'Shoulders (Deltoids)',
-                description: 'Strong shoulders improve arm mobility and support overhead movements. Filter to see shoulder exercises.',
-                exercises: ['Overhead Press', 'Lateral Raises', 'Front Raises', 'Face Pulls']
+                name: 'Shoulders',
+                description: 'Shoulder exercises for better mobility and strength.',
+                exercises: []
             },
             'biceps': {
                 name: 'Biceps',
-                description: 'Biceps help with pulling and lifting movements. Filter to see bicep exercises.',
-                exercises: ['Bicep Curls', 'Hammer Curls', 'Chin-ups', 'Preacher Curls']
+                description: 'Bicep exercises for arm strength.',
+                exercises: []
             },
-            'forearms': {
-                name: 'Forearms',
-                description: 'Strong forearms improve grip strength and wrist stability. Filter to see forearm exercises.',
-                exercises: ['Wrist Curls', 'Reverse Curls', 'Farmer\'s Walk', 'Plate Pinches']
+            'triceps': {
+                name: 'Triceps',
+                description: 'Tricep exercises for arm definition.',
+                exercises: []
             },
             'abs': {
-                name: 'Abdominals',
-                description: 'Core muscles stabilize your body and help with everyday movements. Filter to see ab exercises.',
-                exercises: ['Crunches', 'Planks', 'Leg Raises', 'Russian Twists']
+                name: 'Abs',
+                description: 'Core exercises for stability and strength.',
+                exercises: []
             },
-            'obliques': {
-                name: 'Obliques',
-                description: 'Obliques help with torso rotation and lateral bending. Filter to see oblique exercises.',
-                exercises: ['Russian Twists', 'Side Planks', 'Wood Choppers', 'Bicycle Crunches']
-            },
-            'quads': {
-                name: 'Quadriceps',
-                description: 'Quads are essential for walking, running, and jumping. Filter to see quad exercises.',
-                exercises: ['Squats', 'Leg Press', 'Lunges', 'Leg Extensions']
-            },
-            'calves': {
-                name: 'Calves',
-                description: 'Calf muscles help with ankle movement and stabilization. Filter to see calf exercises.',
-                exercises: ['Calf Raises', 'Jump Rope', 'Seated Calf Raises', 'Box Jumps']
+            'legs': {
+                name: 'Legs',
+                description: 'Leg exercises for lower body strength.',
+                exercises: []
             }
         };
         

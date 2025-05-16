@@ -31,10 +31,6 @@ if (!isset($join_date) && isset($conn)) {
     }
 }
 
-$user_level = 1;
-$user_xp = "0/100";
-$fit_coins = 0;
-
 if (isset($conn) && isset($user_id)) {
 }
 ?>
@@ -43,7 +39,6 @@ if (isset($conn) && isset($user_id)) {
     .sidebar {
         width: var(--sidebar-width, 260px);
         height: 100vh;
-        position: fixed;
         top: 0;
         left: 0;
         background-color: var(--dark-surface, #151515);
@@ -237,6 +232,7 @@ if (isset($conn) && isset($user_id)) {
     @media (max-width: 992px) {
         .sidebar {
             transform: translateX(-100%);
+            position: fixed;
         }
 
         .sidebar.active {
@@ -246,35 +242,12 @@ if (isset($conn) && isset($user_id)) {
 </style>
 
 <aside class="sidebar">
-    <div class="sidebar-header">
-        <a href="/pages/index.php" class="sidebar-logo">MY FITNESS</a>
-        <button class="collapse-toggle" id="toggleSidebar">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-    </div>
-    
     <div class="sidebar-profile">
         <div class="sidebar-avatar">
             <i class="fas fa-user"></i>
         </div>
         <div class="sidebar-user-name"><?= htmlspecialchars($username ?? '') ?></div>
         <div class="sidebar-user-email"><?= htmlspecialchars($email ?? '') ?></div>
-        <?php if (isset($join_date)): ?>
-        <div class="sidebar-user-since">
-            <i class="fas fa-calendar-alt"></i> Member since <?= $join_date ?>
-        </div>
-        <?php endif; ?>
-        <div class="user-status">
-            <div class="user-status-item">
-                <strong>Level:</strong> <?= $user_level ?>
-            </div>
-            <div class="user-status-item">
-                <strong>XP:</strong> <?= $user_xp ?>
-            </div>
-            <div class="user-status-item">
-                <strong>Fit Coins:</strong> <?= $fit_coins ?>
-            </div>
-        </div>
     </div>
     
     <nav class="sidebar-nav">
@@ -285,11 +258,6 @@ if (isset($conn) && isset($user_id)) {
             <li class="sidebar-nav-item">
                 <a href="profile.php" class="sidebar-nav-link <?= $current_page === 'profile.php' ? 'active' : '' ?>">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-            </li>
-            <li class="sidebar-nav-item">
-                <a href="profile-settings.php" class="sidebar-nav-link <?= $current_page === 'profile-settings.php' ? 'active' : '' ?>">
-                    <i class="fas fa-cog"></i> Profile Settings
                 </a>
             </li>
         </ul>
@@ -320,7 +288,7 @@ if (isset($conn) && isset($user_id)) {
         </div>
         <ul class="sidebar-nav-items" id="progress-nav">
             <li class="sidebar-nav-item">
-                <a href="stats-overview.php" class="sidebar-nav-link <?= $current_page === 'stats-overview.php' ? 'active' : '' ?>">
+                <a href="stats-overviews.php" class="sidebar-nav-link <?= $current_page === 'stats-overviews.php' ? 'active' : '' ?>">
                     <i class="fas fa-chart-line"></i> Stats Overview
                 </a>
             </li>
@@ -332,39 +300,6 @@ if (isset($conn) && isset($user_id)) {
             <li class="sidebar-nav-item">
                 <a href="current-goal.php" class="sidebar-nav-link <?= $current_page === 'current-goal.php' ? 'active' : '' ?>">
                     <i class="fas fa-bullseye"></i> Setting Goals
-                </a>
-            </li>
-        </ul>
-        
-        <div class="sidebar-nav-title" data-toggle="collapse" data-target="challenges-nav">
-            Challenges <i class="fas fa-chevron-down"></i>
-        </div>
-        <ul class="sidebar-nav-items" id="challenges-nav">
-            <li class="sidebar-nav-item">
-                <a href="active-challenges.php" class="sidebar-nav-link <?= $current_page === 'active-challenges.php' ? 'active' : '' ?>">
-                    <i class="fas fa-flag"></i> Active Challenges
-                </a>
-            </li>
-            <li class="sidebar-nav-item">
-                <a href="leaderboards.php" class="sidebar-nav-link <?= $current_page === 'leaderboards.php' ? 'active' : '' ?>">
-                    <i class="fas fa-medal"></i> Leaderboards
-                </a>
-            </li>
-            
-            <li class="sidebar-nav-item">
-                <a href="create-challenge.php" class="sidebar-nav-link <?= $current_page === 'create-challenge.php' ? 'active' : '' ?>">
-                    <i class="fas fa-plus"></i> Create Challenge
-                </a>
-            </li>
-        </ul>
-        
-        <div class="sidebar-nav-title" data-toggle="collapse" data-target="achievements-nav">
-            Achievements <i class="fas fa-chevron-down"></i>
-        </div>
-        <ul class="sidebar-nav-items" id="achievements-nav">
-            <li class="sidebar-nav-item">
-                <a href="badges.php" class="sidebar-nav-link <?= $current_page === 'badges.php' ? 'active' : '' ?>">
-                    <i class="fas fa-certificate"></i> Badge Collection
                 </a>
             </li>
         </ul>

@@ -8,7 +8,50 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
+function isMobile() {
+    return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
+}
+
+if (isMobile()) {
+    $params = [];
+    if (!empty($_GET)) {
+        $params = $_GET;
+    } elseif (!empty($_POST)) {
+        $params = $_POST;
+    }
+    
+    $redirect = 'mobile-workout.php';
+    if (!empty($params)) {
+        $redirect .= '?' . http_build_query($params);
+    }
+    
+    header("location: $redirect");
+    exit;
+}
+
 $user_id = $_SESSION["user_id"];
+
+$template_id = null;
+$auto_start = false;
+
+if (isset($_POST['template_id']) && !empty($_POST['template_id'])) {
+    $template_id = $_POST['template_id'];
+    $auto_start = isset($_POST['auto_start']) && $_POST['auto_start'] == 1;
+}
+
+if ($template_id === null && isset($_GET['template_id']) && !empty($_GET['template_id'])) {
+    $template_id = $_GET['template_id'];
+    $auto_start = isset($_GET['auto_start']) && $_GET['auto_start'] == 1;
+}
+
+if ($template_id !== null) {
+    $_SESSION['active_template_id'] = $template_id;
+    
+    if ($auto_start) {
+        $_SESSION['start_workout_directly'] = true;
+        $_SESSION['skip_template_selection'] = true;
+    }
+}
 
 try {
     if (tableExists($conn, 'workout_templates')) {

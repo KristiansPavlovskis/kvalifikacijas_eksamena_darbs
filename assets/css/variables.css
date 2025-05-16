@@ -1,132 +1,115 @@
-/* ==============================
-   CSS VARIABLES
-   ============================== */
-
 :root {
-  /* Colors: Primary Palette */
-  --color-primary: #ff4d4d;
-  --color-primary-dark: #e63939;
-  --color-primary-light: #ff7a7a;
-  --color-primary-subtle: rgba(255, 77, 77, 0.1);
+
+  --primary: #ff4d4d;
+  --primary-light: #4cc9f0;
+  --primary-dark: #3a56d4;
+  --secondary: #f72585;
+  --secondary-light: #ff5c8a;
+
+  --success: #06d6a0;
+  --warning: #ffd166;
+  --danger: #ef476f;
+  --info: #2196f3;
+
+  --dark: #0f0f1a;
+  --dark-card: #1a1a2e;
+  --dark-card-hover: #2a2a2a;
+  --dark-bg: #121212;
   
-  /* Colors: Dark Theme */
-  --color-dark: #121212;
-  --color-dark-light: #1e1e1e;
-  --color-dark-hover: #2a2a2a;
-  --color-dark-border: #333333;
-  
-  /* Colors: Grayscale */
-  --color-gray-100: #f5f5f5;
-  --color-gray-200: #eeeeee;
-  --color-gray-300: #dddddd;
-  --color-gray-400: #cccccc;
-  --color-gray-500: #aaaaaa;
-  --color-gray-600: #888888;
-  --color-gray-700: #666666;
-  --color-gray-800: #444444;
-  --color-gray-900: #222222;
-  
-  /* Colors: Functional */
-  --color-success: #4caf50;
-  --color-success-light: #a5d6a7;
-  --color-success-dark: #388e3c;
-  
-  --color-info: #2196f3;
-  --color-info-light: #90caf9;
-  --color-info-dark: #1976d2;
-  
-  --color-warning: #ffc107;
-  --color-warning-light: #ffecb3;
-  --color-warning-dark: #ffa000;
-  
-  --color-error: #f44336;
-  --color-error-light: #ef9a9a;
-  --color-error-dark: #d32f2f;
-  
-  /* Colors: Text */
-  --color-text: #e0e0e0;
-  --color-text-secondary: #a0a0a0;
-  --color-text-muted: #707070;
-  --color-white: #ffffff;
-  
-  /* Typography: Font Families */
+  --gray-dark: #2b2b3d;
+  --gray-light: rgba(255, 255, 255, 0.7);
+  --gray-100: #f5f5f5;
+  --gray-200: #eeeeee;
+  --gray-300: #dddddd;
+  --gray-400: #cccccc;
+  --gray-500: #aaaaaa;
+  --gray-600: #888888;
+  --gray-700: #666666;
+  --gray-800: #444444;
+  --gray-900: #222222;
+
+  --text-light: #ffffff;
+  --text-gray: #a0a0a0;
+  --text-muted: #707070;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+
+  --gradient-blue: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+  --gradient-purple: linear-gradient(135deg, #9d4edd, #c77dff);
+  --gradient-pink: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+  --gradient-green: linear-gradient(135deg, var(--success), #64dfdf);
+  --gradient-orange: linear-gradient(135deg, #fb8500, #ffb703);
+
   --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   --font-family-heading: 'Koulen', 'Inter', sans-serif;
   --font-family-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  
-  /* Typography: Font Sizes */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
-  --font-size-5xl: 3rem;      /* 48px */
-  --font-size-6xl: 4rem;      /* 64px */
-  
-  /* Typography: Font Weights */
+
+  --font-size-xs: 0.75rem;    
+  --font-size-sm: 0.875rem;   
+  --font-size-base: 1rem;     
+  --font-size-lg: 1.125rem;   
+  --font-size-xl: 1.25rem;    
+  --font-size-2xl: 1.5rem;    
+  --font-size-3xl: 1.875rem;  
+  --font-size-4xl: 2.25rem;   
+  --font-size-5xl: 3rem;      
+  --font-size-6xl: 4rem;      
+
   --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
-  /* Typography: Line Heights */
+
   --line-height-none: 1;
   --line-height-tight: 1.25;
   --line-height-snug: 1.375;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.625;
   --line-height-loose: 2;
-  
-  /* Typography: Letter Spacing */
+
   --letter-spacing-tighter: -0.05em;
   --letter-spacing-tight: -0.025em;
   --letter-spacing-normal: 0;
   --letter-spacing-wide: 0.025em;
   --letter-spacing-wider: 0.05em;
   --letter-spacing-widest: 0.1em;
-  
-  /* Spacing */
-  --space-xs: 0.25rem;    /* 4px */
-  --space-sm: 0.5rem;     /* 8px */
-  --space-md: 1rem;       /* 16px */
-  --space-lg: 1.5rem;     /* 24px */
-  --space-xl: 2rem;       /* 32px */
-  --space-2xl: 2.5rem;    /* 40px */
-  --space-3xl: 3rem;      /* 48px */
-  --space-4xl: 4rem;      /* 64px */
-  --space-5xl: 6rem;      /* 96px */
-  --space-xxl: 3rem;      /* 48px - for backwards compatibility */
-  
-  /* Borders */
+
+  --space-xs: 0.25rem;    
+  --space-sm: 0.5rem;     
+  --space-md: 1rem;       
+  --space-lg: 1.5rem;     
+  --space-xl: 2rem;       
+  --space-2xl: 2.5rem;    
+  --space-3xl: 3rem;      
+  --space-4xl: 4rem;      
+  --space-5xl: 6rem;      
+
+  --sidebar-width: 280px;
+  --header-height: 80px;
+  --footer-height: auto;
+  --container-max-width: 1200px;
+  --container-padding: var(--space-md);
+
   --border-radius-sm: 0.25rem;
   --border-radius-md: 0.375rem;
   --border-radius-lg: 0.5rem;
   --border-radius-xl: 1rem;
   --border-radius-2xl: 1.5rem;
   --border-radius-full: 9999px;
-  
+
   --border-width-thin: 1px;
   --border-width-medium: 2px;
   --border-width-thick: 3px;
-  
-  /* Transitions */
-  --transition-fast: 0.15s ease;
-  --transition-base: 0.3s ease;
-  --transition-slow: 0.5s ease;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --border-color: rgba(255, 255, 255, 0.1);
+
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  
-  /* Z-index */
+
   --z-index-dropdown: 1000;
   --z-index-sticky: 1020;
   --z-index-fixed: 1030;
@@ -134,52 +117,31 @@
   --z-index-modal: 1050;
   --z-index-popover: 1060;
   --z-index-tooltip: 1070;
-  
-  /* Layout */
-  --container-max-width: 1200px;
-  --container-padding: var(--space-md);
-  
-  --header-height: 80px;
-  --footer-height: auto;
-  
-  /* Grid */
-  --grid-gap: 1.5rem;
-  --grid-columns: 12;
-  
-  /* Breakpoints */
-  --breakpoint-xs: 0;
-  --breakpoint-sm: 576px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 992px;
-  --breakpoint-xl: 1200px;
-  --breakpoint-xxl: 1400px;
-  
-  /* Animations */
-  --animation-duration-default: 300ms;
-  --animation-timing-default: ease;
-  
-  /* Components: Buttons */
+
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
   --button-padding-y: 0.75rem;
   --button-padding-x: 1.5rem;
   --button-font-size: var(--font-size-base);
   --button-font-weight: var(--font-weight-medium);
   --button-border-radius: var(--border-radius-md);
   --button-focus-width: 0.2rem;
-  
-  /* Components: Forms */
+
   --input-padding-y: 0.75rem;
   --input-padding-x: 1rem;
   --input-font-size: var(--font-size-base);
   --input-line-height: var(--line-height-normal);
   --input-border-width: 1px;
   --input-border-radius: var(--border-radius-md);
-  --input-focus-border-color: var(--color-primary);
-  --input-focus-box-shadow: 0 0 0 0.2rem rgba(255, 77, 77, 0.25);
-  
-  /* Components: Cards */
+  --input-focus-border-color: var(--primary);
+  --input-focus-box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+
   --card-border-width: 0;
   --card-border-radius: var(--border-radius-lg);
   --card-padding: var(--space-lg);
-  --card-bg: var(--color-dark-light);
+  --card-bg: var(--dark-card);
   --card-shadow: var(--shadow-md);
 } 
