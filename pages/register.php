@@ -105,9 +105,30 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                     mysqli_stmt_bind_param($role_stmt, "i", $new_user_id);
                     mysqli_stmt_execute($role_stmt);
                     mysqli_stmt_close($role_stmt);
+                    
+                    $_SESSION["loggedin"] = true;
+                    $_SESSION["user_id"] = $new_user_id;
+                    $_SESSION["username"] = $username;
+                    $_SESSION["email"] = $email;
+                    
+                    $roles_sql = "SELECT r.name FROM roles r 
+                                JOIN user_roles ur ON r.id = ur.role_id 
+                                WHERE ur.user_id = ?";
+                    if($roles_stmt = $conn->prepare($roles_sql)) {
+                        $roles_stmt->bind_param("i", $new_user_id);
+                        $roles_stmt->execute();
+                        $roles_result = $roles_stmt->get_result();
+                        $user_roles = [];
+                        while ($role = $roles_result->fetch_assoc()) {
+                            $user_roles[] = $role['name'];
+                        }
+                        $_SESSION["user_roles"] = $user_roles;
+                        $roles_stmt->close();
+                        
+                        header("location: ../profile/profile.php");
+                        exit;
+                    }
                 }
-                
-                header("location: login.php?registered=true");
             } else {
                 echo "Oops! Something went wrong. Please try again later.";
             }
@@ -121,275 +142,215 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include '../includes/header.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GYMVERSE - Register</title>
-    <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/css/lietotaja-view.css">
     <style>
         :root {
-            --primary: #ff4d4d;
-            --secondary: #333;
-            --dark: #0A0A0A;
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
             --light: #f5f5f5;
+            --dark: #212529;
+            --background: #ffffff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
         
         .register-container {
-            min-height: 100vh;
             display: flex;
-            background: url('images/gym-background2.jpg') no-repeat center center;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        .form-container {
+            width: 50%;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+        }
+        
+        .image-container {
+            width: 50%;
+            background: url('../assets/images/papers.co-bj03-art-logo-wave-simple-minimal-dark-41-iphone-wallpaper.jpg') no-repeat center center;
             background-size: cover;
-            position: relative;
-        }
-        
-        .register-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 10, 10, 0.8);
-            z-index: 1;
-        }
-        
-        .register-form-container {
-            width: 100%;
-            max-width: 500px;
-            padding: 40px;
-            margin: auto;
-            background: rgba(25, 25, 25, 0.9);
-            border-radius: 15px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-            z-index: 2;
-            position: relative;
-            overflow: hidden;
-            animation: formFadeIn 0.8s ease-in-out;
-        }
-        
-        @keyframes formFadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .register-form-container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, transparent, var(--primary), transparent, transparent);
-            transform: rotate(45deg);
-            animation: borderLight 3s linear forwards;
-            z-index: -1;
-        }
-        
-        @keyframes borderLight {
-            0% { top: -50%; left: -50%; }
-            100% { top: 50%; left: 50%; }
-        }
-        
-        .register-logo {
-            text-align: center;
-            margin-bottom: 30px;
-            color: var(--light);
-            font-size: 3rem;
-            letter-spacing: 4px;
-            font-weight: bold;
-            text-shadow: 0 0 15px rgba(255, 77, 77, 0.7);
-            font-family: 'Koulen', sans-serif;
-        }
-        
-        .register-form h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: var(--light);
-            font-family: 'Koulen', sans-serif;
-            letter-spacing: 2px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-            position: relative;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 15px 15px 15px 45px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--light);
-            font-size: 16px;
-            transition: all 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .form-control:focus {
-            box-shadow: 0 0 10px var(--primary);
-            background: rgba(255, 255, 255, 0.2);
-            border-color: var(--primary);
-            outline: none;
-        }
-        
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-        
-        .form-icon {
-            position: absolute;
-            left: 15px;
-            top: 16px;
-            color: var(--primary);
-        }
-        
-        .register-btn {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            background: var(--primary);
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 10px;
-            position: relative;
-            overflow: hidden;
-            font-family: 'Koulen', sans-serif;
-        }
-        
-        .register-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: all 0.5s;
-        }
-        
-        .register-btn:hover::before {
-            left: 100%;
-        }
-        
-        .register-btn:hover {
-            background: #ff3333;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3);
-        }
-        
-        .register-footer {
-            text-align: center;
-            margin-top: 30px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .register-footer a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .register-footer a:hover {
-            color: #ff3333;
-            text-decoration: underline;
-        }
-        
-        .terms {
-            margin: 20px 0;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            text-align: center;
-        }
-        
-        .terms a {
-            color: var(--primary);
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        
-        .terms a:hover {
-            color: #ff3333;
-            text-decoration: underline;
-        }
-        
-        .form-divider {
             display: flex;
             align-items: center;
-            margin: 30px 0;
-            color: rgba(255, 255, 255, 0.5);
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
         
-        .form-divider::before, .form-divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
         }
         
-        .form-divider::before {
+        .logo-icon {
+            font-size: 30px;
+            color: var(--primary);
             margin-right: 10px;
         }
         
-        .form-divider::after {
-            margin-left: 10px;
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
         }
         
-        .social-login {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
+        .form-header {
+            margin-bottom: 40px;
         }
         
-        .social-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--light);
-            font-size: 18px;
+        .form-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .form-header p {
+            color: #6c757d;
+            font-size: 16px;
+        }
+        
+        .form-control {
+            margin-bottom: 24px;
+        }
+        
+        .form-control label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-control input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
             transition: all 0.3s;
+        }
+        
+        .form-control input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+            outline: none;
+        }
+        
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            padding: 14px 24px;
+            font-size: 16px;
+            line-height: 1.5;
+            border-radius: 8px;
+            transition: all 0.15s ease-in-out;
             cursor: pointer;
             border: none;
         }
         
-        .social-btn:hover {
-            transform: translateY(-3px);
-            background: var(--primary);
+        .btn-primary {
+            color: #fff;
+            background-color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.25);
         }
         
-        .invalid-feedback {
-            color: #ff4d4d;
-            font-size: 14px;
-            margin-top: 5px;
+        .btn-primary:hover {
+            background-color: #3b56d9;
+            border-color: #3b56d9;
+            box-shadow: 0 6px 10px rgba(67, 97, 238, 0.35);
+        }
+        
+        .btn-block {
             display: block;
+            width: 100%;
+        }
+        
+        .account-link {
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            margin: 20px 0;
+        }
+        
+        .account-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .account-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white;
+            color: var(--dark);
+            border: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        .home-button:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
         }
         
         .password-strength {
-            height: 5px;
-            margin-top: 10px;
-            border-radius: 5px;
-            background: #444;
-            position: relative;
-            transition: all 0.3s;
+            height: 4px;
+            margin-top: 8px;
+            border-radius: 2px;
+            background: #e9ecef;
             overflow: hidden;
         }
         
         .password-strength-meter {
             height: 100%;
-            border-radius: 5px;
+            border-radius: 2px;
             transition: all 0.3s;
             width: 0%;
         }
@@ -397,94 +358,100 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         .password-strength-text {
             font-size: 12px;
             margin-top: 5px;
-            color: rgba(255, 255, 255, 0.7);
+            color: #6c757d;
             text-align: right;
         }
         
         .weak {
-            background: #ff4d4d;
+            background: #dc3545;
             width: 25%;
         }
         
         .medium {
-            background: #ffa700;
+            background: #ffc107;
             width: 50%;
         }
         
         .strong {
-            background: #ffff00;
+            background: #20c997;
             width: 75%;
         }
         
         .very-strong {
-            background: #00ff00;
+            background: #198754;
             width: 100%;
         }
         
-        .loading-dots {
-            position: relative;
-            width: 10px;
-            height: 10px;
-            border-radius: 5px;
-            background-color: white;
-            color: white;
-            animation: dotPulse 1.5s infinite linear;
-            animation-delay: 0.25s;
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
         }
         
-        .loading-dots::before,
-        .loading-dots::after {
-            content: '';
-            display: inline-block;
-            position: absolute;
-            top: 0;
-            width: 10px;
-            height: 10px;
-            border-radius: 5px;
-            background-color: white;
-            color: white;
-            animation: dotPulse 1.5s infinite linear;
+        @media (max-width: 992px) {
+            .form-container {
+                width: 60%;
+                padding: 40px;
+            }
+            
+            .image-container {
+                width: 40%;
+            }
         }
         
-        .loading-dots::before {
-            left: -15px;
-            animation-delay: 0s;
-        }
-        
-        .loading-dots::after {
-            left: 15px;
-            animation-delay: 0.5s;
-        }
-        
-        @keyframes dotPulse {
-            0%, 100% { opacity: 0.4; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.3); }
+        @media (max-width: 768px) {
+            .register-container {
+                flex-direction: column-reverse;
+            }
+            
+            .form-container {
+                width: 100%;
+                height: 75vh;
+            }
+            
+            .image-container {
+                width: 100%;
+                height: 25vh;
+            }
         }
     </style>
 </head>
 <body>
     <div class="register-container">
-        <div class="register-form-container">
-            <div class="register-logo">GYMVERSE</div>
+        <div class="form-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div class="logo-text">GYMVERSE</div>
+            </div>
             
-            <form class="register-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-                <h2>CREATE YOUR ACCOUNT</h2>
-                
-                <div class="form-group">
-                    <i class="form-icon fas fa-user"></i>
-                    <input type="text" name="username" class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" placeholder="Username" value="<?php echo $username; ?>">
+            <div class="form-header">
+                <h1>Sign Up to GYMVERSE</h1>
+                <p>Start your journey</p>
+            </div>
+            
+            <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+                <div class="form-control">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username" 
+                           class="<?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" 
+                           value="<?php echo $username; ?>" placeholder="Choose a username">
                     <?php if(!empty($username_err)) echo '<span class="invalid-feedback">' . $username_err . '</span>'; ?>
                 </div>
                 
-                <div class="form-group">
-                    <i class="form-icon fas fa-envelope"></i>
-                    <input type="email" name="email" class="form-control <?php echo (!empty($email_err)) ? 'is-invalid' : ''; ?>" placeholder="Email Address" value="<?php echo $email; ?>">
+                <div class="form-control">
+                    <label for="email">E-mail</label>
+                    <input type="email" name="email" id="email" 
+                           class="<?php echo (!empty($email_err)) ? 'is-invalid' : ''; ?>" 
+                           value="<?php echo $email; ?>" placeholder="example@email.com">
                     <?php if(!empty($email_err)) echo '<span class="invalid-feedback">' . $email_err . '</span>'; ?>
                 </div>
                 
-                <div class="form-group">
-                    <i class="form-icon fas fa-lock"></i>
-                    <input type="password" name="password" id="password" class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" placeholder="Password">
+                <div class="form-control">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" 
+                           class="<?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" 
+                           placeholder="Create a password">
                     <div class="password-strength">
                         <div class="password-strength-meter" id="password-strength-meter"></div>
                     </div>
@@ -492,38 +459,32 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                     <?php if(!empty($password_err)) echo '<span class="invalid-feedback">' . $password_err . '</span>'; ?>
                 </div>
                 
-                <div class="form-group">
-                    <i class="form-icon fas fa-lock"></i>
-                    <input type="password" name="confirm_password" class="form-control <?php echo (!empty($confirm_password_err)) ? 'is-invalid' : ''; ?>" placeholder="Confirm Password">
+                <div class="form-control">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" 
+                           class="<?php echo (!empty($confirm_password_err)) ? 'is-invalid' : ''; ?>" 
+                           placeholder="Confirm your password">
                     <?php if(!empty($confirm_password_err)) echo '<span class="invalid-feedback">' . $confirm_password_err . '</span>'; ?>
                 </div>
-                
-                <div class="terms">
-                    By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-                </div>
-                
-                <button type="submit" class="register-btn">
-                    <span id="register-text">CREATE ACCOUNT</span>
-                    <span id="register-loading" style="display: none;"><div class="loading-dots"></div></span>
+     
+                <button type="submit" class="btn btn-primary btn-block" id="register-btn">
+                    <span id="register-text">Create Account</span>
+                    <span id="register-loading" style="display: none;">
+                    </span>
                 </button>
                 
-                <div class="form-divider">OR</div>
-                
-                <div class="social-login">
-                    <button type="button" class="social-btn"><i class="fab fa-google"></i></button>
-                    <button type="button" class="social-btn"><i class="fab fa-facebook-f"></i></button>
-                    <button type="button" class="social-btn"><i class="fab fa-apple"></i></button>
-                </div>
-                
-                <div class="register-footer">
-                    Already have an account? <a href="login.php">Login</a>
+                <div class="account-link">
+                    <p>Already have an account? <a href="login.php">Sign in</a></p>
                 </div>
             </form>
         </div>
+        
+        <div class="image-container">
+        </div>
     </div>
     
-    <a href="index.php" class="home-button" style="position: fixed; top: 20px; left: 20px; background-color: rgba(25, 25, 25, 0.8); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 1000; transition: all 0.3s ease;">
-        <i class="fas fa-home" style="font-size: 20px;"></i>
+    <a href="index.php" class="home-button">
+        <i class="fas fa-home"></i>
     </a>
     
     <script>
@@ -583,11 +544,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         });
         
-        document.querySelector('.register-form').addEventListener('submit', function() {
+        document.querySelector('form').addEventListener('submit', function() {
             document.getElementById('register-text').style.display = 'none';
             document.getElementById('register-loading').style.display = 'block';
         });
     </script>
 </body>
-</html> 
-<?php include '../includes/footer.php'; ?>
+</html>

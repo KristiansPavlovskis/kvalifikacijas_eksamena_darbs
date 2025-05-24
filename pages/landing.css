@@ -175,7 +175,7 @@ nav ul li a:hover::after {
     display: flex;
     align-items: center;
     padding-top: 80px;
-    background: linear-gradient(rgba(10, 14, 21, 0.8), rgba(10, 14, 21, 0.9)), url('assets/images/pexels-ivan-samkov-4164766.jpg');
+    background: linear-gradient(rgba(10, 14, 21, 0.8), rgba(10, 14, 21, 0.9)), url('../assets/images/wallpaperflare.com_wallpaper.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -420,7 +420,7 @@ nav ul li a:hover::after {
 .final-cta {
     padding: 100px 0;
     text-align: center;
-    background: linear-gradient(rgba(10, 14, 21, 0.9), rgba(10, 14, 21, 0.9)), url('assets/images/pexels-mikhail-nilov-6975759.jpg');
+    background: linear-gradient(rgba(10, 14, 21, 0.9), rgba(10, 14, 21, 0.9)), url('../assets/images/caption-embracing-fitness-state-of-the-art-4k-gym-53wcvwc2088az4xx.jpg');
     background-size: cover;
     background-position: center;
     position: relative;

@@ -844,10 +844,6 @@ function updateWorkoutTemplate($templateId, $data) {
             color: #fff;
         }
         
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
         .input-group label {
             display: block;
             margin-bottom: 8px;
@@ -1205,7 +1201,6 @@ function updateWorkoutTemplate($templateId, $data) {
         <div class="page-header">
             <div>
                 <h1>Workout Templates</h1>
-                <p>Create and manage your workout routines</p>
             </div>
         </div>
         
