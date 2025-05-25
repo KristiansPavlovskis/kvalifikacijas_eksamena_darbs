@@ -230,6 +230,57 @@ try {
     $hiit_templates_count = 0;
     $cardio_templates_count = 0;
 }
+
+function getGlobalWorkoutTemplates($conn) {
+    try {
+        $check_table_query = "SHOW TABLES LIKE 'workout_templates'";
+        $table_result = mysqli_query($conn, $check_table_query);
+        if (mysqli_num_rows($table_result) == 0) {
+            error_log("workout_templates table does not exist");
+            return [];
+        }
+         
+        $query = "SELECT wt.id, wt.name, wt.description, wt.difficulty, wt.estimated_time, 
+                   wt.category, wt.created_at, wt.updated_at, u.username as creator,
+                   (SELECT COUNT(*) FROM workout_template_exercises WHERE workout_template_id = wt.id) as exercise_count
+                   FROM workout_templates wt
+                   JOIN users u ON wt.user_id = u.id
+                   WHERE (
+                     EXISTS (
+                       SELECT 1 FROM user_roles ur 
+                       JOIN roles r ON ur.role_id = r.id 
+                       WHERE ur.user_id = wt.user_id AND (r.name = 'admin' OR r.id = 5)
+                     )
+                   )
+                   ORDER BY wt.updated_at DESC";
+        
+        $result = mysqli_query($conn, $query);
+        
+        if (!$result) {
+            error_log("Failed to execute query: " . mysqli_error($conn));
+            return [];
+        }
+        
+        $templates = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $templates[] = $row;
+        }
+        
+        error_log("Found " . count($templates) . " global templates from admins");
+        return $templates;
+    } catch (Exception $e) {
+        error_log("Error in getGlobalWorkoutTemplates: " . $e->getMessage());
+        return [];
+    }
+}
+
+$global_templates = false;
+try {
+    $global_templates = getGlobalWorkoutTemplates($conn);
+    error_log("Retrieved " . count($global_templates) . " global templates");
+} catch (Exception $e) {
+    error_log("Error fetching global templates: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
@@ -326,6 +377,114 @@ try {
         .stat-value {
             font-weight: 600;
         }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-right: 10px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .toggle-description {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 15px;
+        }
+        
+        .template-global {
+            position: relative;
+        }
+        
+        .template-global:after {
+            content: "GLOBAL";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .global-template {
+            position: relative;
+        }
+        
+        .global-template:after {
+            content: "OFFICIAL TEMPLATE";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .global-badge {
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            padding: 2px 8px;
+        }
+        
+        .selected-template-meta-item.global-badge i,
+        .selected-template-meta-item.global-badge span {
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -380,8 +539,17 @@ try {
                             
                             <div class="filters-section">
                                 <h3 class="panel-title" style="margin-bottom: 15px;">
-                                    <i class="fas fa-filter"></i> Filters
+                                    <i class="fas fa-globe"></i> Global Templates
                                 </h3>
+                                <div class="toggle-container">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="globalTemplatesToggle">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="toggle-label">Show global templates</span>
+                                </div>
+                                <p class="toggle-description">Toggle to view official workout templates created by trainers.</p>
+                                
                                 <div class="filter-group">
                                     <label class="filter-label">Duration</label>
                                     <select class="filter-select" id="durationFilter">
@@ -557,7 +725,7 @@ try {
                                     <?php endwhile; ?>
                                 </div>
                             <?php else: ?>
-                                <div class="empty-message">
+                                <div class="empty-message" id="noTemplatesMessage">
                                     <i class="fas fa-clipboard"></i>
                                     <p>No workout templates found. Create a template first to start a workout.</p>
                                     <a href="workout-templates.php" class="btn btn-primary">
@@ -948,19 +1116,39 @@ try {
             });
 
             function filterTemplates() {
-                const activeCategory = document.querySelector('.category-item.active').dataset.category;
-                const selectedDuration = durationFilter.value;
-                const selectedDifficulty = difficultyFilter.value;
-                const searchQuery = templateSearch.value.toLowerCase();
+                const activeCategory = document.querySelector('.category-item.active')?.dataset.category || 'all';
+                const selectedDuration = durationFilter?.value || 'any';
+                const selectedDifficulty = difficultyFilter?.value || 'any';
+                const searchQuery = templateSearch?.value?.toLowerCase() || '';
+                const showGlobal = globalTemplatesToggle?.checked || false;
 
-                const allTemplates = [...document.querySelectorAll('.template-card'), ...document.querySelectorAll('.template-list-item')];
+                console.log("Filtering templates with parameters:", {
+                    activeCategory,
+                    selectedDuration,
+                    selectedDifficulty,
+                    searchQuery,
+                    showGlobal
+                });
+
+                const allTemplates = [
+                    ...document.querySelectorAll('.template-card'), 
+                    ...document.querySelectorAll('.template-list-item')
+                ];
+                
+                console.log("Filtering templates:", allTemplates.length, "templates found");
 
                 allTemplates.forEach(template => {
+                    if (!template) return;
+                    
                     let showTemplate = true;
+                    
+                    if (template.classList.contains('template-global') && !showGlobal) {
+                        showTemplate = false;
+                    }
 
                     if (activeCategory !== 'all') {
                         const templateCategory = template.getAttribute('data-category');
-                        if (templateCategory && templateCategory === activeCategory) {
+                        if (templateCategory && templateCategory === activeCategory) {  
                         } 
                         else if (activeCategory === 'Strength Training' && template.classList.contains('template-strength')) {
                         } 
@@ -988,7 +1176,7 @@ try {
                     }
 
                     if (searchQuery) {
-                        const templateName = template.querySelector('.template-card-title, .template-list-item-title').textContent.toLowerCase();
+                        const templateName = template.querySelector('.template-card-title, .template-list-item-title')?.textContent.toLowerCase() || '';
                         const templateDescription = template.querySelector('.template-card-description, .template-list-item-description')?.textContent.toLowerCase() || '';
                         
                         if (!templateName.includes(searchQuery) && !templateDescription.includes(searchQuery)) {
@@ -1013,13 +1201,19 @@ try {
                 fetch(`get_template.php?id=${templateId}`)
                     .then(response => {
                         if (!response.ok) {
+                            if (response.status === 500) {
+                                console.error('Server error when loading template. Status:', response.status);
+                                return response.json().then(errorData => {
+                                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                                });
+                            }
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
                         return response.json();
                     })
                     .then(data => {
                         if (data.success) {
-                            renderSelectedTemplate(data.template, data.exercises);
+                            renderSelectedTemplate(data.template, data.exercises, data.is_global);
                             showNotification(`Template "${data.template.name}" loaded successfully!`, 'success');
                         } else {
                             throw new Error(data.error || 'Failed to load template');
@@ -1038,7 +1232,7 @@ try {
                     });
             }
 
-            function renderSelectedTemplate(template, exercises) {
+            function renderSelectedTemplate(template, exercises, isGlobal = false) {
                 const difficultyLabel = template.difficulty ? template.difficulty.charAt(0).toUpperCase() + template.difficulty.slice(1) : 'Beginner';
                 
                 let exercisesHtml = '';
@@ -1056,8 +1250,14 @@ try {
                     `;
                 });
 
+                const creatorInfo = isGlobal && template.creator ? 
+                    `<div class="selected-template-meta-item global-badge">
+                        <i class="fas fa-user-shield"></i>
+                        <span>By ${template.creator}</span>
+                    </div>` : '';
+
                 const html = `
-                    <div class="selected-template">
+                    <div class="selected-template ${isGlobal ? 'global-template' : ''}">
                         <div class="selected-template-header">
                             <h2 class="selected-template-title">${template.name}</h2>
                             <div class="selected-template-meta">
@@ -1073,6 +1273,7 @@ try {
                                     <i class="fas fa-bolt"></i>
                                     <span>${difficultyLabel}</span>
                                 </div>
+                                ${creatorInfo}
                             </div>
                         </div>
                         <div class="selected-template-body">
@@ -1086,9 +1287,15 @@ try {
                             <button class="begin-workout-btn" data-template-id="${template.id}">
                                 <i class="fas fa-play"></i> Begin Workout
                             </button>
+                            ${!isGlobal ? `
                             <button class="modify-template-btn" data-template-id="${template.id}">
                                 <i class="fas fa-edit"></i> Modify Template
                             </button>
+                            ` : `
+                            <button class="copy-template-btn" data-template-id="${template.id}">
+                                <i class="fas fa-copy"></i> Copy Template
+                            </button>
+                            `}
                         </div>
                     </div>
                 `;
@@ -1130,11 +1337,52 @@ try {
                             });
                     });
                 }
+                
+                const copyTemplateBtn = selectedTemplateContainer.querySelector('.copy-template-btn');
+                if (copyTemplateBtn) {
+                    copyTemplateBtn.addEventListener('click', function() {
+                        const templateId = this.dataset.templateId;
+                        
+                        fetch(`get_template.php?id=${templateId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const templateCopy = {
+                                        name: `${data.template.name} (Copy)`,
+                                        description: data.template.description,
+                                        exercises: data.exercises
+                                    };
+                                    
+                                    localStorage.setItem('template_data', JSON.stringify(templateCopy));
+                                    
+                                    showNotification('Template copied! Redirecting to create template...', 'success');
+                                    setTimeout(() => {
+                                        window.location.href = 'workout-templates.php?new=1';
+                                    }, 1500);
+                                } else {
+                                    showNotification('Failed to copy template: ' + data.error, 'error');
+                                }
+                            })
+                            .catch(error => {
+                                showNotification('Error: ' + error.message, 'error');
+                            });
+                    });
+                }
             }
 
             function startWorkout(templateId) {
                 fetch(`get_template.php?id=${templateId}`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            if (response.status === 500) {
+                                return response.json().then(errorData => {
+                                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                                });
+                            }
+                            throw new Error(`Failed to load template: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (!data.success) throw new Error(data.error);
 
@@ -1163,7 +1411,8 @@ try {
                             completedSets: 0,
                             notes: '',
                             peakWeight: 0,
-                            caloriesBurned: 0
+                            caloriesBurned: 0,
+                            isGlobal: data.is_global || false
                         };
 
                         workoutState.timerInterval = setInterval(updateWorkoutTimer, 1000);
@@ -1175,6 +1424,7 @@ try {
                         goToStep(2);
                     })
                     .catch(error => {
+                        console.error("Error starting workout:", error);
                         showNotification(`Failed to start workout: ${error.message}`, 'error');
                     });
             }
@@ -1974,6 +2224,231 @@ try {
                     goToStep(2);
                 });
             }
+
+            function toggleGlobalTemplates(show) {
+                console.log("Toggling global templates:", show);
+                const globalTemplates = document.querySelectorAll('.template-global');
+                console.log("Found", globalTemplates.length, "global template elements");
+                
+                const listView = document.getElementById('listViewBtn').classList.contains('active');
+                const gridView = document.getElementById('gridViewBtn').classList.contains('active');
+                
+                globalTemplates.forEach(template => {
+                    if (show) {
+                        if (template.classList.contains('template-card') && gridView) {
+                            template.style.display = '';
+                        } else if (template.classList.contains('template-list-item') && listView) {
+                            template.style.display = '';
+                        } else if (!gridView && !listView) {
+                            template.style.display = '';
+                        }
+                    } else {
+                        template.style.display = 'none';
+                    }
+                });
+                
+                const noTemplatesMessage = document.getElementById('noTemplatesMessage');
+                if (noTemplatesMessage && show && globalTemplates.length > 0) {
+                    noTemplatesMessage.style.display = 'none';
+                } else if (noTemplatesMessage && !show) {
+                    noTemplatesMessage.style.display = 'block';
+                }
+                
+                if (show) {
+                    if (globalTemplates.length > 0) {
+                        showNotification('Global templates are now visible', 'success');
+                    } else {
+                        showNotification('No global templates available', 'info');
+                    }
+                } else {
+                    showNotification('Global templates are now hidden', 'info');
+                }
+                
+                filterTemplates();
+            }
+            
+            const globalTemplatesToggle = document.getElementById('globalTemplatesToggle');
+            
+            if (globalTemplatesToggle) {
+                console.log("Global templates toggle found");
+                globalTemplatesToggle.addEventListener('change', function() {
+                    console.log("Toggle changed:", this.checked);
+                    toggleGlobalTemplates(this.checked);
+                });
+            } else {
+                console.log("Global templates toggle not found - will be initialized later");
+            }
+            
+            setTimeout(function initGlobalTemplatesFeature() {
+                console.log("Initializing global templates feature");
+                
+                const globalTemplatesToggle = document.getElementById('globalTemplatesToggle');
+                if (!globalTemplatesToggle) {
+                    console.error("Global templates toggle not found");
+                    return;
+                }
+                
+                const templatesPanel = document.querySelector('.templates-panel');
+                if (!templatesPanel) {
+                    console.error("Templates panel not found");
+                    return;
+                }
+                
+                let templateGrid = templatesPanel.querySelector('.template-grid');
+                let templateList = templatesPanel.querySelector('.template-list');
+                
+                if (!templateGrid) {
+                    console.log("Creating missing template grid");
+                    templateGrid = document.createElement('div');
+                    templateGrid.className = 'template-grid';
+                    templateGrid.style.display = 'none';
+                    templatesPanel.querySelector('.panel-content').appendChild(templateGrid);
+                }
+                
+                if (!templateList) {
+                    console.log("Creating missing template list");
+                    templateList = document.createElement('div');
+                    templateList.className = 'template-list';
+                    templatesPanel.querySelector('.panel-content').appendChild(templateList);
+                }
+                
+                try {
+                    <?php if ($global_templates && is_array($global_templates) && count($global_templates) > 0): ?>
+                    console.log("Found <?php echo count($global_templates); ?> global templates to add");
+                    
+                    <?php foreach ($global_templates as $index => $template): ?>
+                    try {
+                        <?php 
+                        $categoryClasses = 'template-all template-global';
+                        $difficultyClass = strtolower($template['difficulty'] ?: 'beginner');
+                        $durationClass = '';
+                        
+                        if ($template['estimated_time'] < 30) {
+                            $durationClass = 'duration-short';
+                        } elseif ($template['estimated_time'] < 60) {
+                            $durationClass = 'duration-medium';
+                        } else {
+                            $durationClass = 'duration-long';
+                        }
+
+                        if (
+                            stripos($template['name'], 'strength') !== false || 
+                            stripos($template['description'], 'strength') !== false
+                        ) {
+                            $categoryClasses .= ' template-strength';
+                        }
+                        
+                        if (
+                            stripos($template['name'], 'hiit') !== false || 
+                            stripos($template['description'], 'hiit') !== false ||
+                            stripos($template['name'], 'interval') !== false || 
+                            stripos($template['description'], 'interval') !== false
+                        ) {
+                            $categoryClasses .= ' template-hiit';
+                        }
+                        
+                        if (
+                            stripos($template['name'], 'cardio') !== false || 
+                            stripos($template['description'], 'cardio') !== false
+                        ) {
+                            $categoryClasses .= ' template-cardio';
+                        }
+                        ?>
+                        
+                        console.log("Adding template: <?php echo htmlspecialchars($template['name']); ?>");
+                        
+                        const gridCardId<?php echo $index; ?> = document.createElement('div');
+                        gridCardId<?php echo $index; ?>.className = 'template-card <?php echo $categoryClasses; ?> <?php echo $difficultyClass; ?> <?php echo $durationClass; ?>';
+                        gridCardId<?php echo $index; ?>.dataset.id = '<?php echo $template['id']; ?>';
+                        gridCardId<?php echo $index; ?>.dataset.category = '<?php echo htmlspecialchars($template['category'] ?? ''); ?>';
+                        gridCardId<?php echo $index; ?>.style.display = 'none';
+                        
+                        gridCardId<?php echo $index; ?>.innerHTML = `
+                            <div class="template-card-header">
+                                <div class="template-card-title"><?php echo htmlspecialchars($template['name']); ?></div>
+                                <div class="template-card-meta">
+                                    <div class="template-card-meta-item">
+                                        <i class="fas fa-stopwatch"></i>
+                                        <span><?php echo $template['estimated_time']; ?> min</span>
+                                    </div>
+                                    <div class="template-card-meta-item">
+                                        <i class="fas fa-dumbbell"></i>
+                                        <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="template-card-body">
+                                <?php if (!empty($template['description'])): ?>
+                                    <div class="template-card-description"><?php echo htmlspecialchars(substr($template['description'], 0, 50)) . (strlen($template['description']) > 50 ? '...' : ''); ?></div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="template-card-footer">
+                                <div class="template-card-action">
+                                    <i class="fas fa-chevron-right"></i> Select
+                                </div>
+                            </div>
+                        `;
+                        
+                        const listItemId<?php echo $index; ?> = document.createElement('div');
+                        listItemId<?php echo $index; ?>.className = 'template-list-item <?php echo $categoryClasses; ?> <?php echo $difficultyClass; ?> <?php echo $durationClass; ?>';
+                        listItemId<?php echo $index; ?>.dataset.id = '<?php echo $template['id']; ?>';
+                        listItemId<?php echo $index; ?>.dataset.category = '<?php echo htmlspecialchars($template['category'] ?? ''); ?>';
+                        listItemId<?php echo $index; ?>.style.display = 'none';
+                        
+                        listItemId<?php echo $index; ?>.innerHTML = `
+                            <div class="template-list-item-header">
+                                <div class="template-list-item-title"><?php echo htmlspecialchars($template['name']); ?></div>
+                                <div class="template-list-item-difficulty"><?php echo ucfirst($template['difficulty'] ?: 'Beginner'); ?></div>
+                            </div>
+                            <div class="template-list-item-meta">
+                                <div class="template-list-item-meta-item">
+                                    <i class="fas fa-stopwatch"></i>
+                                    <span><?php echo $template['estimated_time']; ?> min</span>
+                                </div>
+                                <div class="template-list-item-meta-item">
+                                    <i class="fas fa-dumbbell"></i>
+                                    <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                </div>
+                                <div class="template-list-item-meta-item">
+                                    <i class="fas fa-user"></i>
+                                    <span><?php echo htmlspecialchars($template['creator']); ?></span>
+                                </div>
+                            </div>
+                            <?php if (!empty($template['description'])): ?>
+                                <div class="template-list-item-description"><?php echo htmlspecialchars(substr($template['description'], 0, 80)) . (strlen($template['description']) > 80 ? '...' : ''); ?></div>
+                            <?php endif; ?>
+                        `;
+                        
+                        gridCardId<?php echo $index; ?>.addEventListener('click', function() {
+                            const templateId = this.dataset.id;
+                            loadTemplateDetails(templateId);
+                        });
+                        
+                        listItemId<?php echo $index; ?>.addEventListener('click', function() {
+                            const templateId = this.dataset.id;
+                            loadTemplateDetails(templateId);
+                        });
+                    
+                        templateGrid.appendChild(gridCardId<?php echo $index; ?>);
+                        templateList.appendChild(listItemId<?php echo $index; ?>);
+                        
+                        console.log("Successfully added template", <?php echo $index; ?>);
+                    } catch (e) {
+                        console.error("Error adding template:", e);
+                    }
+                    <?php endforeach; ?>
+                    <?php else: ?>
+                    console.log("No global templates found in PHP data");
+                    <?php endif; ?>
+                    
+                    if (globalTemplatesToggle.checked) {
+                        toggleGlobalTemplates(true);
+                    }
+                    
+                } catch (error) {
+                    console.error("Error initializing global templates:", error);
+                }
+            }, 1000);
         });
     </script>
 </body>

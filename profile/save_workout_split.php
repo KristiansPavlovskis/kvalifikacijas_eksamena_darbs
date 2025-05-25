@@ -15,8 +15,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
     $split_name = isset($_POST['splitName']) ? trim($_POST['splitName']) : '';
     $days = isset($_POST['days']) ? $_POST['days'] : [];
-    $month = isset($_POST['month']) ? intval($_POST['month']) : date('m');
-    $year = isset($_POST['year']) ? intval($_POST['year']) : date('Y');
+    
+    if (isset($_POST['target_month']) && strpos($_POST['target_month'], '_') !== false) {
+        list($month, $year) = explode('_', $_POST['target_month']);
+        $month = intval($month);
+        $year = intval($year);
+    } else {
+        $month = isset($_POST['month']) ? intval($_POST['month']) : date('m');
+        $year = isset($_POST['year']) ? intval($_POST['year']) : date('Y');
+    }
     
     if (empty($split_name)) {
         $response['message'] = 'Please provide a name for your split.';
@@ -58,25 +65,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->begin_transaction();
         
         $days_data = [];
+        for ($i = 0; $i < 7; $i++) {
+            $days_data[$i] = [
+                'type' => '',
+                'template_id' => null
+            ];
+        }
+        
         foreach ($days as $dayIndex => $dayData) {
             if (isset($dayData['type']) && !empty($dayData['type'])) {
-                $day_info = [
-                    'type' => $dayData['type']
-                ];
+                $day_info = [];
                 
-                if ($dayData['type'] !== 'rest') {
-                    $day_info['template_id'] = isset($dayData['template_id']) ? intval($dayData['template_id']) : null;
+                if ($dayData['type'] === 'rest') {
+                    $day_info = [
+                        'type' => 'rest'
+                    ];
+                } 
+                else if (is_numeric($dayData['type'])) {
+                    $template_id = intval($dayData['type']);
                     
-                    if ($dayData['type'] === 'custom' && isset($dayData['custom_name'])) {
-                        $day_info['custom_name'] = $dayData['custom_name'];
+                    $stmt = $conn->prepare("SELECT name, category FROM workout_templates WHERE id = ? AND user_id = ?");
+                    if (!$stmt) {
+                        throw new Exception("Failed to prepare template query: " . mysqli_error($conn));
+                    }
+                    
+                    $stmt->bind_param("ii", $template_id, $user_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    
+                    if ($template = $result->fetch_assoc()) {
+                        $category = $template['category'] ?: '';
+                        
+                        $day_info = [
+                            'type' => strtolower($category),
+                            'template_id' => $template_id
+                        ];
+                        
+                        if (empty($category)) {
+                            $day_info['type'] = 'custom';
+                            $day_info['custom_name'] = $template['name'];
+                        }
+                    } else {
+                        error_log("Template ID $template_id not found for user $user_id");
+                        continue;
+                    }
+                }
+                else {
+                    $day_info = [
+                        'type' => $dayData['type']
+                    ];
+                    
+                    if ($dayData['type'] !== 'rest') {
+                        $day_info['template_id'] = isset($dayData['template_id']) ? intval($dayData['template_id']) : null;
+                        
+                        if ($dayData['type'] === 'custom' && isset($dayData['custom_name'])) {
+                            $day_info['custom_name'] = $dayData['custom_name'];
+                        }
                     }
                 }
                 
-                $days_data[$dayIndex] = $day_info;
+                $days_data[intval($dayIndex)] = $day_info;
             }
         }
         
+        error_log("Saving split data: " . json_encode($days_data));
+        
         $split_data = json_encode($days_data);
+        if ($split_data === false) {
+            throw new Exception("Failed to encode split data as JSON: " . json_last_error_msg());
+        }
+        
         $stmt = $conn->prepare("INSERT INTO workout_splits (user_id, name, data) VALUES (?, ?, ?)");
         $stmt->bind_param("iss", $user_id, $split_name, $split_data);
         $stmt->execute();
@@ -103,10 +161,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $current_year = date('Y');
                 
                 $is_past_date = ($year < $current_year) || 
-                                ($year == $current_year && $month < $current_month) || 
-                                ($year == $current_year && $month == $current_month && $day < $current_day);
+                              ($year == $current_year && $month < $current_month) || 
+                              ($year == $current_year && $month == $current_month && $day < $current_day);
                 
-                if ($is_past_date) {
+                $apply_to_calendar = isset($_POST['apply_to_calendar']) && $_POST['apply_to_calendar'] == '1';
+                
+                if ($is_past_date && !$apply_to_calendar) {
                     continue;
                 }
                 

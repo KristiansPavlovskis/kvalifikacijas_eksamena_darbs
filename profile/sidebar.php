@@ -351,19 +351,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     const toggleSidebarBtn = document.getElementById('toggleSidebar');
-    toggleSidebarBtn.addEventListener('click', function() {
-        const sidebar = document.querySelector('.sidebar');
-        sidebar.classList.toggle('collapsed');
-        
-        const icon = this.querySelector('i');
-        if (sidebar.classList.contains('collapsed')) {
-            icon.classList.remove('fa-chevron-left');
-            icon.classList.add('fa-chevron-right');
-        } else {
-            icon.classList.remove('fa-chevron-right');
-            icon.classList.add('fa-chevron-left');
-        }
-    });
+    if (toggleSidebarBtn) { 
+        toggleSidebarBtn.addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            if (!sidebar) return; 
+            
+            sidebar.classList.toggle('collapsed');
+            
+            const icon = this.querySelector('i');
+            if (icon) {
+                if (sidebar.classList.contains('collapsed')) {
+                    icon.classList.remove('fa-chevron-left');
+                    icon.classList.add('fa-chevron-right');
+                } else {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-left');
+                }
+            }
+        });
+    }
+
 
     document.addEventListener('click', function(event) {
         if (window.innerWidth <= 992) {

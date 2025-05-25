@@ -73,9 +73,9 @@ function searchExercises($query, $category = '') {
     $searchQuery = "%$query%";
     $sql = "SELECT 
             id, name, description, exercise_type, equipment, 
-            primary_muscle, secondary_muscles, difficulty, 
-            time_required, calories_burned, video_url, 
-            image_url, thumbnail_url 
+            primary_muscle, difficulty, instructions, 
+            common_mistakes, benefits, video_url, 
+            created_at, updated_at 
             FROM exercises 
             WHERE (name LIKE ? 
             OR description LIKE ? 
@@ -129,6 +129,36 @@ function getWorkoutTemplates() {
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     
+    $result = $stmt->get_result();
+    
+    $templates = [];
+    while ($row = $result->fetch_assoc()) {
+        $exerciseStmt = $conn->prepare("SELECT COUNT(*) as count FROM workout_template_exercises WHERE workout_template_id = ?");
+        $exerciseStmt->bind_param("i", $row['id']);
+        $exerciseStmt->execute();
+        $exerciseResult = $exerciseStmt->get_result();
+        $exerciseCount = $exerciseResult->fetch_assoc()['count'];
+        
+        $row['exercise_count'] = $exerciseCount;
+        $templates[] = $row;
+    }
+    
+    return $templates;
+}
+
+function getAdminWorkoutTemplates() {
+    global $conn;
+    
+    $stmt = $conn->prepare("SELECT wt.id, wt.name, wt.description, wt.difficulty, wt.estimated_time, 
+                          wt.category, wt.created_at, wt.updated_at, u.username as creator
+                          FROM workout_templates wt
+                          JOIN users u ON wt.user_id = u.id
+                          JOIN user_roles ur ON u.id = ur.user_id
+                          JOIN roles r ON ur.role_id = r.id
+                          WHERE r.id = 5
+                          ORDER BY wt.updated_at DESC");
+    
+    $stmt->execute();
     $result = $stmt->get_result();
     
     $templates = [];
@@ -211,6 +241,7 @@ function createRequiredTables() {
 createRequiredTables();
 
 $templates = getWorkoutTemplates();
+$adminTemplates = getAdminWorkoutTemplates();
 
 function getTemplateDetails($templateId) {
     global $conn;
@@ -1192,6 +1223,42 @@ function updateWorkoutTemplate($templateId, $data) {
                 }
             }
         }
+        
+        .template-view-toggle {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--card-bg);
+            width: fit-content;
+        }
+        
+        .toggle-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            color: #aaa;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .toggle-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .templates-view {
+            display: none;
+        }
+        
+        .templates-view.active {
+            display: block;
+        }
+        
+        .admin-template .template-actions-dropdown {
+            width: 150px;
+        }
     </style>
 </head>
 <body>
@@ -1210,63 +1277,130 @@ function updateWorkoutTemplate($templateId, $data) {
             </button>
         </div>
         
-        <div class="templates-grid">
-            <?php if (empty($templates)): ?>
-                <div class="no-templates">
-                    <p>You haven't created any workout templates yet.</p>
-                    <p>Click "Create Template" to get started!</p>
+        <div class="template-view-toggle">
+            <button class="toggle-btn active" data-view="my-templates">My Templates</button>
+            <button class="toggle-btn" data-view="admin-templates">Global Templates</button>
+        </div>
+        
+        <div class="templates-container">
+            <div id="myTemplatesView" class="templates-view active">
+                <div class="templates-grid">
+                    <?php if (empty($templates)): ?>
+                        <div class="no-templates">
+                            <p>You haven't created any workout templates yet.</p>
+                            <p>Click "Create Template" to get started!</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($templates as $template): ?>
+                            <div class="template-card" data-id="<?php echo $template['id']; ?>">
+                                <div class="template-header">
+                                    <h3 class="template-title"><?php echo htmlspecialchars($template['name']); ?></h3>
+                                    <div class="template-meta">
+                                        <div class="meta-item">
+                                            <i class="fas fa-dumbbell"></i>
+                                            <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span><?php echo $template['estimated_time']; ?> mins</span>
+                                        </div>
+                                    </div>
+                                    <div class="difficulty-dots">
+                                        <?php
+                                            $difficultyLevel = 0;
+                                            if ($template['difficulty'] === 'beginner') $difficultyLevel = 1;
+                                            if ($template['difficulty'] === 'intermediate') $difficultyLevel = 2;
+                                            if ($template['difficulty'] === 'advanced') $difficultyLevel = 3;
+                                            
+                                            for ($i = 1; $i <= 3; $i++) {
+                                                echo '<div class="dot ' . ($i <= $difficultyLevel ? 'active' : '') . '"></div>';
+                                            }
+                                        ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="template-actions-menu">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </div>
+                                
+                                <div class="template-actions-dropdown">
+                                    <div class="template-dropdown-item view-template">
+                                        <i class="fas fa-eye"></i> View
+                                    </div>
+                                    <div class="template-dropdown-item edit-template">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </div>
+                                    <div class="template-dropdown-item delete template-delete">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </div>
+                                </div>
+                                
+                                <div class="last-used">
+                                    Last used: <?php echo date('M d', strtotime($template['updated_at'])); ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
-            <?php else: ?>
-                <?php foreach ($templates as $template): ?>
-                    <div class="template-card" data-id="<?php echo $template['id']; ?>">
-                        <div class="template-header">
-                            <h3 class="template-title"><?php echo htmlspecialchars($template['name']); ?></h3>
-                            <div class="template-meta">
-                                <div class="meta-item">
-                                    <i class="fas fa-dumbbell"></i>
-                                    <span><?php echo $template['exercise_count']; ?> exercises</span>
+            </div>
+            
+            <div id="adminTemplatesView" class="templates-view">
+                <div class="templates-grid">
+                    <?php if (empty($adminTemplates)): ?>
+                        <div class="no-templates">
+                            <p>No admin templates available.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($adminTemplates as $template): ?>
+                            <div class="template-card admin-template" data-id="<?php echo $template['id']; ?>">
+                                <div class="template-header">
+                                    <h3 class="template-title"><?php echo htmlspecialchars($template['name']); ?></h3>
+                                    <div class="template-meta">
+                                        <div class="meta-item">
+                                            <i class="fas fa-dumbbell"></i>
+                                            <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span><?php echo $template['estimated_time']; ?> mins</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <i class="fas fa-user"></i>
+                                            <span>By: <?php echo htmlspecialchars($template['creator']); ?></span>
+                                        </div>
+                                    </div>
+                                    <div class="difficulty-dots">
+                                        <?php
+                                            $difficultyLevel = 0;
+                                            if ($template['difficulty'] === 'beginner') $difficultyLevel = 1;
+                                            if ($template['difficulty'] === 'intermediate') $difficultyLevel = 2;
+                                            if ($template['difficulty'] === 'advanced') $difficultyLevel = 3;
+                                            
+                                            for ($i = 1; $i <= 3; $i++) {
+                                                echo '<div class="dot ' . ($i <= $difficultyLevel ? 'active' : '') . '"></div>';
+                                            }
+                                        ?>
+                                    </div>
                                 </div>
-                                <div class="meta-item">
-                                    <i class="fas fa-clock"></i>
-                                    <span><?php echo $template['estimated_time']; ?> mins</span>
+                                
+                                <div class="template-actions-menu">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </div>
+                                
+                                <div class="template-actions-dropdown">
+                                    <div class="template-dropdown-item view-template">
+                                        <i class="fas fa-eye"></i> View
+                                    </div>
+                                </div>
+                                
+                                <div class="last-used">
+                                    Created: <?php echo date('M d', strtotime($template['created_at'])); ?>
                                 </div>
                             </div>
-                            <div class="difficulty-dots">
-                                <?php
-                                    $difficultyLevel = 0;
-                                    if ($template['difficulty'] === 'beginner') $difficultyLevel = 1;
-                                    if ($template['difficulty'] === 'intermediate') $difficultyLevel = 2;
-                                    if ($template['difficulty'] === 'advanced') $difficultyLevel = 3;
-                                    
-                                    for ($i = 1; $i <= 3; $i++) {
-                                        echo '<div class="dot ' . ($i <= $difficultyLevel ? 'active' : '') . '"></div>';
-                                    }
-                                ?>
-                            </div>
-                        </div>
-                        
-                        <div class="template-actions-menu">
-                            <i class="fas fa-ellipsis-v"></i>
-                        </div>
-                        
-                        <div class="template-actions-dropdown">
-                            <div class="template-dropdown-item view-template">
-                                <i class="fas fa-eye"></i> View
-                            </div>
-                            <div class="template-dropdown-item edit-template">
-                                <i class="fas fa-edit"></i> Edit
-                            </div>
-                            <div class="template-dropdown-item delete template-delete">
-                                <i class="fas fa-trash"></i> Delete
-                            </div>
-                        </div>
-                        
-                        <div class="last-used">
-                            Last used: <?php echo date('M d', strtotime($template['updated_at'])); ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -1562,6 +1696,20 @@ function updateWorkoutTemplate($templateId, $data) {
             let currentCategory = 'Strength Training';
             let editCurrentCategory = 'Strength Training';
             let exerciseTime = 1;
+            
+            $('.toggle-btn').on('click', function() {
+                const viewType = $(this).data('view');
+                
+                $('.toggle-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                $('.templates-view').removeClass('active');
+                if (viewType === 'my-templates') {
+                    $('#myTemplatesView').addClass('active');
+                } else if (viewType === 'admin-templates') {
+                    $('#adminTemplatesView').addClass('active');
+                }
+            });
             
             $('.mobile-tab').on('click', function() {
                 const tabTarget = $(this).data('tab');

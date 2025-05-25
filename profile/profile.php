@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 
 require_once 'profile_access_control.php';
 
@@ -17,6 +20,7 @@ $fitness_level = "Beginner";
 $activity_streak = 0;
 $active_goals_count = 0;
 $completed_goals_count = 0;
+$recent_templates = [];
 
 function tableExists($conn, $tableName) {
     $result = mysqli_query($conn, "SHOW TABLES LIKE '$tableName'");
@@ -241,18 +245,23 @@ try {
 
 $recent_templates = [];
 try {
-    if (mysqli_query($conn, "SHOW TABLES LIKE 'workout_templates'")->num_rows > 0) {
-        $stmt = mysqli_prepare($conn, "SELECT id, name, category FROM workout_templates 
-                                      WHERE user_id = ? 
-                                      ORDER BY last_used_at DESC, updated_at DESC 
-                                      LIMIT 2");
+    $query = "SELECT id, name, category FROM workout_templates WHERE user_id = ? ORDER BY id DESC LIMIT 2";
+    $stmt = mysqli_prepare($conn, $query);
+    
+    if ($stmt) {
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         
+        $template_count = mysqli_num_rows($result);
+        error_log("Found $template_count workout templates for user $user_id");
+        
         while ($template = mysqli_fetch_assoc($result)) {
             $recent_templates[] = $template;
+            error_log("Added template: " . json_encode($template));
         }
+    } else {
+        error_log("Failed to prepare template query: " . mysqli_error($conn));
     }
 } catch (Exception $e) {
     error_log("Error fetching recent templates: " . $e->getMessage());
@@ -1423,16 +1432,23 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                         <div class="panel-header">
                             <h3 class="panel-title">Body Metrics</h3>
                         </div>
-                        <div class="body-metrics-list">
-                            <div class="metric-item">
-                                <span class="metric-label">Weight</span>
-                                <span class="metric-value"><?= $current_weight ?> kg</span>
+                        <?php if ($current_weight == 0 && $body_fat == 0): ?>
+                            <div style="text-align: center; padding: 20px 0;">
+                                <i class="fas fa-weight" style="font-size: 2rem; opacity: 0.5; margin-bottom: 15px;"></i>
+                                <p>You haven't set your body metrics yet</p>
                             </div>
-                            <div class="metric-item">
-                                <span class="metric-label">Body Fat</span>
-                                <span class="metric-value"><?= $body_fat ?>%</span>
+                        <?php else: ?>
+                            <div class="body-metrics-list">
+                                <div class="metric-item">
+                                    <span class="metric-label">Weight</span>
+                                    <span class="metric-value"><?= $current_weight ?> kg</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Body Fat</span>
+                                    <span class="metric-value"><?= $body_fat ?>%</span>
+                                </div>
                             </div>
-                        </div>
+                        <?php endif; ?>
                         <a href="body-measurements.php" class="start-workout-btn">
                             Update Metrics
                         </a>
@@ -1442,8 +1458,13 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                         <div class="panel-header">
                             <h3 class="panel-title">Recent templates</h3>
                         </div>
-                        <div class="templates-grid">
-                            <?php if (!empty($recent_templates)): ?>
+                        <?php if (empty($recent_templates)): ?>
+                            <div style="text-align: center; padding: 20px 0;">
+                                <i class="fas fa-clipboard" style="font-size: 2rem; opacity: 0.5; margin-bottom: 15px;"></i>
+                                <p>You haven't created any templates yet</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="templates-grid">
                                 <?php foreach ($recent_templates as $template): ?>
                                     <div class="template-card" data-template-id="<?= $template['id'] ?>">
                                         <?php 
@@ -1460,15 +1481,8 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                         <div class="template-label <?= $cssClass ?>"><?= htmlspecialchars($template['name']) ?></div>
                                     </div>
                                 <?php endforeach; ?>
-                            <?php else: ?>
-                                <div class="template-card">
-                                    <div class="template-label push-day">Push Workout</div>
-                                </div>
-                                <div class="template-card">
-                                    <div class="template-label pull-day">Pull Workout</div>
-                                </div>
-                            <?php endif; ?>
-                        </div>
+                            </div>
+                        <?php endif; ?>
                         <a href="workout-templates.php" class="start-workout-btn">
                             Update templates
                         </a>
@@ -1826,15 +1840,6 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     <span class="modal-close" onclick="document.getElementById('mobileSplitModal').style.display='none'" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
                     <h3 class="modal-title">Weekly Split Plan</h3>
                     
-                    <div class="form-group">
-                        <select class="form-select" id="mobileSavedSplits">
-                            <option value="">Create new split</option>
-                            <?php foreach ($workout_splits as $split): ?>
-                                <option value="<?= $split['id'] ?>"><?= htmlspecialchars($split['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    
                     <form id="mobileSplitForm">
                         <div class="form-group">
                             <label class="form-label" for="mobileSplitName">Split Name</label>
@@ -1850,37 +1855,24 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                     
                                     echo "<div class='form-group'>";
                                     echo "<select class='form-select mobile-split-type' id='mobile_day_{$index}' name='days[{$index}][type]'>";
-                                    echo "<option value=''>Select type</option>";
-                                    echo "<option value='push'>Push</option>";
-                                    echo "<option value='pull'>Pull</option>";
-                                    echo "<option value='leg'>Leg</option>";
-                                    echo "<option value='rest'>Rest</option>";
-                                    echo "<option value='custom'>Custom</option>";
-                                    echo "</select>";
-                                    echo "</div>";
-                                    
-                                    echo "<div class='form-group mobile-split-template' id='mobile_template_group_{$index}' style='display:none;'>";
-                                    echo "<select class='form-select' id='mobile_template_{$index}' name='days[{$index}][template_id]'>";
-                                    echo "<option value=''>Select template</option>";
+                                    echo "<option value=''>Select workout</option>";
+                                    echo "<option value='rest'>Rest Day</option>";
                                     
                                     try {
-                                        $stmt = mysqli_prepare($conn, "SELECT id, name FROM workout_templates WHERE user_id = ? ORDER BY name");
+                                        $stmt = mysqli_prepare($conn, "SELECT id, name, category FROM workout_templates WHERE user_id = ? ORDER BY name");
                                         mysqli_stmt_bind_param($stmt, "i", $user_id);
                                         mysqli_stmt_execute($stmt);
                                         $result = mysqli_stmt_get_result($stmt);
                                         
                                         while ($template = mysqli_fetch_assoc($result)) {
-                                            echo "<option value='{$template['id']}'>{$template['name']}</option>";
+                                            $category = !empty($template['category']) ? " ({$template['category']})" : "";
+                                            echo "<option value='{$template['id']}' data-category='{$template['category']}'>{$template['name']}{$category}</option>";
                                         }
                                     } catch (Exception $e) {
                                         error_log("Error fetching templates: " . $e->getMessage());
                                     }
                                     
                                     echo "</select>";
-                                    echo "</div>";
-                                    
-                                    echo "<div class='form-group mobile-split-custom' id='mobile_custom_group_{$index}' style='display:none;'>";
-                                    echo "<input type='text' class='form-input' id='mobile_custom_{$index}' name='days[{$index}][custom_name]' placeholder='Custom name'>";
                                     echo "</div>";
                                     
                                     echo "</div>";
@@ -1890,6 +1882,20 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                         
                         <div class="form-actions">
                             <button type="button" class="form-button secondary" id="mobileSplitCancel">Cancel</button>
+                            <div class="form-group">
+                                <label for="mobileTargetMonth">Apply to:</label>
+                                <select id="mobileTargetMonth" name="target_month" class="form-select">
+                                    <?php
+                                        for ($i = 0; $i <= 3; $i++) {
+                                            $month = ($current_month + $i - 1) % 12 + 1;
+                                            $year = $current_year + floor(($current_month + $i - 1) / 12);
+                                            $monthName = date('F', mktime(0, 0, 0, $month, 1, $year));
+                                            $selected = ($month == $selected_month && $year == $selected_year) ? 'selected' : '';
+                                            echo "<option value='{$month}_{$year}' {$selected}>{$monthName} {$year}</option>";
+                                        }
+                                    ?>
+                                </select>
+                            </div>
                             <button type="submit" class="form-button primary" id="mobileSplitSave">Save Split</button>
                             <button type="button" class="form-button primary" id="mobileSplitApply">Apply to Calendar</button>
                         </div>
@@ -1972,53 +1978,46 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             echo "<div class='week-day-header'>{$day}</div>";
                             echo "<div class='week-day-content'>";
                             echo "<select class='form-select week-day-select' id='day_{$index}' name='days[{$index}][type]'>";
-                            echo "<option value=''>Select type</option>";
-                            echo "<option value='push'>Push</option>";
-                            echo "<option value='pull'>Pull</option>";
-                            echo "<option value='leg'>Leg</option>";
-                            echo "<option value='rest'>Rest</option>";
-                            echo "<option value='custom'>Custom</option>";
-                            echo "</select>";
-                            
-                            echo "<select class='form-select week-day-template' id='template_{$index}' name='days[{$index}][template_id]' style='display:none; margin-top:10px;'>";
-                            echo "<option value=''>Select template</option>";
+                            echo "<option value=''>Select workout</option>";
+                            echo "<option value='rest'>Rest Day</option>";
                             
                             try {
-                                $stmt = mysqli_prepare($conn, "SELECT id, name FROM workout_templates WHERE user_id = ? ORDER BY name");
+                                $stmt = mysqli_prepare($conn, "SELECT id, name, category FROM workout_templates WHERE user_id = ? ORDER BY name");
                                 mysqli_stmt_bind_param($stmt, "i", $user_id);
                                 mysqli_stmt_execute($stmt);
                                 $result = mysqli_stmt_get_result($stmt);
                                 
                                 while ($template = mysqli_fetch_assoc($result)) {
-                                    echo "<option value='{$template['id']}'>{$template['name']}</option>";
+                                    $category = !empty($template['category']) ? " ({$template['category']})" : "";
+                                    echo "<option value='{$template['id']}' data-category='{$template['category']}'>{$template['name']}{$category}</option>";
                                 }
                             } catch (Exception $e) {
                                 error_log("Error fetching templates: " . $e->getMessage());
                             }
                             
                             echo "</select>";
-                            
-                            echo "<input type='text' class='form-input week-day-custom' id='custom_{$index}' name='days[{$index}][custom_name]' placeholder='Custom name' style='display:none; margin-top:10px;'>";
                             echo "</div></div>";
                         }
                     ?>
                 </div>
                 
                 <div class="split-actions">
-                    <?php if (!empty($workout_splits)): ?>
-                    <div class="saved-splits">
-                        <label class="form-label">Load saved split:</label>
-                        <select class="form-select" id="savedSplits">
-                            <option value="">Select a saved split</option>
-                            <?php foreach ($workout_splits as $split): ?>
-                                <option value="<?= $split['id'] ?>"><?= htmlspecialchars($split['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <?php endif; ?>
-                    
                     <div class="form-actions">
-                        <button type="button" class="form-button secondary" id="cancelSplit">Cancel</button>
+                        <div class="form-field">
+                            <label for="targetMonth">Apply to:</label>
+                            <select id="targetMonth" name="target_month" class="form-select">
+                                <?php
+                                    $nextFewMonths = [];
+                                    for ($i = 0; $i <= 3; $i++) {
+                                        $month = ($current_month + $i - 1) % 12 + 1;
+                                        $year = $current_year + floor(($current_month + $i - 1) / 12);
+                                        $monthName = date('F', mktime(0, 0, 0, $month, 1, $year));
+                                        $selected = ($month == $selected_month && $year == $selected_year) ? 'selected' : '';
+                                        echo "<option value='{$month}_{$year}' {$selected}>{$monthName} {$year}</option>";
+                                    }
+                                ?>
+                            </select>
+                        </div>
                         <button type="submit" class="form-button primary">Apply to Month</button>
                     </div>
                 </div>
@@ -2027,459 +2026,31 @@ if ($today_workout && !empty($today_workout['template_id'])) {
     </div>
 
     <script>
-        console.log("Script starting execution");
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOM fully loaded");
-            
-            const elementsToCheck = [
-                'dayModal', 'splitModal', 'mobileDayModal', 'mobileSplitModal', 
-                'mobileWeekAction', 'mobileSplitForm', 'mobileSavedSplits'
-            ];
-            
-            elementsToCheck.forEach(id => {
-                const element = document.getElementById(id);
-                console.log(`Element ${id} exists:`, !!element);
-            });
-            
-            console.log("Desktop button exists:", !!document.getElementById('startWorkoutBtn'));
-            console.log("Mobile button exists:", !!document.getElementById('mobileStartWorkoutBtn'));
-            
-            const dayModal = document.getElementById('dayModal');
-            const splitModal = document.getElementById('splitModal');
-            const mobileDayModal = document.getElementById('mobileDayModal');
-            const mobileSplitModal = document.getElementById('mobileSplitModal');
-            const selectedDate = document.getElementById('selectedDate');
-            const mobileSelectedDate = document.getElementById('mobileSelectedDate');
-            const selectedDayInput = document.getElementById('selectedDay');
-            const mobileSelectedDayInput = document.getElementById('mobileSelectedDay');
-            const modalClose = document.querySelectorAll('.modal-close');
-            const cancelPlan = document.getElementById('cancelPlan');
-            const mobileEditCancel = document.getElementById('mobileEditCancel');
-            const mobileSplitCancel = document.getElementById('mobileSplitCancel');
-            const cancelSplit = document.getElementById('cancelSplit');
-            const workoutTypeSelect = document.getElementById('workoutType');
-            const mobileWorkoutTypeSelect = document.getElementById('mobileWorkoutType');
-            const templateSelectGroup = document.getElementById('templateSelectGroup');
-            const mobileTemplateSelectGroup = document.getElementById('mobileTemplateSelectGroup');
-            const customNameGroup = document.getElementById('customNameGroup');
-            const mobileCustomNameGroup = document.getElementById('mobileCustomNameGroup');
-            const calendarDays = document.querySelectorAll('.calendar-day[data-day]');
-            const mobileDayButtons = document.querySelectorAll('.mobile-day-btn');
-            const workoutPlanForm = document.getElementById('workoutPlanForm');
-            const mobileWorkoutPlanForm = document.getElementById('mobileWorkoutPlanForm');
-            const splitPlanForm = document.getElementById('splitPlanForm');
-            const mobileSplitForm = document.getElementById('mobileSplitForm');
-            const newWorkoutBtn = document.getElementById('new-workout-btn');
-            const createSplitBtn = document.getElementById('create-split-btn');
-            const mobileWeekAction = document.getElementById('mobileWeekAction');
-            const prevMonthBtn = document.getElementById('prev-month');
-            const nextMonthBtn = document.getElementById('next-month');
-            const planTodayBtn = document.getElementById('plan-today-btn');
-            const savedSplitsSelect = document.getElementById('savedSplits');
-            const mobileSavedSplits = document.getElementById('mobileSavedSplits');
-            const weekDaySelects = document.querySelectorAll('.week-day-select');
-            const mobileSplitTypeSelects = document.querySelectorAll('.mobile-split-type');
-            const mobileSplitSave = document.getElementById('mobileSplitSave');
-            const mobileSplitApply = document.getElementById('mobileSplitApply');
-            
-            if (prevMonthBtn) {
-                prevMonthBtn.addEventListener('click', function() {
-                    navigateMonth(-1);
-                });
+        window.showSplitModal = function() {
+            console.log("Showing split modal");
+            const modal = document.getElementById('splitModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.style.zIndex = '10000';
+            } else {
+                console.error('Split modal element not found');
             }
-            
-            if (nextMonthBtn) {
-                nextMonthBtn.addEventListener('click', function() {
-                    navigateMonth(1);
-                });
-            }
-            
-            function navigateMonth(direction) {
-                let currentMonth = <?= $selected_month ?>;
-                let currentYear = <?= $selected_year ?>;
-                
-                currentMonth += direction;
-                
-                if (currentMonth > 12) {
-                    currentMonth = 1;
-                    currentYear++;
-                } else if (currentMonth < 1) {
-                    currentMonth = 12;
-                    currentYear--;
-                }
-                
-                window.location.href = `profile.php?month=${currentMonth}&year=${currentYear}`;
-            }
-            
-            if (mobileDayButtons) {
-                mobileDayButtons.forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const dateStr = this.getAttribute('data-date');
-                        if (dateStr) {
-                            const date = new Date(dateStr);
-                            const formattedDate = date.toLocaleDateString('en-US', {
-                                weekday: 'long',
-                                month: 'long',
-                                day: 'numeric'
-                            });
-                            
-                            mobileSelectedDate.textContent = formattedDate;
-                            mobileSelectedDayInput.value = date.getDate();
-                            document.getElementById('mobileSelectedMonth').value = date.getMonth() + 1;
-                            document.getElementById('mobileSelectedYear').value = date.getFullYear();
-                            
-                            mobileWorkoutTypeSelect.value = '';
-                            mobileTemplateSelectGroup.style.display = 'none';
-                            mobileCustomNameGroup.style.display = 'none';
-                            
-                            mobileDayModal.style.display = 'flex';
-                        }
-                    });
-                });
-            }
-
-            calendarDays.forEach(day => {
-                if (!day.hasAttribute('data-past')) {
-                    day.addEventListener('click', function() {
-                        const dayNum = this.getAttribute('data-day');
-                        const monthName = '<?= $monthName ?>';
-                        selectedDate.textContent = `${monthName} ${dayNum}, <?= $selected_year ?>`;
-                        selectedDayInput.value = dayNum;
-                        
-                        workoutTypeSelect.value = '';
-                        templateSelectGroup.style.display = 'none';
-                        customNameGroup.style.display = 'none';
-                        
-                        dayModal.style.display = 'flex';
-                    });
-                }
-            });
-            
-            if (planTodayBtn) {
-                planTodayBtn.addEventListener('click', function() {
-                    const dayNum = <?= $today ?>;
-                    const monthName = '<?= $monthName ?>';
-                    selectedDate.textContent = `${monthName} ${dayNum}, <?= $selected_year ?>`;
-                    selectedDayInput.value = dayNum;
-                    
-                    workoutTypeSelect.value = '';
-                    templateSelectGroup.style.display = 'none';
-                    customNameGroup.style.display = 'none';
-                    
-                    dayModal.style.display = 'flex';
-                });
-            }
-            
-            if (createSplitBtn) {
-                createSplitBtn.addEventListener('click', function() {
-                    splitModal.style.display = 'flex';
-                });
-            }
-            
-            modalClose.forEach(close => {
-                close.addEventListener('click', function() {
-                    dayModal.style.display = 'none';
-                    splitModal.style.display = 'none';
-                    mobileDayModal.style.display = 'none';
-                    mobileSplitModal.style.display = 'none';
-                });
-            });
-            
-            if (cancelPlan) {
-                cancelPlan.addEventListener('click', function() {
-                    dayModal.style.display = 'none';
-                });
-            }
-            
-            if (mobileEditCancel) {
-                mobileEditCancel.addEventListener('click', function() {
-                    mobileDayModal.style.display = 'none';
-                });
-            }
-            
-            if (mobileSplitCancel) {
-                mobileSplitCancel.addEventListener('click', function() {
-                    mobileSplitModal.style.display = 'none';
-                });
-            }
-            
-            if (cancelSplit) {
-                cancelSplit.addEventListener('click', function() {
-                    splitModal.style.display = 'none';
-                });
-            }
-            
-            window.addEventListener('click', function(event) {
-                if (event.target === dayModal) {
-                    dayModal.style.display = 'none';
-                }
-                if (event.target === splitModal) {
-                    splitModal.style.display = 'none';
-                }
-                if (event.target === mobileDayModal) {
-                    mobileDayModal.style.display = 'none';
-                }
-                if (event.target === mobileSplitModal) {
-                    mobileSplitModal.style.display = 'none';
-                }
-            });
-            
-            if (workoutTypeSelect) {
-                workoutTypeSelect.addEventListener('change', function() {
-                    const value = this.value;
-                    
-                    if (value === 'custom') {
-                        customNameGroup.style.display = 'block';
-                        templateSelectGroup.style.display = 'block';
-                    } else if (value === 'rest') {
-                        customNameGroup.style.display = 'none';
-                        templateSelectGroup.style.display = 'none';
-                    } else if (value !== '') {
-                        customNameGroup.style.display = 'none';
-                        templateSelectGroup.style.display = 'block';
-                    } else {
-                        customNameGroup.style.display = 'none';
-                        templateSelectGroup.style.display = 'none';
-                    }
-                });
-            }
-            
-            if (mobileWorkoutTypeSelect) {
-                mobileWorkoutTypeSelect.addEventListener('change', function() {
-                    const value = this.value;
-                    
-                    if (value === 'custom') {
-                        mobileCustomNameGroup.style.display = 'block';
-                        mobileTemplateSelectGroup.style.display = 'block';
-                    } else if (value === 'rest') {
-                        mobileCustomNameGroup.style.display = 'none';
-                        mobileTemplateSelectGroup.style.display = 'none';
-                    } else if (value !== '') {
-                        mobileCustomNameGroup.style.display = 'none';
-                        mobileTemplateSelectGroup.style.display = 'block';
-                    } else {
-                        mobileCustomNameGroup.style.display = 'none';
-                        mobileTemplateSelectGroup.style.display = 'none';
-                    }
-                });
-            }
-            
-            weekDaySelects.forEach((select, index) => {
-                select.addEventListener('change', function() {
-                    const value = this.value;
-                    const templateSelect = document.getElementById(`template_${index}`);
-                    const customInput = document.getElementById(`custom_${index}`);
-                    
-                    if (value === 'custom') {
-                        customInput.style.display = 'block';
-                        templateSelect.style.display = 'block';
-                    } else if (value === 'rest') {
-                        customInput.style.display = 'none';
-                        templateSelect.style.display = 'none';
-                    } else if (value !== '') {
-                        customInput.style.display = 'none';
-                        templateSelect.style.display = 'block';
-                    } else {
-                        customInput.style.display = 'none';
-                        templateSelect.style.display = 'none';
-                    }
-                });
-            });
-            
-            mobileSplitTypeSelects.forEach((select, index) => {
-                select.addEventListener('change', function() {
-                    const value = this.value;
-                    const templateGroup = document.getElementById(`mobile_template_group_${index}`);
-                    const customGroup = document.getElementById(`mobile_custom_group_${index}`);
-                    
-                    if (value === 'custom') {
-                        customGroup.style.display = 'block';
-                        templateGroup.style.display = 'block';
-                    } else if (value === 'rest') {
-                        customGroup.style.display = 'none';
-                        templateGroup.style.display = 'none';
-                    } else if (value !== '') {
-                        customGroup.style.display = 'none';
-                        templateGroup.style.display = 'block';
-                    } else {
-                        customGroup.style.display = 'none';
-                        templateGroup.style.display = 'none';
-                    }
-                });
-            });
-            
-            if (savedSplitsSelect) {
-                savedSplitsSelect.addEventListener('change', function() {
-                    const splitId = this.value;
-                    if (!splitId) return;
-                    
-                    fetch(`get_workout_split.php?id=${splitId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                const split = data.split;
-                                document.getElementById('splitName').value = split.name;
-                                
-                                if (split.data) {
-                                    const weekData = JSON.parse(split.data);
-                                    weekData.forEach((day, index) => {
-                                        const typeSelect = document.getElementById(`day_${index}`);
-                                        const templateSelect = document.getElementById(`template_${index}`);
-                                        const customInput = document.getElementById(`custom_${index}`);
-                                        
-                                        if (typeSelect && day.type) {
-                                            typeSelect.value = day.type;
-                                            
-                                            if (day.type === 'rest') {
-                                                templateSelect.style.display = 'none';
-                                                customInput.style.display = 'none';
-                                            } else {
-                                                templateSelect.style.display = 'block';
-                                                
-                                                if (day.template_id) {
-                                                    templateSelect.value = day.template_id;
-                                                }
-                                                
-                                                if (day.type === 'custom' && day.custom_name) {
-                                                    customInput.style.display = 'block';
-                                                    customInput.value = day.custom_name;
-                                                }
-                                            }
-                                        }
-                                    });
-                                }
-                            } else {
-                                alert('Error loading split: ' + data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred while loading the split.');
-                        });
-                });
-            }
-            
-            if (mobileSavedSplits) {
-                mobileSavedSplits.addEventListener('change', function() {
-                    const splitId = this.value;
-                    if (!splitId) {
-                        document.getElementById('mobileSplitName').value = '';
-                        mobileSplitTypeSelects.forEach((select, index) => {
-                            select.value = '';
-                            document.getElementById(`mobile_template_group_${index}`).style.display = 'none';
-                            document.getElementById(`mobile_custom_group_${index}`).style.display = 'none';
-                        });
-                        return;
-                    }
-                    
-                    fetch(`get_workout_split.php?id=${splitId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                const split = data.split;
-                                document.getElementById('mobileSplitName').value = split.name;
-                                
-                                if (split.data) {
-                                    const weekData = JSON.parse(split.data);
-                                    weekData.forEach((day, index) => {
-                                        const typeSelect = document.getElementById(`mobile_day_${index}`);
-                                        const templateGroup = document.getElementById(`mobile_template_group_${index}`);
-                                        const templateSelect = document.getElementById(`mobile_template_${index}`);
-                                        const customGroup = document.getElementById(`mobile_custom_group_${index}`);
-                                        const customInput = document.getElementById(`mobile_custom_${index}`);
-                                        
-                                        if (typeSelect && day.type) {
-                                            typeSelect.value = day.type;
-                                            
-                                            if (day.type === 'rest') {
-                                                templateGroup.style.display = 'none';
-                                                customGroup.style.display = 'none';
-                                            } else {
-                                                templateGroup.style.display = 'block';
-                                                
-                                                if (day.template_id) {
-                                                    templateSelect.value = day.template_id;
-                                                }
-                                                
-                                                if (day.type === 'custom' && day.custom_name) {
-                                                    customGroup.style.display = 'block';
-                                                    customInput.value = day.custom_name;
-                                                } else {
-                                                    customGroup.style.display = 'none';
-                                                }
-                                            }
-                                        }
-                                    });
-                                }
-                            } else {
-                                alert('Error loading split: ' + data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred while loading the split.');
-                        });
-                });
-            }
-            
-            if (workoutPlanForm) {
-                workoutPlanForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const formData = new FormData(this);
-                    formData.append('month', <?= $selected_month ?>);
-                    formData.append('year', <?= $selected_year ?>);
-                    
-                    fetch('save_workout_plan.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Workout plan saved successfully!');
-                            dayModal.style.display = 'none';
-                            
-                            window.location.reload();
-                        } else {
-                            alert('Error: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while saving your workout plan.');
-                    });
-                });
-            }
-            
-            if (mobileWorkoutPlanForm) {
-                mobileWorkoutPlanForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const formData = new FormData(this);
-                    
-                    fetch('save_workout_plan.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Workout plan saved successfully!');
-                            mobileDayModal.style.display = 'none';
-                            
-                            window.location.reload();
-                        } else {
-                            alert('Error: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while saving your workout plan.');
-                    });
-                });
-            }
+        };
         
+        document.addEventListener('DOMContentLoaded', function() {
+            var createSplitBtn = document.getElementById('create-split-btn');
+            if (createSplitBtn) {
+                console.log("Found Create Split button, adding click handler");
+                createSplitBtn.addEventListener('click', function(e) {
+                    console.log("Create Split button clicked");
+                    e.preventDefault();
+                    showSplitModal();
+                });
+            } else {
+                console.error("Create Split button not found!");
+            }
+            
+            const splitPlanForm = document.getElementById('splitPlanForm');
             if (splitPlanForm) {
                 splitPlanForm.addEventListener('submit', function(e) {
                     e.preventDefault();
@@ -2491,6 +2062,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     }
                     
                     let hasWorkout = false;
+                    const weekDaySelects = document.querySelectorAll('.week-day-select');
                     weekDaySelects.forEach(select => {
                         if (select.value) hasWorkout = true;
                     });
@@ -2501,8 +2073,12 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     }
                     
                     const formData = new FormData(this);
-                    formData.append('month', <?= $selected_month ?>);
-                    formData.append('year', <?= $selected_year ?>);
+                    const targetMonthSelect = document.getElementById('targetMonth');
+                    const [targetMonth, targetYear] = targetMonthSelect.value.split('_');
+                    
+                    formData.append('month', targetMonth);
+                    formData.append('year', targetYear);
+                    formData.append('apply_to_calendar', '1');
                     
                     fetch('save_workout_split.php', {
                         method: 'POST',
@@ -2511,10 +2087,12 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Workout split applied successfully!');
-                            splitModal.style.display = 'none';
-                            
-                            window.location.reload();
+                            alert('Workout split applied successfully to ' + targetMonthSelect.options[targetMonthSelect.selectedIndex].text);
+                            const splitModal = document.getElementById('splitModal');
+                            if (splitModal) {
+                                splitModal.style.display = 'none';
+                            }
+                            window.location.href = `profile.php?month=${targetMonth}&year=${targetYear}`;
                         } else {
                             alert('Error: ' + data.message);
                         }
@@ -2526,13 +2104,15 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 });
             }
             
-            if (mobileSplitForm && mobileSplitSave) {
+            const mobileSplitForm = document.getElementById('mobileSplitForm');
+            if (mobileSplitForm && document.getElementById('mobileSplitSave')) {
                 mobileSplitForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     saveMobileSplit(false);
                 });
             }
             
+            const mobileSplitApply = document.getElementById('mobileSplitApply');
             if (mobileSplitApply) {
                 mobileSplitApply.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -2548,6 +2128,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 }
                 
                 let hasWorkout = false;
+                const mobileSplitTypeSelects = document.querySelectorAll('.mobile-split-type');
                 mobileSplitTypeSelects.forEach(select => {
                     if (select.value) hasWorkout = true;
                 });
@@ -2560,167 +2141,93 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 const formData = new FormData(document.getElementById('mobileSplitForm'));
                 
                 if (applyToCalendar) {
+                    const mobileTargetMonthSelect = document.getElementById('mobileTargetMonth');
+                    const [targetMonth, targetYear] = mobileTargetMonthSelect.value.split('_');
+                    
+                    formData.append('month', targetMonth);
+                    formData.append('year', targetYear);
                     formData.append('apply_to_calendar', '1');
-                    formData.append('month', <?= $selected_month ?>);
-                    formData.append('year', <?= $selected_year ?>);
-                }
-                
-                fetch('save_workout_split.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (applyToCalendar) {
+                    
+                    fetch('save_workout_split.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
                             alert('Workout split applied to calendar successfully!');
-                            window.location.reload();
+                            window.location.href = `profile.php?month=${targetMonth}&year=${targetYear}`;
                         } else {
-                            alert('Workout split saved successfully!');
-                            if (data.split_id) {
-                                if (mobileSavedSplits) {
-                                    const option = document.createElement('option');
-                                    option.value = data.split_id;
-                                    option.textContent = splitName;
-                                    mobileSavedSplits.appendChild(option);
-                                    mobileSavedSplits.value = data.split_id;
-                                }
-                            }
+                            alert('Error: ' + data.message);
                         }
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while saving your workout split.');
-                });
-            }
-            
-            if (newWorkoutBtn) {
-                newWorkoutBtn.addEventListener('click', function() {
-                    window.location.href = 'workout-templates.php';
-                });
-            }
-            
-            const templateCards = document.querySelectorAll('.template-card');
-            templateCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    const templateId = this.getAttribute('data-template-id');
-                    if (templateId) {
-                        window.location.href = `quick-workout.php?template_id=${templateId}`;
-                    }
-                });
-            });
-            
-            const startBtn = document.getElementById('startWorkoutBtn');
-            if (startBtn) {
-                startBtn.addEventListener('click', function(e) {
-                    try {
-                        e.preventDefault();
-                        const templateId = this.getAttribute('data-template-id');
-                        console.log('Desktop - Starting workout with template ID:', templateId);
-                        
-                        window.location.href = 'workout.php?template_id=' + templateId + '&start_workout=1&auto_start=1';
-                    } catch (error) {
-                        console.error('Error starting desktop workout:', error);
-                    }
-                });
-            }
-        
-            const mobileBtn = document.getElementById('mobileStartWorkoutBtn');
-            if (mobileBtn) {
-                mobileBtn.addEventListener('click', function(e) {
-                    try {
-                        e.preventDefault();
-                        const templateId = this.getAttribute('data-template-id');
-                        console.log('Mobile - Starting workout with template ID:', templateId);
-                        
-                        window.location.href = 'mobile-workout.php?template_id=' + templateId + '&start_workout=1&auto_start=1&start_step=2';
-                    } catch (error) {
-                        console.error('Error starting mobile workout:', error);
-                    }
-                });
-            }
-            
-            const mobileAppView = document.querySelector('.mobile-app-view');
-            const dashboardGrid = document.querySelector('.dashboard-grid');
-            
-            function handleViewChange() {
-                const width = window.innerWidth;
-                console.log('Window width:', width);
-                
-                if (width < 768) {
-                    console.log('Switching to mobile view');
-                    if (mobileAppView) {
-                        mobileAppView.style.display = 'block';
-                        console.log('Mobile view display set to block');
-                    }
-                    if (dashboardGrid) {
-                        dashboardGrid.style.display = 'none';
-                        console.log('Dashboard grid display set to none');
-                    }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while saving your workout split.');
+                    });
                 } else {
-                    console.log('Switching to desktop view');
-                    if (mobileAppView) {
-                        mobileAppView.style.display = 'none';
-                        console.log('Mobile view display set to none');
-                    }
-                    if (dashboardGrid) {
-                        dashboardGrid.style.display = 'grid';
-                        console.log('Dashboard grid display set to grid');
-                    }
+                    fetch('save_workout_split.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Workout split saved successfully!');
+                            document.getElementById('mobileSplitModal').style.display = 'none';
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while saving your workout split.');
+                    });
                 }
             }
-            
-            window.addEventListener('DOMContentLoaded', handleViewChange);
-            
-            window.addEventListener('resize', handleViewChange);
-
-            const mobileDayBtns = document.querySelectorAll('.mobile-day-btn');
-            mobileDayBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    mobileDayBtns.forEach(b => b.classList.remove('active'));
-                    
-                    this.classList.add('active');
-                    
-                    const selectedDate = this.getAttribute('data-date');
-                    console.log(`Selected date: ${selectedDate}`);
-
-                });
-            });
-        
-            const mobilePlanWorkoutBtn = document.getElementById('mobilePlanWorkoutBtn');
-            if (mobilePlanWorkoutBtn) {
-                mobilePlanWorkoutBtn.addEventListener('click', function() {
-                    const dayNum = <?= $today ?>;
-                    const monthName = '<?= $monthName ?>';
-                    
-                    document.getElementById('selectedDate').textContent = `${monthName} ${dayNum}, <?= $selected_year ?>`;
-                    document.getElementById('selectedDay').value = dayNum;
-                    
-                    document.getElementById('workoutType').value = '';
-                    document.getElementById('templateSelectGroup').style.display = 'none';
-                    document.getElementById('customNameGroup').style.display = 'none';
-                    
-                    document.getElementById('dayModal').style.display = 'flex';
-                });
-            }
-            
-            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
-            mobileNavItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    if (this.getAttribute('href') === '#') {
-                        e.preventDefault();
                         
-                        mobileNavItems.forEach(i => i.classList.remove('active'));
-                        
-                        this.classList.add('active');
+            const modalCloseButtons = document.querySelectorAll('.modal-close');
+            modalCloseButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    if (modal) {
+                        modal.style.display = 'none';
                     }
                 });
             });
+            
+            const cancelPlan = document.getElementById('cancelPlan');
+            if (cancelPlan) {
+                cancelPlan.addEventListener('click', function() {
+                    document.getElementById('dayModal').style.display = 'none';
+                });
+            }
+            
+            const cancelSplit = document.getElementById('cancelSplit');
+            if (cancelSplit) {
+                cancelSplit.addEventListener('click', function() {
+                    document.getElementById('splitModal').style.display = 'none';
+                });
+            }
+            
+            const mobileEditCancel = document.getElementById('mobileEditCancel');
+            if (mobileEditCancel) {
+                mobileEditCancel.addEventListener('click', function() {
+                    document.getElementById('mobileDayModal').style.display = 'none';
+                });
+            }
+            
+            const mobileSplitCancel = document.getElementById('mobileSplitCancel');
+            if (mobileSplitCancel) {
+                mobileSplitCancel.addEventListener('click', function() {
+                    document.getElementById('mobileSplitModal').style.display = 'none';
+                });
+            }
         });
     </script>
+    <script>console.log("VERIFICATION: Script after main script runs - TIMESTAMP: " + new Date().toISOString());</script>
+    
+    <!-- Original script follows -->
 
     <?php if ($today_workout && !empty($today_workout['template_id'])): ?>
     <form id="workoutForm" action="workout.php" method="POST" style="display: none;">
