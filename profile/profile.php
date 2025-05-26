@@ -1497,14 +1497,6 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                 <button class="action-button secondary" id="create-split-btn">
                                     <i class="fas fa-calendar-week"></i> Create Split
                                 </button>
-                                <div class="calendar-nav">
-                                    <button class="calendar-nav-btn" id="prev-month">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </button>
-                                    <button class="calendar-nav-btn" id="next-month">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </button>
-                                </div>
                             </div>
                         </div>
                         
@@ -2225,10 +2217,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
             }
         });
     </script>
-    <script>console.log("VERIFICATION: Script after main script runs - TIMESTAMP: " + new Date().toISOString());</script>
     
-    <!-- Original script follows -->
-
     <?php if ($today_workout && !empty($today_workout['template_id'])): ?>
     <form id="workoutForm" action="workout.php" method="POST" style="display: none;">
         <input type="hidden" name="template_id" id="templateIdInput" value="<?= $today_workout['template_id'] ?>">

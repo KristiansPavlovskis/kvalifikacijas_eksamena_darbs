@@ -445,19 +445,6 @@ try {
             position: relative;
         }
         
-        .template-global:after {
-            content: "GLOBAL";
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-        
         .global-template {
             position: relative;
         }
@@ -494,11 +481,6 @@ try {
         <div class="main-content">
             <div class="page-header">
                 <h1 class="page-title">Start Workout</h1>
-                <div class="page-actions">
-                    <button class="btn btn-primary" id="startNewWorkoutBtn">
-                        <i class="fas fa-plus"></i> Create Template
-                    </button>
-                </div>
             </div>
            
             <div class="step-content active" id="step1-content">
@@ -892,8 +874,6 @@ try {
                 </div>
                 
                 <div class="workout-footer">
-                    <button id="add-exercise-btn" class="footer-btn"><i class="fas fa-plus"></i> Add Exercise</button>
-                    <button id="skip-exercise-btn" class="footer-btn"><i class="fas fa-forward"></i> Skip Exercise</button>
                     <button id="end-workout-btn" class="footer-btn danger"><i class="fas fa-flag-checkered"></i> End Workout</button>
                 </div>
             </div>
@@ -943,9 +923,11 @@ try {
                     <button class="save-workout-btn" id="final-save-workout-btn">
                         <i class="fas fa-save"></i> Save Workout
                     </button>
-                    <button class="save-template-btn" id="save-as-template-btn">
-                        <i class="fas fa-bookmark"></i> Save as Template
-                    </button>
+                    <a href="workout.php">
+                        <button class="save-template-btn">
+                            <i class="fas fa-bookmark"></i> Dont save
+                        </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -1292,9 +1274,6 @@ try {
                                 <i class="fas fa-edit"></i> Modify Template
                             </button>
                             ` : `
-                            <button class="copy-template-btn" data-template-id="${template.id}">
-                                <i class="fas fa-copy"></i> Copy Template
-                            </button>
                             `}
                         </div>
                     </div>
@@ -1330,37 +1309,6 @@ try {
                                     window.location.href = 'workout-templates.php';
                                 } else {
                                     showNotification('Failed to get template data: ' + data.error, 'error');
-                                }
-                            })
-                            .catch(error => {
-                                showNotification('Error: ' + error.message, 'error');
-                            });
-                    });
-                }
-                
-                const copyTemplateBtn = selectedTemplateContainer.querySelector('.copy-template-btn');
-                if (copyTemplateBtn) {
-                    copyTemplateBtn.addEventListener('click', function() {
-                        const templateId = this.dataset.templateId;
-                        
-                        fetch(`get_template.php?id=${templateId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    const templateCopy = {
-                                        name: `${data.template.name} (Copy)`,
-                                        description: data.template.description,
-                                        exercises: data.exercises
-                                    };
-                                    
-                                    localStorage.setItem('template_data', JSON.stringify(templateCopy));
-                                    
-                                    showNotification('Template copied! Redirecting to create template...', 'success');
-                                    setTimeout(() => {
-                                        window.location.href = 'workout-templates.php?new=1';
-                                    }, 1500);
-                                } else {
-                                    showNotification('Failed to copy template: ' + data.error, 'error');
                                 }
                             })
                             .catch(error => {
@@ -1955,21 +1903,6 @@ try {
                     showNotification(`Error: ${error.message}`, 'error');
                 });
             }
-            
-            document.getElementById('save-as-template-btn').addEventListener('click', function() {
-                const templateData = {
-                    name: `${workoutState.templateName} Copy`,
-                    description: 'Template created from completed workout',
-                    exercises: workoutState.exercises.map(ex => ({
-                        exercise_name: ex.exercise_name,
-                        sets: ex.completedSets > 0 ? ex.completedSets : ex.sets.length,
-                        rest_time: ex.rest_time || workoutState.restTime
-                    }))
-                };
-                
-                localStorage.setItem('template_data', JSON.stringify(templateData));
-                window.location.href = 'workout-templates.php?new=1';
-            });
 
             function updateSetsTable() {
                 const currentEx = workoutState.exercises[workoutState.currentExerciseIndex];
@@ -2195,19 +2128,6 @@ try {
                     }
                 }, 1000);
             }
-            
-            document.getElementById('add-exercise-btn').addEventListener('click', () => {
-                showNotification('Add exercise functionality coming soon', 'success');
-            });
-            
-            document.getElementById('skip-exercise-btn').addEventListener('click', () => {
-                if (workoutState.currentExerciseIndex < workoutState.exercises.length - 1) {
-                    moveToNextExercise();
-                    showNotification('Skipped to next exercise', 'success');
-                } else {
-                    showNotification('This is the last exercise', 'error');
-                }
-            });
             
             document.getElementById('end-workout-btn').addEventListener('click', () => {
                 if (confirm('Are you sure you want to end the workout now?')) {

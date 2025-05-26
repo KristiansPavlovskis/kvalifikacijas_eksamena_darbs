@@ -49,6 +49,8 @@ error_log("MOBILE-WORKOUT DEBUG - SESSION after processing: " .
           "skip_template_selection=" . (isset($_SESSION['skip_template_selection']) ? 'true' : 'false') . ", " . 
           "start_step=" . (isset($_SESSION['start_step']) ? $_SESSION['start_step'] : 'null'));
 
+$debug_info = [];
+
 try {
     if (tableExists($conn, 'workout_templates')) {
         $templates_query = "SELECT wt.*, COUNT(wte.id) as exercise_count, 
@@ -59,16 +61,56 @@ try {
                           WHERE wt.user_id = ?
                           GROUP BY wt.id
                           ORDER BY wt.created_at DESC";
+        
+        error_log("MOBILE-WORKOUT DEBUG - Personal templates query: " . str_replace('?', $user_id, $templates_query));
+                          
         $stmt = mysqli_prepare($conn, $templates_query);
         mysqli_stmt_bind_param($stmt, "ii", $user_id, $user_id);
         mysqli_stmt_execute($stmt);
         $templates = mysqli_stmt_get_result($stmt);
+        
+        $debug_info['personal_templates_count'] = mysqli_num_rows($templates);
     } else {
         $templates = false;
+        $debug_info['error'] = 'workout_templates table does not exist';
     }
 } catch (Exception $e) {
-    error_log("Error fetching workout templates: " . $e->getMessage());
+    error_log("Error fetching personal workout templates: " . $e->getMessage());
     $templates = false;
+    $debug_info['personal_error'] = $e->getMessage();
+}
+
+try {
+    if (tableExists($conn, 'workout_templates')) {
+        $global_templates_query = "SELECT wt.*, COUNT(wte.id) as exercise_count, 
+                               wt.estimated_time,
+                               u.username as creator
+                               FROM workout_templates wt
+                               LEFT JOIN workout_template_exercises wte ON wt.id = wte.workout_template_id
+                               LEFT JOIN users u ON wt.user_id = u.id
+                               WHERE EXISTS (
+                                 SELECT 1 FROM user_roles ur 
+                                 JOIN roles r ON ur.role_id = r.id 
+                                 WHERE ur.user_id = wt.user_id AND (r.name = 'admin' OR r.id = 5)
+                               )
+                               GROUP BY wt.id
+                               ORDER BY wt.created_at DESC";
+                               
+        
+        $global_stmt = mysqli_prepare($conn, $global_templates_query);
+        mysqli_stmt_execute($global_stmt);
+        $global_templates = mysqli_stmt_get_result($global_stmt);
+        
+        $debug_info['global_templates_count'] = mysqli_num_rows($global_templates);
+        
+    } else {
+        $global_templates = false;
+        $debug_info['global_error'] = 'workout_templates table does not exist';
+    }
+} catch (Exception $e) {
+    error_log("Error fetching global workout templates: " . $e->getMessage());
+    $global_templates = false;
+    $debug_info['global_error'] = $e->getMessage();
 }
 
 function formatLastUsed($lastUsedDate) {
@@ -602,6 +644,22 @@ function formatLastUsed($lastUsedDate) {
         font-size: 1.25rem;
         font-weight: 500; 
         }
+        
+        .mobile-template-global-tag {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .no-templates-message {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
     </style>
 </head>
 <body>
@@ -616,11 +674,8 @@ function formatLastUsed($lastUsedDate) {
 
             <div class="mobile-content step1-content">
                 <div class="mobile-tabs">
-                    <div class="mobile-tab active" data-category="all">All</div>
-                    <div class="mobile-tab" data-category="recent">Recent</div>
-                    <div class="mobile-tab" data-category="favorites">Favorites</div>
-                    <div class="mobile-tab" data-category="upper">Upper Body</div>
-                    <div class="mobile-tab" data-category="lower">Lower Body</div>
+                    <div class="mobile-tab active" data-category="personal">Personal Templates</div>
+                    <div class="mobile-tab" data-category="global">Global Templates</div>
                 </div>
 
                 <div class="mobile-templates">
@@ -628,7 +683,7 @@ function formatLastUsed($lastUsedDate) {
                         <?php while ($template = mysqli_fetch_assoc($templates)): 
                             $lastUsed = formatLastUsed($template['last_used']);
                         ?>
-                            <div class="mobile-template-card" data-id="<?php echo $template['id']; ?>" data-name="<?php echo htmlspecialchars($template['name']); ?>">
+                            <div class="mobile-template-card" data-id="<?php echo $template['id']; ?>" data-name="<?php echo htmlspecialchars($template['name']); ?>" data-category="personal">
                                 <div class="mobile-template-header">
                                     <div class="mobile-template-title"><?php echo htmlspecialchars($template['name']); ?></div>
                                     <a href="workout-templates.php?edit=<?php echo $template['id']; ?>" class="mobile-template-edit">edit template</a>
@@ -649,6 +704,41 @@ function formatLastUsed($lastUsedDate) {
                                 </div>
                             </div>
                         <?php endwhile; ?>
+                    <?php else: ?>
+                        <div class="no-templates-message personal-message">
+                            <p>You don't have any personal templates yet.</p>
+                            <p>Create your first template in the Templates section!</p>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($global_templates && mysqli_num_rows($global_templates) > 0): ?>
+                        <?php while ($template = mysqli_fetch_assoc($global_templates)): ?>
+                            <div class="mobile-template-card" data-id="<?php echo $template['id']; ?>" data-name="<?php echo htmlspecialchars($template['name']); ?>" data-category="global" style="display:none;">
+                                <div class="mobile-template-header">
+                                    <div class="mobile-template-title"><?php echo htmlspecialchars($template['name']); ?></div>
+                                    <div class="mobile-template-global-tag">global</div>
+                                </div>
+                                <div class="mobile-template-meta">
+                                    <div class="mobile-template-meta-item">
+                                        <i class="fas fa-dumbbell"></i>
+                                        <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                    </div>
+                                    <div class="mobile-template-meta-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span><?php echo $template['estimated_time'] ?? '45'; ?> min</span>
+                                    </div>
+                                    <div class="mobile-template-meta-item">
+                                        <i class="fas fa-user"></i>
+                                        <span>By: <?php echo htmlspecialchars($template['creator'] ?? 'GYMVERSE'); ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <div class="no-templates-message global-message" style="display:none;">
+                            <p>No global templates available at this time.</p>
+                            <p>Check back later for new workouts!</p>
+                        </div>
                     <?php endif; ?>
                 </div>
                 
@@ -957,7 +1047,13 @@ function formatLastUsed($lastUsedDate) {
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            console.log("Mobile workout page initialized with global templates support");
             window.autoStartInProgress = false;
+            
+            const personalTemplates = document.querySelectorAll('.mobile-template-card[data-category="personal"]');
+            const globalTemplates = document.querySelectorAll('.mobile-template-card[data-category="global"]');
+            const personalNoTemplatesMsg = document.querySelector('.no-templates-message.personal-message');
+            const globalNoTemplatesMsg = document.querySelector('.no-templates-message.global-message');
             
             let currentStep = 1;
             let workoutData = {
@@ -979,6 +1075,122 @@ function formatLastUsed($lastUsedDate) {
                 workoutTimerRAF: null
             };
 
+            function setupTabFunctionality() {
+                console.log("Setting up tab functionality");
+                
+                document.querySelectorAll('.mobile-tab').forEach(tab => {
+                    tab.removeEventListener('click', handleTabClick);
+                    tab.addEventListener('click', handleTabClick);
+                });
+                
+                setupTemplateCardHandlers();
+                
+                const activeTab = document.querySelector('.mobile-tab.active');
+                if (activeTab) {
+                    console.log("Setting initial tab:", activeTab.dataset.category);
+                    handleTabClick.call(activeTab);
+                }
+            }
+            
+            function setupTemplateCardHandlers() {
+                console.log("Setting up template card handlers");
+                document.querySelectorAll('.mobile-template-card').forEach(card => {
+                    card.removeEventListener('click', handleTemplateCardClick);
+                    card.addEventListener('click', handleTemplateCardClick);
+                });
+            }
+            
+            function handleTemplateCardClick() {
+                console.log("Template card clicked:", this.dataset.id, this.dataset.name, "Category:", this.dataset.category);
+                
+                document.querySelectorAll('.mobile-template-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                
+                this.classList.add('selected');
+                
+                workoutData.templateId = parseInt(this.dataset.id, 10);
+                workoutData.title = this.dataset.name;
+                
+                const beginWorkoutBtn = document.getElementById('begin-workout-btn');
+                beginWorkoutBtn.removeAttribute('disabled');
+            }
+            
+            function handleTabClick() {
+                const category = this.getAttribute('data-category');
+                console.log("Tab clicked:", category);
+                
+                document.querySelectorAll('.mobile-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const visibleTemplates = [];
+                
+                document.querySelectorAll('.mobile-template-card').forEach(card => {
+                    if (card.dataset.category === category) {
+                        card.style.display = '';
+                        visibleTemplates.push(card);
+                        console.log(`Showing template: ${card.querySelector('.mobile-template-title')?.textContent}`);
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                console.log(`Found ${visibleTemplates.length} ${category} templates to display`);
+                
+                if (category === 'personal') {
+                    const personalMsg = document.querySelector('.no-templates-message.personal-message');
+                    if (personalMsg) {
+                        personalMsg.style.display = visibleTemplates.length > 0 ? 'none' : 'block';
+                    }
+                    
+                    const globalMsg = document.querySelector('.no-templates-message.global-message');
+                    if (globalMsg) globalMsg.style.display = 'none';
+                    
+                } else if (category === 'global') {
+                    const personalMsg = document.querySelector('.no-templates-message.personal-message');
+                    if (personalMsg) personalMsg.style.display = 'none';
+                    
+                    const globalMsg = document.querySelector('.no-templates-message.global-message');
+                    if (globalMsg) {
+                        globalMsg.style.display = visibleTemplates.length > 0 ? 'none' : 'block';
+                    }
+                }
+                
+                console.log("Templates visibility updated:", category);
+                
+                document.querySelectorAll('.mobile-template-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                document.getElementById('begin-workout-btn').setAttribute('disabled', 'disabled');
+            }
+            
+            
+            setupTabFunctionality();
+            
+            
+            const templatesContainer = document.querySelector('.mobile-templates');
+            if (templatesContainer) {
+                console.log("Setting up MutationObserver for template container");
+                const observer = new MutationObserver((mutations) => {
+                    console.log("Templates container changed, updating handlers");
+                    setupTemplateCardHandlers();
+                    
+                    const activeTab = document.querySelector('.mobile-tab.active');
+                    if (activeTab) {
+                        console.log("Re-triggering active tab:", activeTab.dataset.category);
+                        handleTabClick.call(activeTab);
+                    }
+                });
+                
+                observer.observe(templatesContainer, { 
+                    childList: true, 
+                    subtree: true 
+                });
+            }
+            
+            
             <?php if (isset($_SESSION['active_template_id']) && isset($_SESSION['start_workout_directly']) && $_SESSION['start_workout_directly']): ?>
             console.log("Mobile - Auto-start detected!");
             const templateId = <?= $_SESSION['active_template_id'] ?>;
@@ -1216,35 +1428,12 @@ function formatLastUsed($lastUsedDate) {
             const previewName = document.querySelector('.preview-name');
             const previewDetail = document.querySelector('.preview-detail');
 
-            templateCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    templateCards.forEach(c => c.classList.remove('selected'));
-                    
-                    this.classList.add('selected');
-                    
-                    workoutData.templateId = parseInt(this.dataset.id, 10);
-                    workoutData.title = this.dataset.name;
-                    
-                    beginWorkoutBtn.removeAttribute('disabled');
-                });
-            });
-            
             beginWorkoutBtn.addEventListener('click', function() {
                 if (workoutData.templateId) {
                     fetchTemplateExercises(workoutData.templateId);
                 } else if (emptyWorkout.classList.contains('selected')) {
                     showStep(2);
                 }
-            });
-            
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    
-                    this.classList.add('active');
-                    
-                    const category = this.dataset.category;
-                });
             });
             
             backToTemplates.addEventListener('click', function() {

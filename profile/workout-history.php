@@ -896,10 +896,6 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
-                            <?php else: ?>
-                                <div style="padding: 20px; text-align: center;">
-                                    <p>No workouts found for the selected period.</p>
-                                </div>
                             <?php endif; ?>
                         </div>
 
@@ -968,9 +964,6 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                                     <?= $key == 0 ? 'May 6, 2025' : 'May 5, 2025' ?> • 
                                     <?= $key == 0 ? '50' : '65' ?>min
                                 </div>
-                            </div>
-                            <div>
-                                <i class="fas fa-chevron-down"></i>
                             </div>
                         </div>
                         
@@ -1154,7 +1147,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         if (!data.workouts || data.workouts.length === 0) {
                             const noDataEl = document.createElement('div');
                             noDataEl.className = 'workout-card';
-                            noDataEl.innerHTML = '<p style="text-align: center;">No workouts found for this period.</p>';
+                            noDataEl.innerHTML = '<p style="text-align: center;">No workouts found.</p>';
                             mobileContainer.appendChild(noDataEl);
                         } else {
                             data.workouts.forEach(workout => {
@@ -1264,9 +1257,6 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                                 ${formattedDate} • ${workout.duration_minutes}min
                             </div>
                         </div>
-                        <div>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
                     </div>
                     
                     <div class="workout-meta">
@@ -1285,11 +1275,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     ${workout.notes ? `<div class="workout-notes"><b>Notes:</b> ${workout.notes}</div>` : ''}
                     
                     <div class="card-actions">
-                        <button class="card-btn primary-btn" onclick="repeatWorkout(${workout.id})">Do Again</button>
                         <button class="card-btn secondary-btn" onclick="viewWorkoutDetails(${workout.id})">View Details</button>
-                        <button class="icon-btn" onclick="shareWorkout(${workout.id})">
-                            <i class="fas fa-share"></i>
-                        </button>
                     </div>
                 `;
                 
@@ -1430,15 +1416,18 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         if (loadingElement) {
                             loadingElement.remove();
                         }
-                        
+
+                        const existingMessages = tableBody.querySelectorAll('.no-results-row, .error-row');
+                        existingMessages.forEach(msg => msg.remove());
                         updateSummaryStats(data.summary);
                         
                         if (!data.workouts || data.workouts.length === 0) {
                             const noResultsRow = document.createElement('div');
+                            noResultsRow.className = 'no-results-row';
                             noResultsRow.style.padding = '20px';
                             noResultsRow.style.textAlign = 'center';
                             noResultsRow.style.gridColumn = '1 / -1';
-                            noResultsRow.innerHTML = '<p>No workouts found for the selected filters.</p>';
+                            noResultsRow.innerHTML = '<p>No workouts found.</p>';
                             tableBody.appendChild(noResultsRow);
                             
                             const pagination = document.querySelector('.pagination');
@@ -1468,8 +1457,12 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         if (loadingElement) {
                             loadingElement.remove();
                         }
+
+                        const existingMessages = tableBody.querySelectorAll('.no-results-row, .error-row');
+                        existingMessages.forEach(msg => msg.remove());
                         
                         const errorRow = document.createElement('div');
+                        errorRow.className = 'error-row';
                         errorRow.style.padding = '20px';
                         errorRow.style.textAlign = 'center';
                         errorRow.style.gridColumn = '1 / -1';

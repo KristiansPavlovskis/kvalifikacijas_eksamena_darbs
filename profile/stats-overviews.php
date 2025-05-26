@@ -17,6 +17,26 @@ $current_weight = $user['weight'] ?? 0;
 $goal_weight = $user['goal_weight'] ?? $current_weight;
 $initial_weight = $user['initial_weight'] ?? $current_weight;
 
+$exercise_frequency = $pdo->prepare("
+    SELECT 
+        exercise_name,
+        SUM(total_reps) as total_reps
+    FROM workout_exercises
+    WHERE user_id = ?
+    GROUP BY exercise_name
+    ORDER BY total_reps DESC
+    LIMIT 10
+");
+$exercise_frequency->execute([$user_id]);
+$popular_exercises = $exercise_frequency->fetchAll(PDO::FETCH_ASSOC);
+
+$total_exercises_query = $pdo->prepare("
+    SELECT SUM(total_reps) as total
+    FROM workout_exercises
+    WHERE user_id = ?
+");
+$total_exercises_query->execute([$user_id]);
+$total_reps = $total_exercises_query->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
 
 $weight_progress = 0;
 if ($goal_weight != $initial_weight) {
@@ -359,6 +379,89 @@ $strength_leaders = $top_exercises->fetchAll(PDO::FETCH_ASSOC);
             stroke: var(--border-color);
         }
 
+        .exercise-stats {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .total-count {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .count-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .count-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .popularity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .popularity-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 12px;
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+
+        .popularity-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .popularity-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exercise-name {
+            font-weight: 500;
+        }
+
+        .exercise-count {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .popularity-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .popularity-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.6s ease-in-out;
+        }
+
+        .percentage {
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
         @media (max-width: 768px) {
             .column-card {
                 flex-direction: column;
@@ -376,38 +479,40 @@ $strength_leaders = $top_exercises->fetchAll(PDO::FETCH_ASSOC);
         <div class="column-card">
             <div class="card">
                 <div class="card-header">
-                    <h2><div class="icon-heading"><i class="fas fa-weight"></i></div> Weight Progress</h2>
+                    <h2><div class="icon-heading"><i class="fas fa-chart-bar"></i></div> Exercise Popularity</h2>
                 </div>
                 
-                <div class="weight-stats">
-                    <div class="progress-container">
-                        <svg class="progress-ring" width="200" height="200">
-                            <circle cx="100" cy="100" r="85" stroke="#e6e9f0" stroke-width="12" fill="none" />
-                            <circle id="progressCircle" cx="100" cy="100" r="85" stroke="#e61616" stroke-width="12" 
-                                  stroke-dasharray="534" 
-                                  stroke-dashoffset="<?= 534 - (534 * $weight_progress) / 100 ?>"/>
-                        </svg>
-                        <div class="progress-text">
-                            <div class="progress-value"><?= $current_weight ?> kg</div>
-                            <div class="progress-label"><?= number_format($weight_progress, 0) ?>% to goal</div>
-                        </div>
+                <?php if (empty($popular_exercises)): ?>
+                <div class="empty-state">
+                    <i class="fas fa-dumbbell"></i>
+                    <p>No exercise data found yet. Start logging your workouts!</p>
+                </div>
+                <?php else: ?>
+                <div class="exercise-stats">
+                    <div class="total-count">
+                        <div class="count-label">Total Repetitions Performed</div>
+                        <div class="count-value"><?= number_format($total_reps) ?></div>
                     </div>
                     
-                    <div class="weight-items">
-                        <div class="weight-item">
-                            <div class="weight-label">Initial Weight</div>
-                            <div class="weight-value"><?= $initial_weight ?> kg</div>
-                        </div>
-                        <div class="weight-item">
-                            <div class="weight-label">Current Weight</div>
-                            <div class="weight-value"><?= $current_weight ?> kg</div>
-                        </div>
-                        <div class="weight-item">
-                            <div class="weight-label">Goal Weight</div>
-                            <div class="weight-value"><?= $goal_weight ?> kg</div>
-                        </div>
+                    <div class="popularity-list">
+                        <?php foreach ($popular_exercises as $index => $exercise): ?>
+                            <?php 
+                                $percentage = ($exercise['total_reps'] / $total_reps) * 100;
+                            ?>
+                            <div class="popularity-item">
+                                <div class="popularity-info">
+                                    <div class="exercise-name"><?= htmlspecialchars($exercise['exercise_name']) ?></div>
+                                    <div class="exercise-count"><?= number_format($exercise['total_reps']) ?> reps</div>
+                                </div>
+                                <div class="popularity-bar-container">
+                                    <div class="popularity-bar" style="width: <?= number_format($percentage, 0) ?>%"></div>
+                                </div>
+                                <div class="percentage"><?= number_format($percentage, 1) ?>%</div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
             
             <div class="card">

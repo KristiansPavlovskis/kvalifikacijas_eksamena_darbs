@@ -252,17 +252,31 @@ function getTemplateDetails($templateId) {
     
     $userId = $_SESSION['user_id'];
     
-    $stmt = $conn->prepare("SELECT id, name, description, difficulty, estimated_time, category, created_at, updated_at 
-                          FROM workout_templates 
-                          WHERE id = ? AND user_id = ?");
+    $stmt = $conn->prepare("SELECT wt.id, wt.name, wt.description, wt.difficulty, wt.estimated_time, 
+                          wt.category, wt.created_at, wt.updated_at 
+                          FROM workout_templates wt
+                          WHERE wt.id = ? AND wt.user_id = ?");
     
     $stmt->bind_param("ii", $templateId, $userId);
     $stmt->execute();
-    
     $result = $stmt->get_result();
     
     if ($result->num_rows === 0) {
-        return ['success' => false, 'message' => 'Template not found'];
+        $stmt = $conn->prepare("SELECT wt.id, wt.name, wt.description, wt.difficulty, wt.estimated_time, 
+                          wt.category, wt.created_at, wt.updated_at
+                          FROM workout_templates wt
+                          JOIN users u ON wt.user_id = u.id
+                          JOIN user_roles ur ON u.id = ur.user_id
+                          JOIN roles r ON ur.role_id = r.id
+                          WHERE wt.id = ? AND r.id = 5");
+        
+        $stmt->bind_param("i", $templateId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            return ['success' => false, 'message' => 'Template not found'];
+        }
     }
     
     $template = $result->fetch_assoc();
@@ -611,7 +625,6 @@ function updateWorkoutTemplate($templateId, $data) {
         .modal-content {
             width: 90%;
             max-width: 1100px;
-            height: 85vh;
             background: var(--card-bg);
             border-radius: 10px;
             overflow: hidden;
@@ -774,6 +787,7 @@ function updateWorkoutTemplate($templateId, $data) {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            max-height: 580px;
         }
         
         .exercise-item {
@@ -782,6 +796,7 @@ function updateWorkoutTemplate($templateId, $data) {
             padding: 15px;
             cursor: pointer;
             transition: all 0.2s;
+            min-height: 65px;
         }
         
         .exercise-item:hover {
@@ -820,7 +835,11 @@ function updateWorkoutTemplate($templateId, $data) {
             flex-direction: column;
             gap: 10px;
             overflow-y: auto;
-            max-height: 650px;
+            max-height: 580px;
+        }
+
+        .selected-exercises h3{
+            padding: 15px;
         }
         
         .selected-exercise {
@@ -1259,6 +1278,20 @@ function updateWorkoutTemplate($templateId, $data) {
         .admin-template .template-actions-dropdown {
             width: 150px;
         }
+        
+        #viewExercisesList {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .view-exercise {
+            background: var(--background);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            min-height: 65px;
+        }
     </style>
 </head>
 <body>
@@ -1363,10 +1396,6 @@ function updateWorkoutTemplate($templateId, $data) {
                                         <div class="meta-item">
                                             <i class="fas fa-clock"></i>
                                             <span><?php echo $template['estimated_time']; ?> mins</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <i class="fas fa-user"></i>
-                                            <span>By: <?php echo htmlspecialchars($template['creator']); ?></span>
                                         </div>
                                     </div>
                                     <div class="difficulty-dots">
