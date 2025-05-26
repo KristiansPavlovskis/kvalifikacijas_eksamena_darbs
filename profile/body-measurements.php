@@ -27,10 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         
-        $delete_photos_stmt = $conn->prepare("DELETE FROM measurement_photos WHERE measurement_id = ?");
-        $delete_photos_stmt->bind_param("i", $measurement_id);
-        $delete_photos_stmt->execute();
-        
         $delete_stmt = $conn->prepare("DELETE FROM body_measurements WHERE id = ? AND user_id = ?");
         $delete_stmt->bind_param("ii", $measurement_id, $user_id);
         
@@ -52,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $shoulders = !empty($_POST['shoulders']) ? $_POST['shoulders'] : null;
         $legs = !empty($_POST['legs']) ? $_POST['legs'] : null;
         $hips = !empty($_POST['hips']) ? $_POST['hips'] : null;
-        $notes = !empty($_POST['notes']) ? $_POST['notes'] : null;
+        $notes = null;
         
         $arm_left_bicep = !empty($_POST['arm_left_bicep']) ? $_POST['arm_left_bicep'] : null;
         $arm_right_bicep = !empty($_POST['arm_right_bicep']) ? $_POST['arm_right_bicep'] : null;
@@ -107,20 +103,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($stmt->execute()) {
                     $response['success'] = true;
                     $response['message'] = "Measurement updated successfully!";
-                    
-                    if (!empty($_FILES['frontPhoto']['name'])) {
-                        $result = savePhoto('frontPhoto', $user_id, $measurement_id, 'front');
-                        if (!$result) {
-                            $response['message'] .= " (Note: Front photo upload failed)";
-                        }
-                    }
-                    
-                    if (!empty($_FILES['sidePhoto']['name'])) {
-                        $result = savePhoto('sidePhoto', $user_id, $measurement_id, 'side');
-                        if (!$result) {
-                            $response['message'] .= " (Note: Side photo upload failed)";
-                        }
-                    }
                 } else {
                     $response['message'] = "Error updating measurement: " . $conn->error;
                 }
@@ -155,20 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $measurement_id = $conn->insert_id;
                     $response['success'] = true;
                     $response['message'] = "Measurements saved successfully!";
-                    
-                    if (!empty($_FILES['frontPhoto']['name'])) {
-                        $result = savePhoto('frontPhoto', $user_id, $measurement_id, 'front');
-                        if (!$result) {
-                            $response['message'] .= " (Note: Front photo upload failed)";
-                        }
-                    }
-                    
-                    if (!empty($_FILES['sidePhoto']['name'])) {
-                        $result = savePhoto('sidePhoto', $user_id, $measurement_id, 'side');
-                        if (!$result) {
-                            $response['message'] .= " (Note: Side photo upload failed)";
-                        }
-                    }
                 } else {
                     $response['message'] = "Error saving measurements: " . $conn->error;
                 }
@@ -182,29 +150,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-function savePhoto($fileField, $user_id, $measurement_id, $view_type) {
-    $userDir = "../uploads/measurements/" . $user_id;
-    if (!file_exists($userDir)) {
-        mkdir($userDir, 0777, true);
-    }
-    
-    $fileExtension = pathinfo($_FILES[$fileField]['name'], PATHINFO_EXTENSION);
-    $newFilename = $measurement_id . '_' . $view_type . '_' . time() . '.' . $fileExtension;
-    $targetPath = $userDir . '/' . $newFilename;
-    
-    if (move_uploaded_file($_FILES[$fileField]['tmp_name'], $targetPath)) {
-        global $conn;
-        
-        $stmt = $conn->prepare("INSERT INTO measurement_photos (measurement_id, photo_path, view_type, uploaded_at) VALUES (?, ?, ?, NOW())");
-        $stmt->bind_param("iss", $measurement_id, $targetPath, $view_type);
-        $stmt->execute();
-        
-        return $targetPath;
-    }
-    
-    return false;
-}
-
 $records_per_page = 5;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($page - 1) * $records_per_page;
@@ -216,7 +161,7 @@ $count_result = $count_stmt->get_result();
 $total_records = $count_result->fetch_assoc()['total'];
 $total_pages = ceil($total_records / $records_per_page);
 
-$all_stmt = $conn->prepare("SELECT * FROM body_measurements WHERE user_id = ? ORDER BY measurement_date DESC");
+$all_stmt = $conn->prepare("SELECT * FROM body_measurements WHERE user_id = ? ORDER BY created_at DESC");
 $all_stmt->bind_param("i", $user_id);
 $all_stmt->execute();
 $all_result = $all_stmt->get_result();
@@ -226,14 +171,16 @@ if (count($all_measurements) >= 2) {
     $latest = $all_measurements[0];
     $previous = $all_measurements[1];
     
+    $calc_percent = function($current, $previous) {
+        if ($previous == 0 || $previous === null || $current === null) return 0;
+        return (($current - $previous) / abs($previous)) * 100;
+    };
+
     $weight_change = ($latest['weight'] ?? 0) - ($previous['weight'] ?? 0);
     $bodyfat_change = ($latest['body_fat'] ?? 0) - ($previous['body_fat'] ?? 0);
-    $waist_change = ($latest['waist'] ?? 0) - ($previous['waist'] ?? 0);
-
     $chest_change = ($latest['chest'] ?? 0) - ($previous['chest'] ?? 0);
-    $arms_change = ($latest['arms'] ?? 0) - ($previous['arms'] ?? 0);
+    $waist_change = ($latest['waist'] ?? 0) - ($previous['waist'] ?? 0);
     $shoulders_change = ($latest['shoulders'] ?? 0) - ($previous['shoulders'] ?? 0);
-    $legs_change = ($latest['legs'] ?? 0) - ($previous['legs'] ?? 0);
     $hips_change = ($latest['hips'] ?? 0) - ($previous['hips'] ?? 0);
     $arm_left_bicep_change = ($latest['arm_left_bicep'] ?? 0) - ($previous['arm_left_bicep'] ?? 0);
     $arm_right_bicep_change = ($latest['arm_right_bicep'] ?? 0) - ($previous['arm_right_bicep'] ?? 0);
@@ -244,19 +191,20 @@ if (count($all_measurements) >= 2) {
     $leg_left_calf_change = ($latest['leg_left_calf'] ?? 0) - ($previous['leg_left_calf'] ?? 0);
     $leg_right_calf_change = ($latest['leg_right_calf'] ?? 0) - ($previous['leg_right_calf'] ?? 0);
 
-    $calc_percent = function($current, $previous) {
-        if ($previous === 0 || $previous === null) return 0;
-        return (($current - $previous) / $previous) * 100;
-    };
-
-    $weight_change_percent = $calc_percent($latest['weight'] ?? 0, $previous['weight'] ?? 0);
-    $bodyfat_change_percent = $calc_percent($latest['body_fat'] ?? 0, $previous['body_fat'] ?? 0);
-    $waist_change_percent = $calc_percent($latest['waist'] ?? 0, $previous['waist'] ?? 0);
-    $chest_change_percent = $calc_percent($latest['chest'] ?? 0, $previous['chest'] ?? 0);
-    $arms_change_percent = $calc_percent($latest['arms'] ?? 0, $previous['arms'] ?? 0);
-    $shoulders_change_percent = $calc_percent($latest['shoulders'] ?? 0, $previous['shoulders'] ?? 0);
-    $legs_change_percent = $calc_percent($latest['legs'] ?? 0, $previous['legs'] ?? 0);
-    $hips_change_percent = $calc_percent($latest['hips'] ?? 0, $previous['hips'] ?? 0);
+    $weight_change_percent = $calc_percent($latest['weight'], $previous['weight']);
+    $bodyfat_change_percent = $calc_percent($latest['body_fat'], $previous['body_fat']);
+    $chest_change_percent = $calc_percent($latest['chest'], $previous['chest']);
+    $waist_change_percent = $calc_percent($latest['waist'], $previous['waist']);
+    $shoulders_change_percent = $calc_percent($latest['shoulders'], $previous['shoulders']);
+    $hips_change_percent = $calc_percent($latest['hips'], $previous['hips']);
+    $arm_left_bicep_change_percent = $calc_percent($latest['arm_left_bicep'], $previous['arm_left_bicep']);
+    $arm_right_bicep_change_percent = $calc_percent($latest['arm_right_bicep'], $previous['arm_right_bicep']);
+    $arm_left_forearm_change_percent = $calc_percent($latest['arm_left_forearm'], $previous['arm_left_forearm']);
+    $arm_right_forearm_change_percent = $calc_percent($latest['arm_right_forearm'], $previous['arm_right_forearm']);
+    $leg_left_quad_change_percent = $calc_percent($latest['leg_left_quad'], $previous['leg_left_quad']);
+    $leg_right_quad_change_percent = $calc_percent($latest['leg_right_quad'], $previous['leg_right_quad']);
+    $leg_left_calf_change_percent = $calc_percent($latest['leg_left_calf'], $previous['leg_left_calf']);
+    $leg_right_calf_change_percent = $calc_percent($latest['leg_right_calf'], $previous['leg_right_calf']);
 }
 
 $chart_stmt = $conn->prepare("
@@ -265,7 +213,7 @@ $chart_stmt = $conn->prepare("
            leg_left_quad, leg_right_quad, leg_left_calf, leg_right_calf, hips
     FROM body_measurements 
     WHERE user_id = ? 
-    ORDER BY measurement_date ASC 
+    ORDER BY created_at ASC 
     LIMIT 30
 ");
 $chart_stmt->bind_param("i", $user_id);
@@ -273,34 +221,14 @@ $chart_stmt->execute();
 $chart_result = $chart_stmt->get_result();
 $chart_data = $chart_result->fetch_all(MYSQLI_ASSOC);
 
-$stmt = $conn->prepare("SELECT * FROM body_measurements WHERE user_id = ? ORDER BY measurement_date DESC LIMIT ? OFFSET ?");
+$stmt = $conn->prepare("SELECT * FROM body_measurements WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
 $stmt->bind_param("iii", $user_id, $records_per_page, $offset);
 $stmt->execute();
 $result = $stmt->get_result();
 $measurements = $result->fetch_all(MYSQLI_ASSOC);
 
 function getMeasurementPhotos($measurement_id, $conn) {
-    $photos = ['front' => null, 'side' => null];
-    
-    $photos_stmt = $conn->prepare("
-        SELECT photo_path, view_type
-        FROM measurement_photos
-        WHERE measurement_id = ?
-        ORDER BY uploaded_at DESC
-    ");
-    $photos_stmt->bind_param("i", $measurement_id);
-    $photos_stmt->execute();
-    $photos_result = $photos_stmt->get_result();
-    
-    while ($photo = $photos_result->fetch_assoc()) {
-        if ($photo['view_type'] === 'front') {
-            $photos['front'] = $photo['photo_path'];
-        } else if ($photo['view_type'] === 'side') {
-            $photos['side'] = $photo['photo_path'];
-        }
-    }
-    
-    return $photos;
+    return ['front' => null, 'side' => null];
 }
 
 $dates = [];
@@ -321,29 +249,6 @@ foreach ($chart_data as $row) {
     $shoulders_data[] = $row['shoulders'];
     $arm_left_data[] = ($row['arm_left_bicep'] + $row['arm_left_forearm']) / 2;
     $arm_right_data[] = ($row['arm_right_bicep'] + $row['arm_right_forearm']) / 2;
-}
-
-$photos_stmt = $conn->prepare("
-    SELECT mp.photo_path, mp.view_type, m.measurement_date 
-    FROM measurement_photos mp
-    JOIN body_measurements m ON mp.measurement_id = m.id
-    WHERE m.user_id = ?
-    ORDER BY m.measurement_date DESC
-");
-$photos_stmt->bind_param("i", $user_id);
-$photos_stmt->execute();
-$photos_result = $photos_stmt->get_result();
-$photos = $photos_result->fetch_all(MYSQLI_ASSOC);
-
-$front_photos = [];
-$side_photos = [];
-
-foreach ($photos as $photo) {
-    if ($photo['view_type'] === 'front') {
-        $front_photos[] = $photo;
-    } else if ($photo['view_type'] === 'side') {
-        $side_photos[] = $photo;
-    }
 }
 
 ?>
@@ -1001,12 +906,16 @@ foreach ($photos as $photo) {
             border-radius: 8px;
             max-width: 800px;
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         @media (max-width: 840px) {
             .modal-content {
                 max-width: 90%;
                 margin: 30px auto;
+                max-height: 80vh;
+                overflow-y: auto;
             }
         }
         
@@ -1298,10 +1207,10 @@ foreach ($photos as $photo) {
         }
         
         .details-group {
-            background: rgba(0, 0, 0, 0.2);
+            /* background: rgba(0, 0, 0, 0.2); */
             border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
+            /* padding: 1rem;
+            margin-bottom: 1.5rem; */
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
@@ -1526,9 +1435,6 @@ foreach ($photos as $photo) {
                                                     <button class="btn btn-secondary view-details" data-id="<?= $measurement['id'] ?>" title="View Details">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
-                                                    <button class="btn btn-primary edit-measurement" data-id="<?= $measurement['id'] ?>" title="Edit Measurement">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
                                                     <button class="btn btn-danger delete-measurement" data-id="<?= $measurement['id'] ?>" title="Delete Measurement">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
@@ -1596,12 +1502,37 @@ foreach ($photos as $photo) {
                                 $value = $change[0] ?? 0;
                                 $percent = $change[1] ?? 0;
                                 $intensity = min(abs($percent) / 10, 0.5);
-                                $color = $value < 0 ? 'rgba(244, 67, 54, ' : 'rgba(76, 175, 80, ';
+                                $sign = '';
+                                
+                                if ($label === 'Weight') {
+                                    $color = 'rgba(100, 100, 100, ' . $intensity . ')';
+                                    $sign = $value >= 0 ? '+' : '-';
+                                }
+                                else if ($label === 'Body Fat' || $label === 'Waist' || $label === 'Hips') {
+                                    if ($value > 0) {
+                                        $color = 'rgba(244, 67, 54, ' . $intensity . ')';
+                                        $sign = '+';
+                                    } else {
+                                        $color = 'rgba(76, 175, 80, ' . $intensity . ')';
+                                        $sign = '-';
+                                    }
+                                }
+                                else {
+                                    if ($value > 0) {
+                                        $color = 'rgba(76, 175, 80, ' . $intensity . ')';
+                                        $sign = '+';
+                                    } else {
+                                        $color = 'rgba(244, 67, 54, ' . $intensity . ')';
+                                        $sign = '-';
+                                    }
+                                }
+                                
+                                $displayValue = $sign . number_format(abs($value), 1);
                             ?>
-                            <div class="heatmap-cell" style="background-color: <?= $color . $intensity . ')' ?>">
-                                <div class="heatmap-value"><?= number_format($value, 1) ?></div>
+                            <div class="heatmap-cell" style="background-color: <?= $color ?>">
+                                <div class="heatmap-value"><?= $displayValue ?></div>
                                 <div class="heatmap-label"><?= $label ?></div>
-                                <div class="heatmap-percent"><?= number_format($percent, 1) ?>%</div>
+                                <div class="heatmap-percent"><?= $sign . number_format(abs($percent), 1) ?>%</div>
                             </div>
                             <?php endforeach; ?>
                         </div>
@@ -1619,183 +1550,146 @@ foreach ($photos as $photo) {
             <span class="modal-close">&times;</span>
             <div class="modal-header">
                 <h2><i class="fas fa-tape"></i> Record Measurements</h2>
-                <div class="step-indicator">
-                    <div class="step active" data-step="1">1</div>
-                    <div class="step" data-step="2">2</div>
-                </div>
             </div>
             
             <form id="measurementForm">
-                <div class="step-content active" data-step="1">
-                    <div class="two-column-layout">
-                        <div class="column">
-                            <h3>Basic Measurements</h3>
-                            <div class="form-row">
-                                <div class="form-control">
-                                    <label for="measurement_date">Date</label>
-                                    <input type="date" id="measurement_date" name="measurement_date" required>
+                <div class="two-column-layout">
+                    <div class="column">
+                        <h3>Basic Measurements</h3>
+                        <div class="form-row">
+                            <div class="form-control">
+                                <label for="measurement_date">Date</label>
+                                <input type="date" id="measurement_date" name="measurement_date" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-control">
+                                <label for="weight">Weight</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="weight" name="weight" placeholder="Your current weight" required>
+                                    <div class="input-group-append">kg</div>
                                 </div>
                             </div>
-                            
-                            <div class="form-row">
-                                <div class="form-control">
-                                    <label for="weight">Weight</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="weight" name="weight" placeholder="Your current weight" required>
-                                        <div class="input-group-append">kg</div>
-                                    </div>
-                                </div>
-                                <div class="form-control">
-                                    <label for="body_fat">Body Fat Percentage</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="body_fat" name="body_fat" placeholder="Your body fat percentage">
-                                        <div class="input-group-append">%</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-control">
-                                    <label for="chest">Chest</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="chest" name="chest" placeholder="Chest circumference">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
-                                </div>
-                                <div class="form-control">
-                                    <label for="shoulders">Shoulders</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="shoulders" name="shoulders" placeholder="Shoulder circumference">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-control">
-                                    <label for="waist">Waist</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="waist" name="waist" placeholder="Waist circumference">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
-                                </div>
-                                <div class="form-control">
-                                    <label for="hips">Hips</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="hips" name="hips" placeholder="Hip circumference">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
+                            <div class="form-control">
+                                <label for="body_fat">Body Fat Percentage</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="body_fat" name="body_fat" placeholder="Your body fat percentage">
+                                    <div class="input-group-append">%</div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="column">
-                            <h3>Detailed Measurements</h3>
-                            <div class="form-group-title">Arms</div>
-                            <div class="form-row">
-                                <div class="form-control">
-                                    <label for="arm_left_bicep">Left Bicep</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="arm_left_bicep" name="arm_left_bicep">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
-                                </div>
-                                <div class="form-control">
-                                    <label for="arm_right_bicep">Right Bicep</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="arm_right_bicep" name="arm_right_bicep">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
+                        
+                        <div class="form-row">
+                            <div class="form-control">
+                                <label for="chest">Chest</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="chest" name="chest" placeholder="Chest circumference">
+                                    <div class="input-group-append">cm</div>
                                 </div>
                             </div>
-
-                            <div class="form-row">
-                                <div class="form-control">
-                                    <label for="arm_left_forearm">Left Forearm</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="arm_left_forearm" name="arm_left_forearm">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
-                                </div>
-                                <div class="form-control">
-                                    <label for="arm_right_forearm">Right Forearm</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="arm_right_forearm" name="arm_right_forearm">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
+                            <div class="form-control">
+                                <label for="shoulders">Shoulders</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="shoulders" name="shoulders" placeholder="Shoulder circumference">
+                                    <div class="input-group-append">cm</div>
                                 </div>
                             </div>
-                            
-                            <div class="form-group-title">Legs</div>
-                            <div class="form-row">
-                                <div class="form-control">
-                                    <label for="leg_left_quad">Left Quad</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="leg_left_quad" name="leg_left_quad">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
-                                </div>
-                                <div class="form-control">
-                                    <label for="leg_right_quad">Right Quad</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="leg_right_quad" name="leg_right_quad">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-control">
+                                <label for="waist">Waist</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="waist" name="waist" placeholder="Waist circumference">
+                                    <div class="input-group-append">cm</div>
                                 </div>
                             </div>
-                            <div class="form-row">
-                                <div class="form-control">
-                                    <label for="leg_left_calf">Left Calf</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="leg_left_calf" name="leg_left_calf">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
-                                </div>
-                                <div class="form-control">
-                                    <label for="leg_right_calf">Right Calf</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.1" id="leg_right_calf" name="leg_right_calf">
-                                        <div class="input-group-append">cm</div>
-                                    </div>
+                            <div class="form-control">
+                                <label for="hips">Hips</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="hips" name="hips" placeholder="Hip circumference">
+                                    <div class="input-group-append">cm</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="step-content" data-step="2">
-                    <h3>Progress Photos</h3>
-                    <div class="form-row">
-                        <div class="form-control">
-                            <label>Front View</label>
-                            <div class="upload-area" id="frontPhotoUpload">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Click to upload or drag and drop</p>
-                                <input type="file" id="frontPhoto" name="frontPhoto" accept="image/*" style="display: none;">
+
+                    <div class="column">
+                        <h3>Detailed Measurements</h3>
+                        <div class="form-group-title">Arms</div>
+                        <div class="form-row">
+                            <div class="form-control">
+                                <label for="arm_left_bicep">Left Bicep</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="arm_left_bicep" name="arm_left_bicep">
+                                    <div class="input-group-append">cm</div>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label for="arm_right_bicep">Right Bicep</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="arm_right_bicep" name="arm_right_bicep">
+                                    <div class="input-group-append">cm</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-control">
-                            <label>Side View</label>
-                            <div class="upload-area" id="sidePhotoUpload">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Click to upload or drag and drop</p>
-                                <input type="file" id="sidePhoto" name="sidePhoto" accept="image/*" style="display: none;">
+
+                        <div class="form-row">
+                            <div class="form-control">
+                                <label for="arm_left_forearm">Left Forearm</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="arm_left_forearm" name="arm_left_forearm">
+                                    <div class="input-group-append">cm</div>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label for="arm_right_forearm">Right Forearm</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="arm_right_forearm" name="arm_right_forearm">
+                                    <div class="input-group-append">cm</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="notes">Notes</label>
-                        <textarea id="notes" name="notes" rows="3" placeholder="Add any notes about your measurements or progress..."></textarea>
+                        
+                        <div class="form-group-title">Legs</div>
+                        <div class="form-row">
+                            <div class="form-control">
+                                <label for="leg_left_quad">Left Quad</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="leg_left_quad" name="leg_left_quad">
+                                    <div class="input-group-append">cm</div>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label for="leg_right_quad">Right Quad</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="leg_right_quad" name="leg_right_quad">
+                                    <div class="input-group-append">cm</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-control">
+                                <label for="leg_left_calf">Left Calf</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="leg_left_calf" name="leg_left_calf">
+                                    <div class="input-group-append">cm</div>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label for="leg_right_calf">Right Calf</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" id="leg_right_calf" name="leg_right_calf">
+                                    <div class="input-group-append">cm</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="modal-footer">
-                    <div class="modal-nav">
-                        <button type="button" id="prevStep" class="btn btn-secondary" style="display: none;">Previous</button>
-                        <button type="button" id="nextStep" class="btn">Next</button>
-                    </div>
-                    <button type="submit" id="saveButton" class="btn" style="display: none;">Save Measurements</button>
+                    <button type="submit" id="saveButton" class="btn">Save Measurements</button>
                 </div>
             </form>
         </div>
@@ -1840,25 +1734,6 @@ foreach ($photos as $photo) {
                     </div>
                 </div>
             </div>
-            
-            <div class="notes-section">
-                <h3>Notes</h3>
-                <div id="detail-notes" class="notes-content"></div>
-            </div>
-            
-            <div class="photo-section">
-                <h3>Progress Photos</h3>
-                <div class="photo-comparison">
-                    <div class="photo-container">
-                        <div id="detail-front-photo" class="detail-photo"></div>
-                        <div class="photo-label">Front View</div>
-                    </div>
-                    <div class="photo-container">
-                        <div id="detail-side-photo" class="detail-photo"></div>
-                        <div class="photo-label">Side View</div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -1878,8 +1753,6 @@ foreach ($photos as $photo) {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('measurement_date').value = today;
             
-            setupTabs();
-            setupPhotoUpload();
             setupModal();
             setupActionButtons();
             setupDeleteConfirmation();
@@ -1895,14 +1768,6 @@ foreach ($photos as $photo) {
                 button.addEventListener('click', function() {
                     const measurementId = this.dataset.id;
                     fetchMeasurementDetails(measurementId);
-                });
-            });
-            
-            const editButtons = document.querySelectorAll('.edit-measurement');
-            editButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const measurementId = this.dataset.id;
-                    fetchMeasurementForEdit(measurementId);
                 });
             });
             
@@ -2039,32 +1904,6 @@ foreach ($photos as $photo) {
             document.getElementById('detail-right-quad').textContent = measurement.leg_right_quad || 'N/A';
             document.getElementById('detail-left-calf').textContent = measurement.leg_left_calf || 'N/A';
             document.getElementById('detail-right-calf').textContent = measurement.leg_right_calf || 'N/A';
-      
-            document.getElementById('detail-notes').textContent = measurement.notes || 'No notes available';
-     
-            const frontPhotoContainer = document.getElementById('detail-front-photo');
-            const sidePhotoContainer = document.getElementById('detail-side-photo');
-            
-            frontPhotoContainer.innerHTML = '';
-            sidePhotoContainer.innerHTML = '';
-            
-            if (measurement.front_photo) {
-                const frontImg = document.createElement('img');
-                frontImg.src = measurement.front_photo;
-                frontImg.alt = 'Front progress photo';
-                frontPhotoContainer.appendChild(frontImg);
-            } else {
-                frontPhotoContainer.innerHTML = '<div class="no-photo">No front photo</div>';
-            }
-            
-            if (measurement.side_photo) {
-                const sideImg = document.createElement('img');
-                sideImg.src = measurement.side_photo;
-                sideImg.alt = 'Side progress photo';
-                sidePhotoContainer.appendChild(sideImg);
-            } else {
-                sidePhotoContainer.innerHTML = '<div class="no-photo">No side photo</div>';
-            }
             
             openDetailsModal();
         }
@@ -2088,94 +1927,9 @@ foreach ($photos as $photo) {
             }, 300);
         }
         
-        function fetchMeasurementForEdit(measurementId) {
-            fetch('get_measurement.php?id=' + measurementId)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        populateEditForm(data.measurement);
-                    } else {
-                        showToast('Error', data.message || 'Failed to load measurement for editing', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching measurement for edit:', error);
-                    showToast('Error', 'An error occurred while loading measurement for editing', 'error');
-                });
-        }
-        
-        function populateEditForm(measurement) {
-            document.getElementById('measurementForm').reset();
-            
-            document.getElementById('measurement_date').value = measurement.measurement_date || '';
-            document.getElementById('weight').value = measurement.weight || '';
-            document.getElementById('body_fat').value = measurement.body_fat || '';
-            document.getElementById('chest').value = measurement.chest || '';
-            document.getElementById('waist').value = measurement.waist || '';
-            document.getElementById('shoulders').value = measurement.shoulders || '';
-            document.getElementById('hips').value = measurement.hips || '';
-            
-            document.getElementById('arm_left_bicep').value = measurement.arm_left_bicep || '';
-            document.getElementById('arm_right_bicep').value = measurement.arm_right_bicep || '';
-            document.getElementById('arm_left_forearm').value = measurement.arm_left_forearm || '';
-            document.getElementById('arm_right_forearm').value = measurement.arm_right_forearm || '';
-            document.getElementById('leg_left_quad').value = measurement.leg_left_quad || '';
-            document.getElementById('leg_right_quad').value = measurement.leg_right_quad || '';
-            document.getElementById('leg_left_calf').value = measurement.leg_left_calf || '';
-            document.getElementById('leg_right_calf').value = measurement.leg_right_calf || '';
-            
-            document.getElementById('notes').value = measurement.notes || '';
-            
-            if (measurement.front_photo) {
-                displayExistingPhoto('frontPhotoUpload', measurement.front_photo, 'Front photo');
-            }
-            
-            if (measurement.side_photo) {
-                displayExistingPhoto('sidePhotoUpload', measurement.side_photo, 'Side photo');
-            }
-            
-            if (!document.getElementById('measurement_id')) {
-                const hiddenField = document.createElement('input');
-                hiddenField.type = 'hidden';
-                hiddenField.name = 'measurement_id';
-                hiddenField.id = 'measurement_id';
-                document.getElementById('measurementForm').appendChild(hiddenField);
-            }
-            document.getElementById('measurement_id').value = measurement.id;
-            
-            const modalTitle = document.querySelector('#measurementModal .modal-header h2');
-            modalTitle.innerHTML = '<i class="fas fa-edit"></i> Edit Measurement';
-            
-            document.getElementById('saveButton').textContent = 'Update Measurement';
-            
-            currentStep = 1;
-            updateStepDisplay();
-            openModal();
-        }
-        
-        function displayExistingPhoto(containerId, photoUrl, altText) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            
-            const img = document.createElement('img');
-            img.src = photoUrl;
-            img.alt = altText;
-            img.style.width = '100%';
-            img.style.height = 'auto';
-            
-            container.appendChild(img);
-        }
-        
         function setupModal() {
             const modal = document.getElementById('measurementModal');
             const closeBtn = document.querySelector('.modal-close');
-            const nextBtn = document.getElementById('nextStep');
-            const prevBtn = document.getElementById('prevStep');
             
             closeBtn.addEventListener('click', function() {
                 closeModal();
@@ -2184,20 +1938,6 @@ foreach ($photos as $photo) {
             window.addEventListener('click', function(event) {
                 if (event.target === modal) {
                     closeModal();
-                }
-            });
-            
-            nextBtn.addEventListener('click', function() {
-                if (currentStep < 2) {
-                    currentStep++;
-                    updateStepDisplay();
-                }
-            });
-            
-            prevBtn.addEventListener('click', function() {
-                if (currentStep > 1) {
-                    currentStep--;
-                    updateStepDisplay();
                 }
             });
         }
@@ -2210,9 +1950,6 @@ foreach ($photos as $photo) {
             setTimeout(() => {
                 modal.classList.add('active');
             }, 10);
-            
-            currentStep = 1;
-            updateStepDisplay();
             
             document.getElementById('measurementForm').reset();
             document.getElementById('measurement_date').value = new Date().toISOString().split('T')[0];
@@ -2227,105 +1964,6 @@ foreach ($photos as $photo) {
             }, 300);
         }
 
-        let currentStep = 1;
-
-        function updateStepDisplay() {
-            const steps = document.querySelectorAll('.step');
-            const stepContents = document.querySelectorAll('.step-content');
-            const prevBtn = document.getElementById('prevStep');
-            const nextBtn = document.getElementById('nextStep');
-            const saveBtn = document.getElementById('saveButton');
-            
-            steps.forEach(step => {
-                if (parseInt(step.getAttribute('data-step')) === currentStep) {
-                    step.classList.add('active');
-                } else {
-                    step.classList.remove('active');
-                }
-            });
-            
-            stepContents.forEach(content => {
-                if (parseInt(content.getAttribute('data-step')) === currentStep) {
-                    content.classList.add('active');
-                } else {
-                    content.classList.remove('active');
-                }
-            });
-            
-            if (currentStep === 1) {
-                prevBtn.style.display = 'none';
-            } else {
-                prevBtn.style.display = 'inline-block';
-            }
-            
-            if (currentStep === 2) {
-                nextBtn.style.display = 'none';
-                saveBtn.style.display = 'inline-block';
-            } else {
-                nextBtn.style.display = 'inline-block';
-                saveBtn.style.display = 'none';
-            }
-        }
-        
-        function setupTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    
-                    this.classList.add('active');
-                    
-                    const tabContents = document.querySelectorAll('.tab-content');
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    
-                    const tabId = this.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active');
-                });
-            });
-        }
-        
-        function setupPhotoUpload() {
-            const frontUpload = document.getElementById('frontPhotoUpload');
-            const sideUpload = document.getElementById('sidePhotoUpload');
-            const frontInput = document.getElementById('frontPhoto');
-            const sideInput = document.getElementById('sidePhoto');
-            
-            console.log(frontInput);
-            
-            frontUpload.addEventListener('click', () => frontInput.click());
-            sideUpload.addEventListener('click', () => sideInput.click());
-            
-            frontInput.addEventListener('change', function() {
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.style.width = '100%';
-                        img.style.height = 'auto';
-                        frontUpload.innerHTML = '';
-                        frontUpload.appendChild(img);
-                    };
-                    reader.readAsDataURL(this.files[0]);
-                }
-            });
-            
-            sideInput.addEventListener('change', function() {
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.style.width = '100%';
-                        img.style.height = 'auto';
-                        sideUpload.innerHTML = '';
-                        sideUpload.appendChild(img);
-                    };
-                    reader.readAsDataURL(this.files[0]);
-                }
-            });
-        }
-        
         document.getElementById('measurementForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -2341,17 +1979,6 @@ foreach ($photos as $photo) {
             
             if (!formData.get('measurement_date')) {
                 formData.set('measurement_date', new Date().toISOString().split('T')[0]);
-            }
-
-            const frontPhotoInput = document.getElementById('frontPhoto');
-            const sidePhotoInput = document.getElementById('sidePhoto');
-            
-            if (frontPhotoInput && frontPhotoInput.files.length > 0) {
-                formData.append('frontPhoto', frontPhotoInput.files[0]);
-            }
-            
-            if (sidePhotoInput && sidePhotoInput.files.length > 0) {
-                formData.append('sidePhoto', sidePhotoInput.files[0]);
             }
             
             const saveButton = document.getElementById('saveButton');
