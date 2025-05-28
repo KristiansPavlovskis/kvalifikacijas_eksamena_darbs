@@ -249,17 +249,6 @@ function formatLastUsed($lastUsedDate) {
             flex-direction: column;
             overflow-y: auto;
         }
-
-        .mobile-navigation {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--dark-card);
-            display: flex;
-            justify-content: space-around;
-            padding: 0.75rem 0.5rem;
-        }
         
         .nav-item {
             display: flex;
@@ -745,25 +734,6 @@ function formatLastUsed($lastUsedDate) {
                 <div class="begin-workout-container">
                     <button id="begin-workout-btn" disabled>Begin Workout</button>
                 </div>
-            </div>
-            
-            <div class="mobile-navigation">
-                <a href="dashboard.php" class="nav-item active">
-                    <i class="fas fa-home"></i>
-                    <span>Home</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-clipboard-list"></i>
-                    <span>Templates</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-history"></i>
-                    <span>History</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-user"></i>
-                    <span>Profile</span>
-                </a>
             </div>
         </div>
     </div>

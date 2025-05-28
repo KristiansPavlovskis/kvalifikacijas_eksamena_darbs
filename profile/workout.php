@@ -130,6 +130,7 @@ try {
     </style>
 </head>
 <body>
+<?php require_once 'sidebar.php'; ?>
     <div id="desktopView">
         <?php include 'desktop-workout.php'; ?>
     </div>

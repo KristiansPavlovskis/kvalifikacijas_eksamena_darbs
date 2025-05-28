@@ -411,9 +411,6 @@ try {
                             </div>
                             
                             <div class="action-buttons">
-                                <button class="action-btn" onclick="editGoal(<?= $goal['id'] ?>)">
-                                    <i class="fas fa-edit"></i>
-                                </button>
                                 <button class="action-btn" onclick="deleteGoal(<?= $goal['id'] ?>)">
                                     <i class="fas fa-trash"></i>
                                 </button>

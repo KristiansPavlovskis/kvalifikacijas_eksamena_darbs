@@ -239,6 +239,120 @@ if (isset($conn) && isset($user_id)) {
             transform: translateX(0);
         }
     }
+    
+    .mobile-nav {
+        display: none;
+    }
+    
+    .more-menu-overlay {
+        display: none;
+    }
+    
+    @media (max-width: 992px) {
+        .mobile-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: var(--dark-surface, #151515);
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted, #a0a0a0);
+            text-decoration: none;
+            padding: 8px 0;
+            width: 25%;
+            font-size: 12px;
+        }
+        
+        .mobile-nav-item i {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .mobile-nav-item.active {
+            color: var(--primary, #ff4d4d);
+        }
+        
+        .more-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .more-menu-container {
+            background-color: var(--dark-surface, #151515);
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 500px;
+            margin: auto;
+            width: 100%;
+        }
+        
+        .more-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color, #333);
+            padding-bottom: 10px;
+        }
+        
+        .more-menu-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--light, #f5f5f5);
+        }
+        
+        .more-menu-close {
+            background: transparent;
+            border: none;
+            color: var(--light, #f5f5f5);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .more-menu-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .more-menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--light, #f5f5f5);
+        }
+        
+        .more-menu-item i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: var(--primary, #ff4d4d);
+        }
+    }
 </style>
 
 <aside class="sidebar">
@@ -315,6 +429,62 @@ if (isset($conn) && isset($user_id)) {
     </div>
 </aside>
 
+<nav class="mobile-nav">
+    <a href="profile.php" class="mobile-nav-item <?= $current_page === 'profile.php' ? 'active' : '' ?>">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="workout.php" class="mobile-nav-item <?= $current_page === 'workout.php' ? 'active' : '' ?>">
+        <i class="fas fa-play-circle"></i>
+        <span>Workout</span>
+    </a>
+    <a href="workout-templates.php" class="mobile-nav-item <?= $current_page === 'workout-templates.php' ? 'active' : '' ?>">
+        <i class="fas fa-clipboard-list"></i>
+        <span>Templates</span>
+    </a>
+    <a href="#" class="mobile-nav-item" id="moreBtn">
+        <i class="fas fa-ellipsis-h"></i>
+        <span>More</span>
+    </a>
+</nav>
+
+<div class="more-menu-overlay" id="moreMenuOverlay">
+    <div class="more-menu-container">
+        <div class="more-menu-header">
+            <div class="more-menu-title">More Options</div>
+            <button class="more-menu-close" id="closeMoreMenu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="more-menu-items">
+            <a href="workout-history.php" class="more-menu-item">
+                <i class="fas fa-history"></i>
+                <span>Workout History</span>
+            </a>
+            <a href="stats-overviews.php" class="more-menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Stats Overview</span>
+            </a>
+            <a href="body-measurements.php" class="more-menu-item">
+                <i class="fas fa-ruler"></i>
+                <span>Body Measurements</span>
+            </a>
+            <a href="current-goal.php" class="more-menu-item">
+                <i class="fas fa-bullseye"></i>
+                <span>Setting Goals</span>
+            </a>
+            <a href="settings.php" class="more-menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="../pages/logout.php" class="more-menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const toggleSidebar = () => {
@@ -371,7 +541,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
     document.addEventListener('click', function(event) {
         if (window.innerWidth <= 992) {
             const sidebar = document.querySelector('.sidebar');
@@ -384,5 +553,41 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    const moreBtn = document.getElementById('moreBtn');
+    const moreMenuOverlay = document.getElementById('moreMenuOverlay');
+    const closeMoreMenu = document.getElementById('closeMoreMenu');
+    
+    if (moreBtn && moreMenuOverlay && closeMoreMenu) {
+        moreBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            moreMenuOverlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeMoreMenu.addEventListener('click', function() {
+            moreMenuOverlay.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+        
+        moreMenuOverlay.addEventListener('click', function(e) {
+            if (e.target === moreMenuOverlay) {
+                moreMenuOverlay.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        });
+    }
+    
+    function adjustContentPadding() {
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent && window.innerWidth <= 992) {
+            mainContent.style.paddingBottom = '70px';
+        } else if (mainContent) {
+            mainContent.style.paddingBottom = '';
+        }
+    }
+    
+    adjustContentPadding();
+    window.addEventListener('resize', adjustContentPadding);
 });
 </script> 

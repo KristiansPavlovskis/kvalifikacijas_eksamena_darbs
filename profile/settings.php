@@ -19,9 +19,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST["update_profile"])) {
         $new_username = trim($_POST["username"]);
         $email = trim($_POST["email"]);
-        $first_name = trim($_POST["first_name"]);
-        $last_name = trim($_POST["last_name"]);
-        $bio = trim($_POST["bio"]);
         
         if ($new_username !== $username) {
             $check_query = "SELECT id FROM users WHERE username = ? AND id != ?";
@@ -40,9 +37,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         if (empty($message)) {
-            $query = "UPDATE users SET username = ?, first_name = ?, last_name = ?, email = ?, bio = ? WHERE id = ?";
+            $query = "UPDATE users SET username = ?, email = ? WHERE id = ?";
             $stmt = mysqli_prepare($conn, $query);
-            mysqli_stmt_bind_param($stmt, "sssssi", $new_username, $first_name, $last_name, $email, $bio, $user_id);
+            mysqli_stmt_bind_param($stmt, "ssi", $new_username, $email, $user_id);
             
             if (mysqli_stmt_execute($stmt)) {
                 $message = "Profile updated successfully!";
@@ -492,26 +489,9 @@ $user = mysqli_fetch_assoc($result);
                                 <input type="text" id="username" name="username" class="form-control" value="<?php echo htmlspecialchars($user['username'] ?? ''); ?>" placeholder="Enter your username">
                             </div>
                             
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="first_name">First Name</label>
-                                    <input type="text" id="first_name" name="first_name" class="form-control" value="<?php echo htmlspecialchars($user['first_name'] ?? ''); ?>" placeholder="Enter your first name">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="last_name">Last Name</label>
-                                    <input type="text" id="last_name" name="last_name" class="form-control" value="<?php echo htmlspecialchars($user['last_name'] ?? ''); ?>" placeholder="Enter your last name">
-                                </div>
-                            </div>
-                            
                             <div class="form-group">
                                 <label for="email">Email Address</label>
                                 <input type="email" id="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" placeholder="Enter your email">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="bio">Bio</label>
-                                <textarea id="bio" name="bio" class="form-control" rows="4" placeholder="Tell us about yourself"><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
                             </div>
                             
                             <div class="form-actions">

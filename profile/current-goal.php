@@ -489,13 +489,12 @@ try {
         }
 
         .filter-count {
-            position: absolute;
-            right: 12px;
-            border-radius: 12px;
-            padding: 2px 8px;
-            font-size: 12px;
+            position: relative;
+            display: inline-block;
+            margin-right: 10px;
+            font-size: 14px;
             font-weight: 500;
-            color: #1a1b26;
+            color: #a9b1d6;
         }
 
         .filter-count.green {
@@ -799,7 +798,7 @@ try {
             }
             
             .categories, .main-content {
-                display: none;
+                display: none !important;
             }
             
             .mobile-view {
@@ -1086,14 +1085,12 @@ try {
         }
 
         .filter-count {
-            position: absolute;
-            right: 12px;
-            background-color: #7aa2f7;
-            color: #1a1b26;
-            border-radius: 12px;
-            padding: 2px 8px;
-            font-size: 12px;
+            position: relative;
+            display: inline-block;
+            margin-right: 10px;
+            font-size: 14px;
             font-weight: 500;
+            color: #a9b1d6;
         }
 
         .filter-count.red {
@@ -1566,6 +1563,41 @@ try {
             background-color: rgba(255, 255, 255, 0.1);
             transform: translateX(4px);
         }
+
+        .no-goals, .empty-state, .no-matches {
+            text-align: center;
+            padding: 30px;
+            background-color: #1a1b26;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .has-goals .no-goals,
+        .has-goals .empty-state {
+            display: none;
+        }
+        
+        .empty-state-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: #7aa2f7;
+        }
+        
+        .empty-state-title {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .empty-state-text {
+            margin-bottom: 20px;
+            color: #a9b1d6;
+        }
+        
+        @media (max-width: 768px) {
+            .empty-state {
+                margin: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1583,14 +1615,11 @@ try {
                 <div class="filter-category">
                     <h3>Categories</h3>
                     <div class="filter-option active" data-filter="all">
-                        <i class="fas fa-th-list"></i>
+                        <span class="filter-count"><?= count($goals) ?></span>
                         <span>All Categories</span>
-                        <span class="filter-count blue"><?= count($goals) ?></span>
                     </div>
                     <?php foreach ($goalTypeIcons as $type => $icon): ?>
                         <div class="filter-option" data-filter="<?= htmlspecialchars($type) ?>">
-                            <span class="emoji-icon"><?= $icon ?></span>
-                            <span><?= ucfirst(htmlspecialchars($type)) ?></span>
                             <?php 
                             $typeCount = 0;
                             foreach ($goals as $goal) {
@@ -1598,23 +1627,19 @@ try {
                                     $typeCount++;
                                 }
                             }
-                            if ($typeCount > 0):
                             ?>
-                            <span class="filter-count blue"><?= $typeCount ?></span>
-                            <?php endif; ?>
+                            <span class="filter-count"><?= $typeCount ?></span>
+                            <span><?= ucfirst(htmlspecialchars($type)) ?></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
                 <div class="filter-category">
                     <h3>Status</h3>
                     <div class="filter-option active" data-status="all">
-                        <i class="fas fa-th-list"></i>
+                        <span class="filter-count"><?= count($goals) ?></span>
                         <span>All Status</span>
-                        <span class="filter-count blue"><?= count($goals) ?></span>
                     </div>
                     <div class="filter-option" data-status="on-track">
-                        <i class="fas fa-check-circle"></i>
-                        <span>On Track</span>
                         <?php
                         $onTrackCount = 0;
                         foreach ($goals as $goal) {
@@ -1623,11 +1648,10 @@ try {
                             }
                         }
                         ?>
-                        <span class="filter-count green"><?= $onTrackCount ?></span>
+                        <span class="filter-count"><?= $onTrackCount ?></span>
+                        <span>On Track</span>
                     </div>
                     <div class="filter-option" data-status="behind">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>Behind</span>
                         <?php
                         $behindCount = 0;
                         foreach ($goals as $goal) {
@@ -1636,11 +1660,10 @@ try {
                             }
                         }
                         ?>
-                        <span class="filter-count red"><?= $behindCount ?></span>
+                        <span class="filter-count"><?= $behindCount ?></span>
+                        <span>Behind</span>
                     </div>
                     <div class="filter-option" data-status="completed">
-                        <i class="fas fa-flag-checkered"></i>
-                        <span>Completed</span>
                         <?php
                         $completedCount = 0;
                         foreach ($goals as $goal) {
@@ -1649,14 +1672,22 @@ try {
                             }
                         }
                         ?>
-                        <span class="filter-count blue"><?= $completedCount ?></span>
+                        <span class="filter-count"><?= $completedCount ?></span>
+                        <span>Completed</span>
                     </div>
                 </div>
             </div>
             <div class="goal-cards">
                 <?php if (empty($active_goals)): ?>
-                    <div class="no-goals">
-                        <p>You haven't set any goals yet. Click the + button to add your first goal!</p>
+                    <div class="no-goals" style="display: block !important;">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 class="empty-state-title">You haven't set any fitness goals yet</h3>
+                        <p class="empty-state-text">Setting clear goals is the first step toward achieving your fitness dreams</p>
+                        <button class="btn btn-primary create-goal-btn">
+                            <i class="fas fa-plus"></i> Create Your First Goal
+                        </button>
                     </div>
                 <?php else: ?>
                     <?php foreach ($active_goals as $goal): 
@@ -1798,42 +1829,61 @@ try {
             </div>
             
             <div class="mobile-progress">
-                <div class="progress-circle">
+                <div class="progress-circle" data-progress="<?= $completionRate ?>">
                     <svg width="120" height="120" viewBox="0 0 120 120">
                         <circle cx="60" cy="60" r="54" fill="none" stroke="#2a2b36" stroke-width="12" />
+                        <?php
+                        $circumference = 2 * 3.14159 * 54;
+                        $dashOffset = $circumference - ($circumference * $completionRate / 100);
+                        ?>
                         <circle cx="60" cy="60" r="54" fill="none" stroke="#ff4d4d" stroke-width="12" 
-                                stroke-dasharray="339.292" stroke-dashoffset="84.823" />
+                                stroke-dasharray="<?= $circumference ?>" stroke-dashoffset="<?= $dashOffset ?>" />
                     </svg>
-                    <div class="progress-text">75%</div>
+                    <div class="progress-text"><?= $completionRate ?>%</div>
                 </div>
                 <div>Overall Progress</div>
-                <div>Next milestone in 3 days</div>
+                <?php
+                $nextMilestone = null;
+                $daysToNext = null;
+                foreach ($upcomingDeadlines as $goal) {
+                    $daysLeft = ceil((strtotime($goal['deadline']) - time()) / (60 * 60 * 24));
+                    if ($daysToNext === null || $daysLeft < $daysToNext) {
+                        $nextMilestone = $goal;
+                        $daysToNext = $daysLeft;
+                    }
+                }
+                ?>
+                <?php if ($nextMilestone): ?>
+                    <div>Next milestone in <?= $daysToNext ?> days</div>
+                <?php else: ?>
+                    <div>No upcoming milestones</div>
+                <?php endif; ?>
             </div>
             
             <div class="mobile-tabs">
-                <div class="mobile-tab active">Active</div>
-                <div class="mobile-tab">Completed</div>
-                <div class="mobile-tab">All</div>
+                <div class="mobile-tab active" data-filter="active">Active</div>
+                <div class="mobile-tab" data-filter="completed">Completed</div>
+                <div class="mobile-tab" data-filter="all">All</div>
             </div>
             
             <div class="mobile-goals">
                 <?php if (empty($active_goals)): ?>
-                    <div class="empty-state">
+                    <div class="empty-state" style="display: block !important;">
                         <div class="empty-state-icon">
                             <i class="fas fa-bullseye"></i>
                         </div>
-                        <h3 class="empty-state-title">No Active Goals</h3>
-                        <p class="empty-state-text">Set meaningful goals to track your fitness progress and stay motivated.</p>
-                        <button class="btn btn-primary" id="startNewGoalBtn">
+                        <h3 class="empty-state-title">You haven't set any fitness goals yet</h3>
+                        <p class="empty-state-text">Setting clear goals is the first step toward achieving your fitness dreams</p>
+                        <button class="btn btn-primary" id="mobileAddGoalBtn">
                             <i class="fas fa-plus"></i> Create Your First Goal
                         </button>
                     </div>
                 <?php else: ?>
                     <?php foreach ($active_goals as $goal): 
-                        if ($goal['completed']) continue;
                         $progress = calculateProgress($goal['current_value'], $goal['target_value']);
+                        $isCompleted = $goal['completed'] ? 'true' : 'false';
                     ?>
-                        <div class="mobile-goal-card" onclick="viewGoal(<?= $goal['id'] ?>)">
+                        <div class="mobile-goal-card" data-completed="<?= $isCompleted ?>" onclick="viewGoal(<?= $goal['id'] ?>)">
                             <div class="mobile-goal-title">
                                 <?= htmlspecialchars($goal['title']) ?>
                                 <div class="mobile-goal-actions">
@@ -1962,20 +2012,6 @@ try {
                                 </div>
                             </div>
                             
-                            <div class="form-section">
-                                <h3>Tracking Options</h3>
-                                <div class="form-group checkbox-group">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" id="auto_track" name="auto_track" value="1">
-                                        <label for="auto_track">Auto-track from workouts</label>
-                                    </div>
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" id="enable_reminders" name="enable_reminders" value="1">
-                                        <label for="enable_reminders">Enable reminders</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary">Create Goal</button>
                             </div>
@@ -2087,10 +2123,6 @@ try {
                             <option value="min">Minutes</option>
                         </select>
                     </div>
-                </div>
-                
-                <div class="form-step" data-step="3">
-                    <h3>Set Timeline</h3>
                     
                     <div class="form-group">
                         <label>Start Date</label>
@@ -2100,17 +2132,6 @@ try {
                     <div class="form-group">
                         <label>Target Date</label>
                         <input type="date" name="mobile_deadline" class="form-control">
-                    </div>
-                    
-                    <div class="form-group checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="mobile_auto_track" name="mobile_auto_track" value="1">
-                            <label for="mobile_auto_track">Auto-track from workouts</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="mobile_reminders" name="mobile_reminders" value="1">
-                            <label for="mobile_reminders">Enable reminders</label>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -2218,6 +2239,71 @@ try {
                 </div>
             </div>
         </div>
+        
+        <div class="modal-content mobile-goal-form">
+            <div class="mobile-form-header">
+                <button class="back-button" id="mobileEditFormBack"><i class="fas fa-arrow-left"></i></button>
+                <h2>Edit Goal</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="mobile-form-steps">
+                <div class="form-step" data-step="1">
+                    <div class="form-group">
+                        <label>Goal Title</label>
+                        <input type="text" name="mobile_edit_title" id="mobile_edit_title" placeholder="Enter your goal title" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="mobile_edit_description" id="mobile_edit_description" placeholder="Add some details about your goal" class="form-control" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="mobile_edit_goal_type" id="mobile_edit_goal_type" class="form-control">
+                            <option value="">Select Category</option>
+                            <?php foreach ($goalTypeIcons as $type => $icon): ?>
+                                <option value="<?= htmlspecialchars($type) ?>">
+                                    <?= $icon ?> <?= ucfirst(htmlspecialchars($type)) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-step" data-step="2">
+                    <h3>Set Your Target</h3>
+                    
+                    <div class="form-group">
+                        <label>Current Value</label>
+                        <input type="number" name="mobile_edit_current_value" id="mobile_edit_current_value" class="form-control" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Target Value</label>
+                        <input type="number" name="mobile_edit_target_value" id="mobile_edit_target_value" class="form-control" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Target Date</label>
+                        <input type="date" name="mobile_edit_deadline" id="mobile_edit_deadline" class="form-control">
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="mobile_edit_completed" name="mobile_edit_completed">
+                            <label for="mobile_edit_completed">Mark as completed</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mobile-form-actions">
+                <button class="btn btn-primary btn-continue" id="mobileEditFormContinue">Continue</button>
+                <button class="btn btn-primary btn-update" id="mobileEditFormUpdate">Update Goal</button>
+            </div>
+        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -2238,6 +2324,10 @@ try {
             const goalCards = document.querySelectorAll('.goal-card');
             
             function filterGoals() {
+                if (goalCards.length === 0) {
+                    return;
+                }
+                
                 goalCards.forEach(card => {
                     const goalType = card.getAttribute('data-type');
                     const status = card.getAttribute('data-status');
@@ -2253,12 +2343,12 @@ try {
                 });
                 
                 const visibleGoals = Array.from(goalCards).filter(card => card.style.display !== 'none');
-                const noGoalsElement = document.querySelector('.no-goals') || createNoGoalsElement();
+                const noGoalsElement = document.querySelector('.no-goals');
                 
-                if (visibleGoals.length === 0 && goalCards.length > 0) {
-                    noGoalsElement.style.display = 'block';
-                } else {
+                if (noGoalsElement && visibleGoals.length === 0 && goalCards.length > 0) {
+                    const filterNoMatchElement = createNoGoalsElement();
                     noGoalsElement.style.display = 'none';
+                    filterNoMatchElement.style.display = 'block';
                 }
                 
                 console.log(`Filtered by category: ${currentCategoryFilter}, status: ${currentStatusFilter}`);
@@ -2266,13 +2356,13 @@ try {
             }
             
             function createNoGoalsElement() {
-                const noGoalsElement = document.createElement('div');
-                noGoalsElement.className = 'no-goals';
-                noGoalsElement.style.padding = '20px';
-                noGoalsElement.style.textAlign = 'center';
-                noGoalsElement.style.backgroundColor = '#1a1b26';
-                noGoalsElement.style.borderRadius = '12px';
-                noGoalsElement.style.margin = '10px 0';
+                const noMatchElement = document.createElement('div');
+                noMatchElement.className = 'no-matches';
+                noMatchElement.style.padding = '20px';
+                noMatchElement.style.textAlign = 'center';
+                noMatchElement.style.backgroundColor = '#1a1b26';
+                noMatchElement.style.borderRadius = '12px';
+                noMatchElement.style.margin = '10px 0';
                 
                 let message = 'No goals match your current filters.';
                 
@@ -2284,12 +2374,18 @@ try {
                     message = `No ${currentStatusFilter} goals found.`;
                 }
                 
-                noGoalsElement.innerHTML = `
+                noMatchElement.innerHTML = `
                     <p>${message}</p>
                     <p>Try changing your filters or <a href="#" onclick="document.getElementById('addGoalBtn').click(); return false;">add a new goal</a>.</p>
                 `;
-                document.querySelector('.goal-cards').appendChild(noGoalsElement);
-                return noGoalsElement;
+                
+                const existingNoMatch = document.querySelector('.no-matches');
+                if (existingNoMatch) {
+                    existingNoMatch.remove();
+                }
+                
+                document.querySelector('.goal-cards').appendChild(noMatchElement);
+                return noMatchElement;
             }
             
             const categoryFilters = document.querySelectorAll('.filter-category:nth-child(1) .filter-option');
@@ -2322,6 +2418,11 @@ try {
                 card.setAttribute('data-type', goalType);
             });
             
+            const goalCardsContainer = document.querySelector('.goal-cards');
+            if (goalCardsContainer && goalCards.length > 0) {
+                goalCardsContainer.classList.add('has-goals');
+            }
+            
             filterGoals();
             
             function openModal(modalId) {
@@ -2339,17 +2440,18 @@ try {
                 document.body.style.overflow = '';
             }
             
-            if (addGoalBtn) {
-                addGoalBtn.addEventListener('click', () => openModal('addGoalModal'));
-            }
+            const addGoalButtons = [
+                document.getElementById('addGoalBtn'),
+                document.getElementById('mobileAddGoalBtn'),
+                document.getElementById('startNewGoalBtn'),
+                document.querySelector('.empty-state .btn')
+            ];
             
-            if (mobileAddGoalBtn) {
-                mobileAddGoalBtn.addEventListener('click', () => openModal('addGoalModal'));
-            }
-            
-            if (startNewGoalBtn) {
-                startNewGoalBtn.addEventListener('click', () => openModal('addGoalModal'));
-            }
+            addGoalButtons.forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', () => openModal('addGoalModal'));
+                }
+            });
             
             updateGoalBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -2385,7 +2487,49 @@ try {
                     mobileTabs.forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
                     
-                    console.log(`Selected tab: ${this.textContent}`);
+                    const filter = this.getAttribute('data-filter');
+                    console.log(`Selected tab: ${this.textContent}, filter: ${filter}`);
+                    
+                    const mobileGoalCards = document.querySelectorAll('.mobile-goal-card');
+                    mobileGoalCards.forEach(card => {
+                        const isCompleted = card.hasAttribute('data-completed') && card.getAttribute('data-completed') === 'true';
+                        
+                        if (filter === 'all') {
+                            card.style.display = 'block';
+                        } else if (filter === 'active' && !isCompleted) {
+                            card.style.display = 'block';
+                        } else if (filter === 'completed' && isCompleted) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    const visibleGoals = Array.from(mobileGoalCards).filter(card => card.style.display !== 'none');
+                    const emptyState = document.querySelector('.mobile-goals .empty-state');
+                    
+                    if (emptyState) {
+                        if (visibleGoals.length === 0 && mobileGoalCards.length > 0) {
+                            let message = 'No goals match your filter.';
+                            
+                            if (filter === 'active') {
+                                message = 'You don\'t have any active goals.';
+                            } else if (filter === 'completed') {
+                                message = 'You haven\'t completed any goals yet.';
+                            }
+                            
+                            const emptyTitle = emptyState.querySelector('.empty-state-title');
+                            if (emptyTitle) {
+                                emptyTitle.textContent = message;
+                            }
+                            
+                            emptyState.style.display = 'block';
+                        } else if (mobileGoalCards.length === 0) {
+                            emptyState.style.display = 'block';
+                        } else {
+                            emptyState.style.display = 'none';
+                        }
+                    }
                 });
             });
             
@@ -2469,9 +2613,13 @@ try {
                     }
                 });
 
-                document.querySelector('.filter-count.green').textContent = onTrack;
-                document.querySelector('.filter-count.red').textContent = behind;
-                document.querySelector('.filter-count.blue').textContent = completed;
+                const onTrackFilter = document.querySelector('.filter-option[data-status="on-track"]');
+                const behindFilter = document.querySelector('.filter-option[data-status="behind"]');
+                const completedFilter = document.querySelector('.filter-option[data-status="completed"]');
+                
+                if (onTrackFilter) onTrackFilter.querySelector('.filter-count').textContent = onTrack;
+                if (behindFilter) behindFilter.querySelector('.filter-count').textContent = behind;
+                if (completedFilter) completedFilter.querySelector('.filter-count').textContent = completed;
             }
 
             updateStatusCounts();
@@ -2549,7 +2697,7 @@ try {
             if (mobileFormContinue) {
                 mobileFormContinue.addEventListener('click', function() {
                     const nextStep = currentStep + 1;
-                    if (nextStep <= mobileFormSteps.length) {
+                    if (nextStep <= 2) {
                         showStep(nextStep);
                     }
                 });
@@ -2575,7 +2723,7 @@ try {
                     stepToShow.style.display = 'block';
                     currentStep = step;
                     
-                    if (currentStep === mobileFormSteps.length) {
+                    if (currentStep === 2) {
                         mobileFormContinue.style.display = 'none';
                         mobileFormCreate.style.display = 'block';
                     } else {
@@ -2603,8 +2751,6 @@ try {
                     const mobileUnit = document.querySelector('select[name="mobile_unit"]').value;
                     const mobileStartDate = document.querySelector('input[name="mobile_start_date"]').value;
                     const mobileDeadline = document.querySelector('input[name="mobile_deadline"]').value;
-                    const mobileAutoTrack = document.getElementById('mobile_auto_track').checked;
-                    const mobileReminders = document.getElementById('mobile_reminders').checked;
                     
                     document.getElementById('title').value = mobileTitle;
                     document.getElementById('description').value = mobileDescription;
@@ -2655,6 +2801,14 @@ try {
                             document.getElementById('edit_deadline').value = goal.deadline;
                             document.getElementById('edit_completed').checked = goal.completed == 1;
                             
+                            document.getElementById('mobile_edit_title').value = goal.title;
+                            document.getElementById('mobile_edit_description').value = goal.description || '';
+                            document.getElementById('mobile_edit_goal_type').value = goal.goal_type;
+                            document.getElementById('mobile_edit_current_value').value = goal.current_value;
+                            document.getElementById('mobile_edit_target_value').value = goal.target_value;
+                            document.getElementById('mobile_edit_deadline').value = goal.deadline;
+                            document.getElementById('mobile_edit_completed').checked = goal.completed == 1;
+                            
                             document.getElementById('edit-preview-title').textContent = goal.title;
                             document.getElementById('edit-preview-current').textContent = goal.current_value;
                             document.getElementById('edit-preview-target').textContent = goal.target_value;
@@ -2667,7 +2821,9 @@ try {
                             });
                             
                             const progress = Math.min(100, (goal.current_value / goal.target_value) * 100) || 0;
-                            modal.querySelector('.preview-progress .progress').style.width = progress + '%';
+                            document.querySelector('#editGoalModal .preview-progress .progress').style.width = progress + '%';
+                            
+                            showEditStep(1);
                             
                             modal.classList.add('active');
                             document.body.style.overflow = 'hidden';
@@ -2785,6 +2941,89 @@ try {
 
                 });
             });
+
+            const mobileGoalsContainer = document.querySelector('.mobile-goals');
+            if (mobileGoalsContainer && document.querySelectorAll('.mobile-goal-card').length > 0) {
+                mobileGoalsContainer.classList.add('has-goals');
+            }
+
+            const mobileEditFormContinue = document.getElementById('mobileEditFormContinue');
+            const mobileEditFormUpdate = document.getElementById('mobileEditFormUpdate');
+            const mobileEditFormBack = document.getElementById('mobileEditFormBack');
+            let currentEditStep = 1;
+            
+            if (mobileEditFormContinue) {
+                mobileEditFormContinue.addEventListener('click', function() {
+                    const nextStep = currentEditStep + 1;
+                    if (nextStep <= 2) {
+                        showEditStep(nextStep);
+                    }
+                });
+            }
+            
+            if (mobileEditFormBack) {
+                mobileEditFormBack.addEventListener('click', function() {
+                    if (currentEditStep > 1) {
+                        showEditStep(currentEditStep - 1);
+                    } else {
+                        closeAllModals();
+                    }
+                });
+            }
+            
+            function showEditStep(step) {
+                const editFormSteps = document.querySelectorAll('#editGoalModal .form-step');
+                editFormSteps.forEach(formStep => {
+                    formStep.style.display = 'none';
+                });
+                
+                const stepToShow = document.querySelector(`#editGoalModal .form-step[data-step="${step}"]`);
+                if (stepToShow) {
+                    stepToShow.style.display = 'block';
+                    currentEditStep = step;
+                    
+                    if (currentEditStep === 2) {
+                        mobileEditFormContinue.style.display = 'none';
+                        mobileEditFormUpdate.style.display = 'block';
+                    } else {
+                        mobileEditFormContinue.style.display = 'block';
+                        mobileEditFormUpdate.style.display = 'none';
+                    }
+                }
+            }
+            
+            if (mobileEditFormUpdate) {
+                mobileEditFormUpdate.addEventListener('click', function() {
+                    document.getElementById('edit_title').value = document.getElementById('mobile_edit_title').value;
+                    document.getElementById('edit_description').value = document.getElementById('mobile_edit_description').value;
+                    document.getElementById('edit_goal_type').value = document.getElementById('mobile_edit_goal_type').value;
+                    document.getElementById('edit_current_value').value = document.getElementById('mobile_edit_current_value').value;
+                    document.getElementById('edit_target_value').value = document.getElementById('mobile_edit_target_value').value;
+                    document.getElementById('edit_deadline').value = document.getElementById('mobile_edit_deadline').value;
+                    document.getElementById('edit_completed').checked = document.getElementById('mobile_edit_completed').checked;
+                    
+                    document.getElementById('editGoalForm').submit();
+                });
+            }
+
+            const activeTab = document.querySelector('.mobile-tab.active');
+            if (activeTab) {
+                const defaultFilter = activeTab.getAttribute('data-filter');
+                const mobileGoalCards = document.querySelectorAll('.mobile-goal-card');
+                mobileGoalCards.forEach(card => {
+                    const isCompleted = card.hasAttribute('data-completed') && card.getAttribute('data-completed') === 'true';
+                    
+                    if (defaultFilter === 'all') {
+                        card.style.display = 'block';
+                    } else if (defaultFilter === 'active' && !isCompleted) {
+                        card.style.display = 'block';
+                    } else if (defaultFilter === 'completed' && isCompleted) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
         });
     </script> 
 </body>

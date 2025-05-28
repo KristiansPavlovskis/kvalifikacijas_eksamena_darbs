@@ -1750,25 +1750,6 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     <input type="hidden" name="auto_start" value="1">
                     <input type="hidden" name="start_step" value="2">
                 </form>
-                
-                <div class="mobile-bottom-nav">
-                    <a href="#" class="mobile-nav-item active">
-                        <div class="mobile-nav-icon"><i class="fas fa-home"></i></div>
-                        <div class="mobile-nav-label">Home</div>
-                    </a>
-                    <a href="#" class="mobile-nav-item">
-                        <div class="mobile-nav-icon"><i class="fas fa-clipboard-list"></i></div>
-                        <div class="mobile-nav-label">Templates</div>
-                    </a>
-                    <a href="#" class="mobile-nav-item">
-                        <div class="mobile-nav-icon"><i class="fas fa-history"></i></div>
-                        <div class="mobile-nav-label">History</div>
-                    </a>
-                    <a href="#" class="mobile-nav-item">
-                        <div class="mobile-nav-icon"><i class="fas fa-user"></i></div>
-                        <div class="mobile-nav-label">Profile</div>
-                    </a>
-                </div>
             </div>
             
             <div class="modal" id="mobileDayModal">
