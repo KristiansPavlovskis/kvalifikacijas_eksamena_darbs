@@ -111,274 +111,7 @@ try {
     <link rel="stylesheet" href="../profile/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link href="../assets/css/variables.css" rel="stylesheet">
-    <style>
-        .goal-details-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-        }
-        
-        @media (max-width: 992px) {
-            .goal-details-container {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .goal-details-card {
-            background-color: #1a1b26;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .goal-details-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 24px;
-        }
-        
-        .goal-title-area h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        
-        .goal-meta {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            color: #a9b1d6;
-            font-size: 14px;
-        }
-        
-        .goal-type-badge {
-            padding: 4px 12px;
-            border-radius: 16px;
-            background-color: #24273a;
-            font-size: 14px;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .action-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background-color: #24273a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .action-btn:hover {
-            background-color: #2a2d45;
-        }
-        
-        .goal-progress-section {
-            padding: 24px 0;
-        }
-        
-        .goal-progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        
-        .progress-stats {
-            display: flex;
-            gap: 24px;
-            margin-bottom: 16px;
-        }
-        
-        .progress-stat {
-            flex: 1;
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            color: #a9b1d6;
-        }
-        
-        .goal-progress-bar {
-            height: 12px;
-            background-color: #24273a;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #7aa2f7 0%, #bb9af7 100%);
-            border-radius: 6px;
-            transition: width 0.3s ease;
-        }
-        
-        .progress-numbers {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #a9b1d6;
-        }
-        
-        .update-progress-form {
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .form-title {
-            margin-bottom: 16px;
-            font-size: 18px;
-        }
-        
-        .form-group {
-            margin-bottom: 16px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #a9b1d6;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            background-color: #24273a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-        }
-        
-        .btn-primary {
-            background-color: #7aa2f7;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #6e93e8;
-        }
-        
-        .goal-description {
-            margin-top: 24px;
-            color: #a9b1d6;
-            line-height: 1.6;
-        }
-        
-        .history-section {
-            margin-top: 24px;
-        }
-        
-        .history-title {
-            margin-bottom: 16px;
-            font-size: 18px;
-        }
-        
-        .history-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .history-item {
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .history-date {
-            font-size: 14px;
-            color: #a9b1d6;
-            margin-bottom: 4px;
-        }
-        
-        .history-value {
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .related-workouts {
-            margin-top: 24px;
-        }
-        
-        .workouts-title {
-            margin-bottom: 16px;
-            font-size: 18px;
-        }
-        
-        .workout-card {
-            padding: 12px;
-            border-radius: 8px;
-            background-color: #24273a;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .workout-name {
-            font-weight: 500;
-        }
-        
-        .workout-meta {
-            font-size: 14px;
-            color: #a9b1d6;
-        }
-        
-        .view-link {
-            color: #7aa2f7;
-            text-decoration: none;
-        }
-        
-        .view-link:hover {
-            text-decoration: underline;
-        }
-        
-        .message {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-        }
-        
-        .message.success {
-            background-color: rgba(16, 185, 129, 0.2);
-            color: #10b981;
-        }
-        
-        .message.error {
-            background-color: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-    </style>
+    <link href="../profile/global-profile.css" rel="stylesheet">
 </head>
 <body>
     <div class="dashboard">
@@ -393,7 +126,7 @@ try {
             </div>
             
             <?php if (!empty($message)): ?>
-                <div class="message <?= $message_type ?>">
+                <div class="goal-message <?= $message_type ?>">
                     <?= $message ?>
                 </div>
             <?php endif; ?>
@@ -410,8 +143,8 @@ try {
                                 </div>
                             </div>
                             
-                            <div class="action-buttons">
-                                <button class="action-btn" onclick="deleteGoal(<?= $goal['id'] ?>)">
+                            <div class="goal-action-buttons">
+                                <button class="goal-action-btn" onclick="deleteGoal(<?= $goal['id'] ?>)">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -420,56 +153,56 @@ try {
                         <div class="goal-progress-section">
                             <div class="goal-progress-header">
                                 <h2>Progress Tracking</h2>
-                                <span class="status-badge <?= $isCompleted ? 'completed' : '' ?>">
+                                <span class="goal-status-badge <?= $isCompleted ? 'completed' : '' ?>">
                                     <?= $isCompleted ? 'Completed' : 'In Progress' ?>
                                 </span>
                             </div>
                             
-                            <div class="progress-stats">
-                                <div class="progress-stat">
-                                    <div class="stat-value"><?= $progress ?>%</div>
-                                    <div class="stat-label">Progress</div>
+                            <div class="goal-progress-stats">
+                                <div class="goal-progress-stat">
+                                    <div class="goal-stat-value"><?= $progress ?>%</div>
+                                    <div class="goal-stat-label">Progress</div>
                                 </div>
-                                <div class="progress-stat">
-                                    <div class="stat-value"><?= $goal['current_value'] ?></div>
-                                    <div class="stat-label">Current Value</div>
+                                <div class="goal-progress-stat">
+                                    <div class="goal-stat-value"><?= $goal['current_value'] ?></div>
+                                    <div class="goal-stat-label">Current Value</div>
                                 </div>
-                                <div class="progress-stat">
-                                    <div class="stat-value"><?= $goal['target_value'] ?></div>
-                                    <div class="stat-label">Target Value</div>
+                                <div class="goal-progress-stat">
+                                    <div class="goal-stat-value"><?= $goal['target_value'] ?></div>
+                                    <div class="goal-stat-label">Target Value</div>
                                 </div>
-                                <div class="progress-stat">
-                                    <div class="stat-value"><?= $daysLeft >= 0 ? $daysLeft : 'Expired' ?></div>
-                                    <div class="stat-label"><?= $daysLeft >= 0 ? 'Days Left' : 'Days Overdue' ?></div>
+                                <div class="goal-progress-stat">
+                                    <div class="goal-stat-value"><?= $daysLeft >= 0 ? $daysLeft : 'Expired' ?></div>
+                                    <div class="goal-stat-label"><?= $daysLeft >= 0 ? 'Days Left' : 'Days Overdue' ?></div>
                                 </div>
                             </div>
                             
                             <div class="goal-progress-bar">
-                                <div class="progress-fill" style="width: <?= $progress ?>%"></div>
+                                <div class="goal-progress-fill" style="width: <?= $progress ?>%"></div>
                             </div>
-                            <div class="progress-numbers">
+                            <div class="goal-progress-numbers">
                                 <span class="start">0</span>
                                 <span class="target"><?= $goal['target_value'] ?></span>
                             </div>
                             
-                            <div class="update-progress-form">
-                                <h3 class="form-title">Update Progress</h3>
+                            <div class="goal-update-progress-form">
+                                <h3 class="goal-form-title">Update Progress</h3>
                                 <form action="goal-details.php?id=<?= $goal_id ?>" method="post">
                                     <input type="hidden" name="update_progress" value="1">
                                     
-                                    <div class="form-group">
-                                        <label class="form-label">Current Value</label>
-                                        <input type="number" name="current_value" class="form-control" value="<?= $goal['current_value'] ?>" step="any" required>
+                                    <div class="goal-form-group">
+                                        <label class="goal-form-label">Current Value</label>
+                                        <input type="number" name="current_value" class="goal-form-control" value="<?= $goal['current_value'] ?>" step="any" required>
                                     </div>
                                     
-                                    <div class="form-group">
-                                        <div class="checkbox-group">
+                                    <div class="goal-form-group">
+                                        <div class="goal-checkbox-group">
                                             <input type="checkbox" id="completed" name="completed" <?= $isCompleted ? 'checked' : '' ?>>
                                             <label for="completed">Mark as completed</label>
                                         </div>
                                     </div>
                                     
-                                    <button type="submit" class="btn btn-primary">Update Progress</button>
+                                    <button type="submit" class="goal-btn goal-btn-primary">Update Progress</button>
                                 </form>
                             </div>
                         </div>
@@ -484,15 +217,15 @@ try {
                     
                     <?php if (!empty($history)): ?>
                         <div class="goal-details-card">
-                            <div class="history-section">
-                                <h3 class="history-title">Progress History</h3>
-                                <ul class="history-list">
+                            <div class="goal-history-section">
+                                <h3 class="goal-history-title">Progress History</h3>
+                                <ul class="goal-history-list">
                                     <?php foreach ($history as $entry): ?>
-                                        <li class="history-item">
-                                            <div class="history-date">
+                                        <li class="goal-history-item">
+                                            <div class="goal-history-date">
                                                 <?= date('M d, Y', strtotime($entry['logged_at'])) ?>
                                             </div>
-                                            <div class="history-value">
+                                            <div class="goal-history-value">
                                                 <span>Value: <?= $entry['value'] ?></span>
                                                 <span><?= round(($entry['value'] / $goal['target_value']) * 100) ?>%</span>
                                             </div>
@@ -508,19 +241,19 @@ try {
                     <div class="goal-details-card">
                         <div class="goal-deadline">
                             <h3>Goal Timeline</h3>
-                            <div class="deadline-info">
-                                <div class="deadline-item">
-                                    <span class="deadline-label">Start Date</span>
-                                    <span class="deadline-value"><?= date('M d, Y', strtotime($goal['created_at'])) ?></span>
+                            <div class="goal-deadline-info">
+                                <div class="goal-deadline-item">
+                                    <span class="goal-deadline-label">Start Date</span>
+                                    <span class="goal-deadline-value"><?= date('M d, Y', strtotime($goal['created_at'])) ?></span>
                                 </div>
-                                <div class="deadline-item">
-                                    <span class="deadline-label">Deadline</span>
-                                    <span class="deadline-value"><?= date('M d, Y', strtotime($goal['deadline'])) ?></span>
+                                <div class="goal-deadline-item">
+                                    <span class="goal-deadline-label">Deadline</span>
+                                    <span class="goal-deadline-value"><?= date('M d, Y', strtotime($goal['deadline'])) ?></span>
                                 </div>
                                 <?php if ($goal['completed'] && !empty($goal['completed_at'])): ?>
-                                    <div class="deadline-item">
-                                        <span class="deadline-label">Completed On</span>
-                                        <span class="deadline-value"><?= date('M d, Y', strtotime($goal['completed_at'])) ?></span>
+                                    <div class="goal-deadline-item">
+                                        <span class="goal-deadline-label">Completed On</span>
+                                        <span class="goal-deadline-value"><?= date('M d, Y', strtotime($goal['completed_at'])) ?></span>
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -529,18 +262,18 @@ try {
                     
                     <?php if (!empty($related_workouts)): ?>
                         <div class="goal-details-card">
-                            <div class="related-workouts">
-                                <h3 class="workouts-title">Recent Workouts</h3>
+                            <div class="goal-related-workouts">
+                                <h3 class="goal-workouts-title">Recent Workouts</h3>
                                 <?php foreach ($related_workouts as $workout): ?>
-                                    <div class="workout-card">
+                                    <div class="goal-workout-card">
                                         <div>
-                                            <div class="workout-name"><?= htmlspecialchars($workout['name']) ?></div>
-                                            <div class="workout-meta">
+                                            <div class="goal-workout-name"><?= htmlspecialchars($workout['name']) ?></div>
+                                            <div class="goal-workout-meta">
                                                 <?= date('M d, Y', strtotime($workout['created_at'])) ?> • 
                                                 <?= $workout['duration_minutes'] ?> min
                                             </div>
                                         </div>
-                                        <a href="workout-details.php?id=<?= $workout['id'] ?>" class="view-link">View</a>
+                                        <a href="workout-details.php?id=<?= $workout['id'] ?>" class="goal-view-link">View</a>
                                     </div>
                                 <?php endforeach; ?>
                             </div>

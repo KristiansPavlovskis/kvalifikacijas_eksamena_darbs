@@ -82,6 +82,7 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="global-profile.css" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
@@ -96,6 +97,7 @@ try {
             --dark-card: #1a1a2e;
             --gray-dark: #2b2b3d;
             --gray-light: rgba(255, 255, 255, 0.7);
+            --sidebar-width: 260px;
         }
 
         body {
@@ -104,6 +106,19 @@ try {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .main-content {
+            flex: 1;
+            padding-left: 0;
+            width: 100%;
+            overflow-x: hidden;
         }
 
         #desktopView, #mobileView {
@@ -126,18 +141,29 @@ try {
             #mobileView {
                 display: block !important;
             }
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
 <body>
-<?php require_once 'sidebar.php'; ?>
-    <div id="desktopView">
-        <?php include 'desktop-workout.php'; ?>
-    </div>
+<div class="app-container">
+    <?php require_once 'sidebar.php'; ?>
+    
+    <div class="main-content">
+        <div id="desktopView">
+            <?php include 'desktop-workout.php'; ?>
+        </div>
 
-    <div id="mobileView">
-        <?php include 'mobile-workout.php'; ?>
+        <div id="mobileView">
+            <?php include 'mobile-workout.php'; ?>
+        </div>
     </div>
+</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

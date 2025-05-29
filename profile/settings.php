@@ -122,342 +122,34 @@ $user = mysqli_fetch_assoc($result);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/variables.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--dark-bg);
-            color: var(--text-light);
-            font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        .dashboard {
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            min-height: 100vh;
-        }
-        
-        .page-header {
-            margin-bottom: 25px;
-        }
-        
-        .page-title {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin: 0;
-            color: var(--text-light);
-        }
-        
-        .alert {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-        }
-        
-        .alert-success {
-            background-color: rgba(0, 204, 102, 0.1);
-            border-left: 4px solid #00cc66;
-        }
-        
-        .alert-error {
-            background-color: rgba(230, 57, 70, 0.1);
-            border-left: 4px solid #e63946;
-        }
-        
-        .alert-icon {
-            font-size: 1.2rem;
-        }
-        
-        .alert-success .alert-icon {
-            color: #00cc66;
-        }
-        
-        .alert-error .alert-icon {
-            color: #e63946;
-        }
-        
-        .alert-content {
-            flex: 1;
-        }
-        
-        .settings-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            padding-bottom: 5px;
-        }
-        
-        .settings-tabs::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .settings-tab {
-            padding: 12px 20px;
-            background-color: var(--dark-card);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: var(--transition-standard);
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-light);
-            font-weight: 500;
-        }
-        
-        .settings-tab:hover {
-            background-color: var(--dark-card-hover);
-            transform: translateY(-2px);
-        }
-        
-        .settings-tab.active {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .settings-tab i {
-            font-size: 1.1rem;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .settings-card {
-            background-color: var(--dark-card);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
-            margin-bottom: 30px;
-        }
-        
-        .settings-card-header {
-            padding: 25px 30px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .settings-card-title {
-            margin: 0;
-            font-size: 1.3rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .settings-card-title i {
-            color: var(--primary);
-        }
-        
-        .settings-card-body {
-            padding: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-light);
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 14px 16px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-light);
-            font-family: 'Poppins', sans-serif;
-            font-size: 1rem;
-            transition: var(--transition-standard);
-            box-sizing: border-box;
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: rgba(255, 255, 255, 0.08);
-        }
-        
-        .form-control::placeholder {
-            color: var(--text-muted);
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-        
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition-standard);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .btn-secondary {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--text-light);
-        }
-        
-        .btn-secondary:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background-color: #d62f3c;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .modal-content {
-            background-color: var(--dark-card);
-            border-radius: 16px;
-            width: 90%;
-            max-width: 500px;
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            animation: scaleIn 0.3s ease;
-        }
-        
-        @keyframes scaleIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        
-        .modal-header {
-            padding: 25px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .modal-title {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .modal-body {
-            padding: 25px;
-        }
-        
-        .modal-footer {
-            padding: 20px 25px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            border-top: 1px solid var(--border-color);
-        }
-    </style>
+    <link href="global-profile.css" rel="stylesheet">
 </head>
-<body>
-    <div class="dashboard">
+<body style="display: block;">
+    <div class="settings-dashboard">
         <?php require_once 'sidebar.php'; ?>
         
-        <div class="main-content">
-            <div class="page-header">
-                <h1 class="page-title">Settings</h1>
+        <div class="settings-main-content">
+            <div class="settings-page-header">
+                <h1 class="settings-page-title">Settings</h1>
             </div>
             
             <?php if (!empty($message) && $message_type === "success") { ?>
-                <div class="alert alert-success">
-                    <div class="alert-icon">
+                <div class="settings-alert settings-alert-success">
+                    <div class="settings-alert-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
-                    <div class="alert-content">
+                    <div class="settings-alert-content">
                         <strong>Success!</strong> <?php echo $message; ?>
                     </div>
                 </div>
             <?php } ?>
             
             <?php if (!empty($message) && $message_type === "error") { ?>
-                <div class="alert alert-error">
-                    <div class="alert-icon">
+                <div class="settings-alert settings-alert-error">
+                    <div class="settings-alert-icon">
                         <i class="fas fa-exclamation-circle"></i>
                     </div>
-                    <div class="alert-content">
+                    <div class="settings-alert-content">
                         <strong>Error!</strong> <?php echo $message; ?>
                     </div>
                 </div>
@@ -475,7 +167,7 @@ $user = mysqli_fetch_assoc($result);
                 </div>
             </div>
             
-            <div class="tab-content active" id="profile-tab">
+            <div class="settings-tab-content active" id="profile-tab">
                 <form method="POST" action="">
                     <div class="settings-card">
                         <div class="settings-card-header">
@@ -484,18 +176,18 @@ $user = mysqli_fetch_assoc($result);
                             </h2>
                         </div>
                         <div class="settings-card-body">
-                            <div class="form-group">
+                            <div class="settings-form-group">
                                 <label for="username">Username</label>
-                                <input type="text" id="username" name="username" class="form-control" value="<?php echo htmlspecialchars($user['username'] ?? ''); ?>" placeholder="Enter your username">
+                                <input type="text" id="username" name="username" class="settings-form-control" value="<?php echo htmlspecialchars($user['username'] ?? ''); ?>" placeholder="Enter your username">
                             </div>
                             
-                            <div class="form-group">
+                            <div class="settings-form-group">
                                 <label for="email">Email Address</label>
-                                <input type="email" id="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" placeholder="Enter your email">
+                                <input type="email" id="email" name="email" class="settings-form-control" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" placeholder="Enter your email">
                             </div>
                             
-                            <div class="form-actions">
-                                <button type="submit" name="update_profile" class="btn btn-primary">
+                            <div class="settings-form-actions">
+                                <button type="submit" name="update_profile" class="settings-btn settings-btn-primary">
                                     <i class="fas fa-save"></i> Save Changes
                                 </button>
                             </div>
@@ -504,7 +196,7 @@ $user = mysqli_fetch_assoc($result);
                 </form>
             </div>
             
-            <div class="tab-content" id="security-tab">
+            <div class="settings-tab-content" id="security-tab">
                 <form method="POST" action="">
                     <div class="settings-card">
                         <div class="settings-card-header">
@@ -513,23 +205,23 @@ $user = mysqli_fetch_assoc($result);
                             </h2>
                         </div>
                         <div class="settings-card-body">
-                            <div class="form-group">
+                            <div class="settings-form-group">
                                 <label for="current_password">Current Password</label>
-                                <input type="password" id="current_password" name="current_password" class="form-control" placeholder="Enter your current password" required>
+                                <input type="password" id="current_password" name="current_password" class="settings-form-control" placeholder="Enter your current password" required>
                             </div>
                             
-                            <div class="form-group">
+                            <div class="settings-form-group">
                                 <label for="new_password">New Password</label>
-                                <input type="password" id="new_password" name="new_password" class="form-control" placeholder="Enter your new password" required>
+                                <input type="password" id="new_password" name="new_password" class="settings-form-control" placeholder="Enter your new password" required>
                             </div>
                             
-                            <div class="form-group">
+                            <div class="settings-form-group">
                                 <label for="confirm_password">Confirm New Password</label>
-                                <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Confirm your new password" required>
+                                <input type="password" id="confirm_password" name="confirm_password" class="settings-form-control" placeholder="Confirm your new password" required>
                             </div>
                             
-                            <div class="form-actions">
-                                <button type="submit" name="change_password" class="btn btn-primary">
+                            <div class="settings-form-actions">
+                                <button type="submit" name="change_password" class="settings-btn settings-btn-primary">
                                     <i class="fas fa-key"></i> Update Password
                                 </button>
                             </div>
@@ -538,7 +230,7 @@ $user = mysqli_fetch_assoc($result);
                 </form>
             </div>
             
-            <div class="tab-content" id="account-tab">
+            <div class="settings-tab-content" id="account-tab">
                 <div class="settings-card">
                     <div class="settings-card-header">
                         <h2 class="settings-card-title">
@@ -546,10 +238,10 @@ $user = mysqli_fetch_assoc($result);
                         </h2>
                     </div>
                     <div class="settings-card-body">
-                        <div class="form-group">
+                        <div class="settings-form-group">
                             <label>Delete Account</label>
                             <p style="color: var(--text-muted); margin-bottom: 15px;">Permanently delete your account and all associated data. This action cannot be undone.</p>
-                            <button class="btn btn-danger" id="deleteAccountBtn">
+                            <button class="settings-btn settings-btn-danger" id="deleteAccountBtn">
                                 <i class="fas fa-trash-alt"></i> Delete Account
                             </button>
                         </div>
@@ -559,30 +251,30 @@ $user = mysqli_fetch_assoc($result);
         </div>
     </div>
     
-    <div class="modal" id="deleteAccountModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" style="color: var(--danger);">
+    <div class="settings-modal" id="deleteAccountModal">
+        <div class="settings-modal-content">
+            <div class="settings-modal-header">
+                <h2 class="settings-modal-title" style="color: var(--danger);">
                     <i class="fas fa-exclamation-triangle"></i> Delete Account
                 </h2>
             </div>
-            <div class="modal-body">
-                <div class="alert alert-error" style="margin-bottom: 20px;">
-                    <div class="alert-icon">
+            <div class="settings-modal-body">
+                <div class="settings-alert settings-alert-error" style="margin-bottom: 20px;">
+                    <div class="settings-alert-icon">
                         <i class="fas fa-exclamation-circle"></i>
                     </div>
-                    <div class="alert-content">
+                    <div class="settings-alert-content">
                         <strong>Warning!</strong> This action cannot be undone.
                     </div>
                 </div>
                 <p>Are you sure you want to delete your account? This will permanently remove all your data including workout history, goals, and personal information.</p>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelDeleteBtn">
+            <div class="settings-modal-footer">
+                <button class="settings-btn settings-btn-secondary" id="cancelDeleteBtn">
                     <i class="fas fa-times"></i> Cancel
                 </button>
                 <form method="POST" action="">
-                    <button type="submit" name="delete_account" class="btn btn-danger">
+                    <button type="submit" name="delete_account" class="settings-btn settings-btn-danger">
                         <i class="fas fa-trash-alt"></i> Delete Account
                     </button>
                 </form>
@@ -593,7 +285,7 @@ $user = mysqli_fetch_assoc($result);
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('.settings-tab');
-            const tabContents = document.querySelectorAll('.tab-content');
+            const tabContents = document.querySelectorAll('.settings-tab-content');
             
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {

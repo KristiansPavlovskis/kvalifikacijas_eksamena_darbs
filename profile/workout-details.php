@@ -171,413 +171,75 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="global-profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <style>
-        :root {
-            --primary: #6366F1;
-            --primary-hover: #4F46E5;
-            --primary-light: rgba(99, 102, 241, 0.1);
-            --primary-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
-            --dark-bg: #0F172A;
-            --dark-card: #1E293B;
-            --dark-card-hover: #334155;
-            --gray-light: #94A3B8;
-            --white: #FFFFFF;
-            --transition: all 0.3s ease;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --info: #3B82F6;
-            --accent: #EF4444;
-        }
-        
-        body {
-            background-color: var(--dark-bg);
-            font-family: 'Poppins', sans-serif;
-            color: var(--white);
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .main-content {
-            flex: 1;
-            padding: 30px 40px; 
-            width: calc(100% - var(--sidebar-width));
-            max-width: 100%;
-        }
-
-        .dashboard {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-        }
-        
-        @media (min-width: 992px) {
-            .main-content {
-                padding: 30px;
-            }
-        }
-        
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        
-        .page-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin: 0;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-        
-        .btn {
-            background-color: var(--dark-card);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn-accent {
-            background-color: var(--accent);
-        }
-        
-        .btn-accent:hover {
-            background-color: #D03737;
-        }
-        
-        .workout-details-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 24px;
-        }
-        
-        @media (min-width: 992px) {
-            .workout-details-container {
-                grid-template-columns: 3fr 1fr;
-            }
-        }
-        
-        .workout-header {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .workout-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .workout-meta {
-            color: var(--gray-light);
-            margin-top: 4px;
-        }
-        
-        .workout-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-top: 20px;
-        }
-        
-        @media (min-width: 768px) {
-            .workout-stats {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-        
-        .stat-card {
-            background-color: var(--dark-bg);
-            border-radius: 8px;
-            padding: 16px;
-        }
-        
-        .stat-value {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .stat-label {
-            color: var(--gray-light);
-            font-size: 14px;
-        }
-        
-        .workout-notes {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .notes-label {
-            color: var(--gray-light);
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-        
-        .rating {
-            color: var(--warning);
-            margin-top: 8px;
-        }
-        
-        .exercise-section {
-            margin-bottom: 24px;
-        }
-        
-        .exercise-card {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-        
-        .exercise-header {
-            padding: 20px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-        
-        .exercise-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0;
-        }
-        
-        .exercise-body {
-            padding: 0 24px 24px;
-        }
-        
-        .sets-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .sets-table th {
-            text-align: left;
-            color: var(--gray-light);
-            font-weight: 500;
-            padding: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .sets-table td {
-            padding: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .sets-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .sidebar-section {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 16px;
-        }
-        
-        .volume-comparison {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-        
-        .volume-box {
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            background-color: var(--dark-bg);
-            border-radius: 8px;
-        }
-        
-        .volume-label {
-            color: var(--gray-light);
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-        
-        .volume-value {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .volume-difference {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            background-color: <?php echo $volume_difference >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'; ?>;
-            color: <?php echo $volume_difference >= 0 ? 'var(--success)' : 'var(--danger)'; ?>;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-        
-        .pr-list {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-        
-        .pr-item {
-            padding: 12px;
-            margin-bottom: 8px;
-            background-color: var(--dark-bg);
-            border-radius: 8px;
-        }
-        
-        .pr-exercise {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .pr-details {
-            color: var(--gray-light);
-            font-size: 14px;
-        }
-        
-        .similar-list {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-        
-        .similar-item {
-            padding: 12px;
-            margin-bottom: 8px;
-            background-color: var(--dark-bg);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-        
-        .similar-item:hover {
-            background-color: var(--dark-card-hover);
-        }
-        
-        .similar-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .similar-date {
-            color: var(--gray-light);
-            font-size: 14px;
-        }
-        
-        .pdf-btn, .excel-btn {
-            width: 100%;
-            margin-top: 12px;
-            justify-content: center;
-        }
-    </style>
 </head>
 <body>
-    <div class="dashboard">
+    <div class="wd-dashboard">
         <?php include 'sidebar.php'; ?>
 
-        <div class="main-content">
-            <div class="page-header">
-                <h1 class="page-title">Workout Details</h1>
-                <div class="header-actions">
-                    <a href="workout-history.php" class="btn">
+        <div class="wd-main-content">
+            <div class="wd-page-header">
+                <h1 class="wd-page-title">Workout Details</h1>
+                <div class="wd-header-actions">
+                    <a href="workout-history.php" class="wd-btn">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
                 </div>
             </div>
 
-            <div class="workout-details-container">
-                <div class="workout-main">
-                    <div class="workout-header">
-                        <h2 class="workout-title">
+            <div class="wd-workout-details-container">
+                <div class="wd-workout-main">
+                    <div class="wd-workout-header">
+                        <h2 class="wd-workout-title">
                             <?= htmlspecialchars($workout['name']) ?>
                             <i class="fas fa-dumbbell"></i>
                         </h2>
-                        <div class="workout-meta">
+                        <div class="wd-workout-meta">
                             <?= $workout['formatted_date'] ?> • <?= $workout['formatted_time'] ?>
                         </div>
                         
-                        <div class="workout-stats">
-                            <div class="stat-card">
-                                <div class="stat-value"><?= $workout['duration_minutes'] ?> min</div>
-                                <div class="stat-label">Duration</div>
+                        <div class="wd-workout-stats">
+                            <div class="wd-stat-card">
+                                <div class="wd-stat-value"><?= $workout['duration_minutes'] ?> min</div>
+                                <div class="wd-stat-label">Duration</div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-value"><?= number_format($workout['total_volume']) ?> kg</div>
-                                <div class="stat-label">Volume</div>
+                            <div class="wd-stat-card">
+                                <div class="wd-stat-value"><?= number_format($workout['total_volume']) ?> kg</div>
+                                <div class="wd-stat-label">Volume</div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-value"><?= $workout['calories_burned'] ?> kcal</div>
-                                <div class="stat-label">Calories</div>
+                            <div class="wd-stat-card">
+                                <div class="wd-stat-value"><?= $workout['calories_burned'] ?> kcal</div>
+                                <div class="wd-stat-label">Calories</div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-value"><?= count($exercises) > 0 ? array_sum(array_column($exercises, 'sets_count')) : 0 ?></div>
-                                <div class="stat-label">Sets</div>
+                            <div class="wd-stat-card">
+                                <div class="wd-stat-value"><?= count($exercises) > 0 ? array_sum(array_column($exercises, 'sets_count')) : 0 ?></div>
+                                <div class="wd-stat-label">Sets</div>
                             </div>
                         </div>
                         
-                        <div class="rating">
+                        <div class="wd-rating">
                             <?= str_repeat('★', $workout['rating']) . str_repeat('☆', 5 - $workout['rating']) ?>
                         </div>
                         
                         <?php if (!empty($workout['notes'])): ?>
-                        <div class="workout-notes">
-                            <div class="notes-label">Notes</div>
+                        <div class="wd-workout-notes">
+                            <div class="wd-notes-label">Notes</div>
                             <p><?= nl2br(htmlspecialchars($workout['notes'])) ?></p>
                         </div>
                         <?php endif; ?>
                     </div>
                     
-                    <div class="exercise-section">
+                    <div class="wd-exercise-section">
                         <?php foreach ($exercises as $index => $exercise): ?>
-                        <div class="exercise-card">
-                            <div class="exercise-header" onclick="toggleExercise(<?= $index ?>)">
-                                <h3 class="exercise-title"><?= htmlspecialchars($exercise['exercise_name']) ?></h3>
+                        <div class="wd-exercise-card">
+                            <div class="wd-exercise-header" onclick="toggleExercise(<?= $index ?>)">
+                                <h3 class="wd-exercise-title"><?= htmlspecialchars($exercise['exercise_name']) ?></h3>
                                 <i id="exercise-icon-<?= $index ?>" class="fas <?= $index === 0 ? 'fa-chevron-up' : 'fa-chevron-down' ?>"></i>
                             </div>
-                            <div id="exercise-body-<?= $index ?>" class="exercise-body" style="<?= $index === 0 ? '' : 'display: none;' ?>">
+                            <div id="exercise-body-<?= $index ?>" class="wd-exercise-body" style="<?= $index === 0 ? '' : 'display: none;' ?>">
                                 <?php if (!empty($exercise['sets'])): ?>
-                                <table class="sets-table">
+                                <table class="wd-sets-table">
                                     <thead>
                                         <tr>
                                             <th>Set</th>
@@ -588,7 +250,7 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                                     </thead>
                                     <tbody>
                                         <?php foreach ($exercise['sets'] as $set): ?>
-                                        <tr <?= $set['is_warmup'] ? 'class="warmup-set"' : '' ?>>
+                                        <tr <?= $set['is_warmup'] ? 'class="wd-warmup-set"' : '' ?>>
                                             <td><?= $set['set_number'] ?></td>
                                             <td><?= $set['weight'] ?> kg</td>
                                             <td><?= $set['reps'] ?></td>
@@ -605,8 +267,8 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                         <?php endforeach; ?>
                         
                         <?php if (empty($exercises)): ?>
-                        <div class="exercise-card">
-                            <div class="exercise-body" style="text-align: center; padding: 24px;">
+                        <div class="wd-exercise-card">
+                            <div class="wd-exercise-body" style="text-align: center; padding: 24px;">
                                 <p>No exercises recorded for this workout.</p>
                             </div>
                         </div>
@@ -614,26 +276,26 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                     </div>
                 </div>
                 
-                <div class="workout-sidebar">
-                    <div class="sidebar-section">
-                        <h3 class="section-title">Previous Performance</h3>
+                <div class="wd-workout-sidebar">
+                    <div class="wd-sidebar-section">
+                        <h3 class="wd-section-title">Previous Performance</h3>
                         
-                        <div class="volume-comparison">
-                            <div class="volume-box">
-                                <div class="volume-label">Total Volume</div>
-                                <div class="volume-value"><?= number_format($workout['total_volume']) ?> kg</div>
+                        <div class="wd-volume-comparison">
+                            <div class="wd-volume-box">
+                                <div class="wd-volume-label">Total Volume</div>
+                                <div class="wd-volume-value"><?= number_format($workout['total_volume']) ?> kg</div>
                             </div>
                             
                             <?php if ($prev_workout): ?>
-                            <div class="volume-box">
-                                <div class="volume-label">Previous</div>
-                                <div class="volume-value"><?= number_format($prev_workout['total_volume']) ?> kg</div>
+                            <div class="wd-volume-box">
+                                <div class="wd-volume-label">Previous</div>
+                                <div class="wd-volume-value"><?= number_format($prev_workout['total_volume']) ?> kg</div>
                             </div>
                             <?php endif; ?>
                         </div>
                         
                         <?php if ($prev_workout): ?>
-                        <div class="volume-difference">
+                        <div class="wd-volume-difference <?= $volume_difference >= 0 ? 'positive' : 'negative' ?>">
                             <i class="fas fa-<?= $volume_difference >= 0 ? 'arrow-up' : 'arrow-down' ?>"></i>
                             <?= number_format(abs($volume_difference)) ?> kg (<?= $volume_percentage ?>%)
                         </div>
@@ -641,20 +303,20 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                         
                         <?php if (!empty($similar_workouts)): ?>
                         <h4 style="margin-top: 20px; margin-bottom: 12px;">Similar Workouts</h4>
-                        <ul class="similar-list">
+                        <ul class="wd-similar-list">
                             <?php foreach ($similar_workouts as $similar): ?>
-                            <li class="similar-item" onclick="window.location.href='workout-details.php?id=<?= $similar['id'] ?>'">
-                                <div class="similar-title"><?= htmlspecialchars($similar['name']) ?></div>
-                                <div class="similar-date"><?= $similar['workout_date'] ?></div>
+                            <li class="wd-similar-item" onclick="window.location.href='workout-details.php?id=<?= $similar['id'] ?>'">
+                                <div class="wd-similar-title"><?= htmlspecialchars($similar['name']) ?></div>
+                                <div class="wd-similar-date"><?= $similar['workout_date'] ?></div>
                             </li>
                             <?php endforeach; ?>
                         </ul>
                         <?php endif; ?>
                     </div>
                     
-                    <div class="sidebar-section">
-                        <h3 class="section-title">Export</h3>
-                        <button class="btn pdf-btn" onclick="exportToPDF()">
+                    <div class="wd-sidebar-section">
+                        <h3 class="wd-section-title">Export</h3>
+                        <button class="wd-btn wd-pdf-btn" onclick="exportToPDF()">
                             <i class="fas fa-file-pdf"></i> PDF
                         </button>
                     </div>

@@ -295,188 +295,10 @@ try {
     <link href="../assets/css/variables.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="desktop-workout.css">
-    <style>
-        .exercise-list-item {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-        
-        .exercise-drag-handle {
-            color: #888;
-            margin-right: 10px;
-            cursor: grab;
-            opacity: 0.7;
-        }
-        
-        .exercise-list-item:hover .exercise-drag-handle {
-            opacity: 1;
-        }
-        
-        .exercise-list-item.dragging {
-            opacity: 0.5;
-        }
-        
-        .exercise-reorder-controls {
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .reorder-instructions {
-            font-size: 0.85rem;
-            opacity: 0.8;
-            margin-bottom: 8px;
-            width: 100%;
-        }
-        
-        .rest-timer-controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 15px 0;
-        }
-        
-        .timer-adjust-btn {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 12px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .timer-adjust-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-        
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            background-color: rgba(255, 255, 255, 0.05);
-            padding: 10px 15px;
-            border-radius: 6px;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        
-        .stat-value {
-            font-weight: 600;
-        }
-        
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-            margin-right: 10px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.2);
-            transition: .4s;
-            border-radius: 24px;
-        }
-        
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .toggle-slider {
-            background-color: var(--primary-color);
-        }
-        
-        input:checked + .toggle-slider:before {
-            transform: translateX(26px);
-        }
-        
-        .toggle-label {
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .toggle-description {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            margin-bottom: 15px;
-        }
-        
-        .template-global {
-            position: relative;
-        }
-        
-        .global-template {
-            position: relative;
-        }
-        
-        .global-template:after {
-            content: "OFFICIAL TEMPLATE";
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-        
-        .global-badge {
-            background-color: var(--primary-color);
-            border-radius: 4px;
-            padding: 2px 8px;
-        }
-        
-        .selected-template-meta-item.global-badge i,
-        .selected-template-meta-item.global-badge span {
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="profile-desktop-workout.css">
 </head>
 <body>
     <div class="dashboard">
-        <?php require_once 'sidebar.php'; ?>
         
         <div class="main-content">
             <div class="page-header">
@@ -520,17 +342,17 @@ try {
                             </div>
                             
                             <div class="filters-section">
-                                <h3 class="panel-title" style="margin-bottom: 15px;">
+                                <h3 class="panel-title pdw-panel-title">
                                     <i class="fas fa-globe"></i> Global Templates
                                 </h3>
-                                <div class="toggle-container">
-                                    <label class="toggle-switch">
+                                <div class="pdw-toggle-container">
+                                    <label class="pdw-toggle-switch">
                                         <input type="checkbox" id="globalTemplatesToggle">
-                                        <span class="toggle-slider"></span>
+                                        <span class="pdw-toggle-slider"></span>
                                     </label>
-                                    <span class="toggle-label">Show global templates</span>
+                                    <span class="pdw-toggle-label">Show global templates</span>
                                 </div>
-                                <p class="toggle-description">Toggle to view official workout templates created by trainers.</p>
+                                <p class="pdw-toggle-description">Toggle to view official workout templates created by trainers.</p>
                                 
                                 <div class="filter-group">
                                     <label class="filter-label">Duration</label>
@@ -756,8 +578,8 @@ try {
                             <h2 class="panel-title">Workout Overview</h2>
                             <div class="exercise-list" id="exercise-list">
                             </div>
-                            <div class="exercise-reorder-controls">
-                                <p class="reorder-instructions">Drag exercises to reorder or use buttons:</p>
+                            <div class="pdw-exercise-reorder-controls">
+                                <p class="pdw-reorder-instructions">Drag exercises to reorder or use buttons:</p>
                                 <button class="btn btn-sm" id="move-exercise-up-btn" disabled>
                                     <i class="fas fa-arrow-up"></i> Move Up
                                 </button>
@@ -822,11 +644,11 @@ try {
                             
                             <div class="rest-timer-display" id="rest-timer-display">00:00</div>
                             
-                            <div class="rest-timer-controls">
-                                <button class="timer-adjust-btn" id="decrease-rest-btn">
+                            <div class="pdw-rest-timer-controls">
+                                <button class="pdw-timer-adjust-btn" id="decrease-rest-btn">
                                     <i class="fas fa-minus"></i> 15s
                                 </button>
-                                <button class="timer-adjust-btn" id="increase-rest-btn">
+                                <button class="pdw-timer-adjust-btn" id="increase-rest-btn">
                                     <i class="fas fa-plus"></i> 15s
                                 </button>
                             </div>
@@ -851,22 +673,22 @@ try {
                         
                         <div class="panel-section">
                             <h2 class="panel-title">Workout Stats</h2>
-                            <div class="stats-grid">
-                                <div class="stat-row">
-                                    <div class="stat-label">Sets Completed</div>
-                                    <div class="stat-value" id="stats-sets-completed">0/0</div>
+                            <div class="pdw-stats-grid">
+                                <div class="pdw-stat-row">
+                                    <div class="pdw-stat-label">Sets Completed</div>
+                                    <div class="pdw-stat-value" id="stats-sets-completed">0/0</div>
                                 </div>
-                                <div class="stat-row">
-                                    <div class="stat-label">Volume</div>
-                                    <div class="stat-value" id="stats-volume">0 kg</div>
+                                <div class="pdw-stat-row">
+                                    <div class="pdw-stat-label">Volume</div>
+                                    <div class="pdw-stat-value" id="stats-volume">0 kg</div>
                                 </div>
-                                <div class="stat-row">
-                                    <div class="stat-label">Elapsed Time</div>
-                                    <div class="stat-value" id="stats-elapsed-time">00:00:00</div>
+                                <div class="pdw-stat-row">
+                                    <div class="pdw-stat-label">Elapsed Time</div>
+                                    <div class="pdw-stat-value" id="stats-elapsed-time">00:00:00</div>
                                 </div>
-                                <div class="stat-row">
-                                    <div class="stat-label">Calories Burned</div>
-                                    <div class="stat-value" id="stats-calories-burned">0 kcal</div>
+                                <div class="pdw-stat-row">
+                                    <div class="pdw-stat-label">Calories Burned</div>
+                                    <div class="pdw-stat-value" id="stats-calories-burned">0 kcal</div>
                                 </div>
                             </div>
                         </div>
@@ -1233,13 +1055,13 @@ try {
                 });
 
                 const creatorInfo = isGlobal && template.creator ? 
-                    `<div class="selected-template-meta-item global-badge">
+                    `<div class="selected-template-meta-item pdw-global-badge">
                         <i class="fas fa-user-shield"></i>
                         <span>By ${template.creator}</span>
                     </div>` : '';
 
                 const html = `
-                    <div class="selected-template ${isGlobal ? 'global-template' : ''}">
+                    <div class="selected-template ${isGlobal ? 'pdw-global-template' : ''}">
                         <div class="selected-template-header">
                             <h2 class="selected-template-title">${template.name}</h2>
                             <div class="selected-template-meta">
@@ -1398,9 +1220,9 @@ try {
             function updateExerciseList() {
                 const exerciseList = document.getElementById('exercise-list');
                 exerciseList.innerHTML = workoutState.exercises.map((ex, index) => `
-                    <div class="exercise-list-item ${index === workoutState.currentExerciseIndex ? 'current' : ''}" 
+                    <div class="pdw-exercise-list-item ${index === workoutState.currentExerciseIndex ? 'current' : ''}" 
                          data-index="${index}" draggable="true">
-                        <div class="exercise-drag-handle"><i class="fas fa-grip-vertical"></i></div>
+                        <div class="pdw-exercise-drag-handle"><i class="fas fa-grip-vertical"></i></div>
                         <div class="exercise-status ${index === workoutState.currentExerciseIndex ? 'current' : ''}">${index + 1}</div>
                         <div class="exercise-name">${ex.exercise_name}</div>
                         <div class="exercise-progress">
@@ -1426,7 +1248,7 @@ try {
                 exerciseList.addEventListener('dragend', handleDragEnd);
                 
                 exerciseList.addEventListener('click', function(e) {
-                    const item = e.target.closest('.exercise-list-item');
+                    const item = e.target.closest('.pdw-exercise-list-item');
                     if (item) {
                         const index = parseInt(item.dataset.index);
                         if (index !== workoutState.currentExerciseIndex) {
@@ -1485,7 +1307,7 @@ try {
             let draggedItem = null;
             
             function handleDragStart(e) {
-                const item = e.target.closest('.exercise-list-item');
+                const item = e.target.closest('.pdw-exercise-list-item');
                 if (item) {
                     draggedItem = item;
                     e.dataTransfer.effectAllowed = 'move';
@@ -1508,7 +1330,7 @@ try {
                     e.stopPropagation();
                 }
                 
-                const dropTarget = e.target.closest('.exercise-list-item');
+                const dropTarget = e.target.closest('.pdw-exercise-list-item');
                 if (dropTarget && draggedItem !== dropTarget) {
                     const fromIndex = parseInt(draggedItem.dataset.index);
                     const toIndex = parseInt(dropTarget.dataset.index);
@@ -1536,7 +1358,7 @@ try {
             }
             
             function handleDragEnd() {
-                const items = document.querySelectorAll('.exercise-list-item');
+                const items = document.querySelectorAll('.pdw-exercise-list-item');
                 items.forEach(item => {
                     item.classList.remove('dragging');
                 });
@@ -1551,7 +1373,7 @@ try {
                 document.getElementById('weight-input').value = '';
                 document.getElementById('reps-input').value = '';
                 
-                document.querySelectorAll('.exercise-list-item').forEach((item, index) => {
+                document.querySelectorAll('.pdw-exercise-list-item').forEach((item, index) => {
                     const exercise = workoutState.exercises[index];
                     item.classList.remove('current', 'completed');
                     item.querySelector('.exercise-status').classList.remove('current', 'completed');
@@ -2147,7 +1969,7 @@ try {
 
             function toggleGlobalTemplates(show) {
                 console.log("Toggling global templates:", show);
-                const globalTemplates = document.querySelectorAll('.template-global');
+                const globalTemplates = document.querySelectorAll('.pdw-template-global');
                 console.log("Found", globalTemplates.length, "global template elements");
                 
                 const listView = document.getElementById('listViewBtn').classList.contains('active');
@@ -2239,7 +2061,7 @@ try {
                     <?php foreach ($global_templates as $index => $template): ?>
                     try {
                         <?php 
-                        $categoryClasses = 'template-all template-global';
+                        $categoryClasses = 'template-all pdw-template-global';
                         $difficultyClass = strtolower($template['difficulty'] ?: 'beginner');
                         $durationClass = '';
                         

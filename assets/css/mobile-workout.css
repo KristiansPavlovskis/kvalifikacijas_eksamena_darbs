@@ -1,0 +1,643 @@
+
+:root {
+    --mw-transition-speed: 0.3s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body .mw-body {
+    background-color: var(--dark-bg);
+    color: #ffffff;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.mw-step-container {
+    width: 100%;
+    height: 100vh;
+    position: absolute;
+    transition: transform 0.3s ease-in-out;
+    left: 0;
+    top: 0;
+    transform: translateX(100%);
+    z-index: 5;
+    visibility: hidden;
+    opacity: 0;
+    transition: transform var(--mw-transition-speed) ease-in-out, 
+                opacity var(--mw-transition-speed) ease-in-out, 
+                visibility var(--mw-transition-speed) ease-in-out;
+}
+
+#mw-step1 {
+    transform: translateX(0%);
+    z-index: 2;
+}
+
+.mw-step-active {
+    transform: translateX(0%) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 15 !important;
+}
+
+.mw-step-previous {
+    transform: translateX(-100%) !important;
+    z-index: 1 !important;
+}
+
+.mw-step-next {
+    transform: translateX(100%) !important;
+    z-index: 1 !important;
+}
+
+.mw-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--dark-bg);
+    color: white;
+}
+
+.mw-header {
+    background: var(--dark-card);
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.mw-back-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mw-header-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    flex: 1;
+}
+
+.mw-header-timer {
+    color: var(--primary);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mw-header-calories {
+    color: var(--primary);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mw-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.mw-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--gray-light);
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+
+.mw-nav-item i {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+}
+
+.mw-nav-item.active {
+    color: var(--primary);
+}
+
+.mw-tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 1rem 1rem 0.5rem;
+    margin-bottom: 1rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.mw-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.mw-tab {
+    background: var(--dark-card);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.mw-tab.active {
+    background: var(--primary);
+}
+
+.mw-templates {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 1rem 1rem;
+}
+
+.mw-template-card {
+    background: var(--dark-card);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+
+.mw-template-card.selected {
+    border: 2px solid var(--primary);
+}
+
+.mw-template-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.mw-template-title {
+    font-weight: 600;
+}
+
+.mw-template-edit {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.mw-template-meta {
+    color: var(--gray-light);
+    font-size: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.mw-template-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.mw-begin-workout-container {
+    margin: 1rem 1rem 5rem;
+}
+
+#mw-begin-workout-btn {
+    background: var(--dark-card);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#mw-begin-workout-btn:not([disabled]) {
+    background: var(--primary);
+}
+
+#mw-begin-workout-btn[disabled] {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.mw-workout-progress {
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.mw-exercise-card {
+    background: var(--dark-card);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin: 1rem;
+    margin-bottom: 5rem;
+}
+
+.mw-exercise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.mw-exercise-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+#mw-set-counter {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.mw-previous-set {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mw-set-label {
+    color: var(--gray-light);
+    font-size: 0.9rem;
+}
+
+.mw-set-info {
+    font-weight: 500;
+    color: #3498db;
+}
+
+.mw-set-completion-mark {
+    color: #2ecc71;
+    font-size: 1.25rem;
+}
+
+.mw-input-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.mw-number-input {
+    display: flex;
+    margin-bottom: 0.5rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.mw-number-input button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    padding: 0.5rem 1.25rem;
+    cursor: pointer;
+}
+
+.mw-number-input input {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    text-align: center;
+    width: 100%;
+    padding: 0.5rem;
+}
+
+.mw-input-hint {
+    color: var(--gray-light);
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+
+.mw-exercise-image {
+    padding: 0 1rem 5rem;
+}
+
+.mw-exercise-image img {
+    width: 100%;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    height: 200px;
+}
+
+.mw-rest-message {
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+
+.mw-rest-message h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.mw-rating-options {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.mw-rating-option {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dark-card);
+    cursor: pointer;
+}
+
+.mw-rating-option.selected {
+    border: 2px solid var(--primary);
+}
+
+.mw-rating-icon {
+    font-size: 1.5rem;
+}
+
+.mw-rest-timer {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mw-timer-circle {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 8px solid var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    transform: translateZ(0);
+    isolation: isolate;
+}
+
+.mw-timer-display {
+    font-size: 3rem;
+    font-weight: 700;
+}
+
+.mw-timer-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.mw-timer-adjust-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    cursor: pointer;
+}
+
+.mw-next-exercise-preview {
+    background: var(--dark-card);
+    margin: 1.5rem 1rem;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.mw-preview-header {
+    color: var(--gray-light);
+    margin-bottom: 0.75rem;
+}
+
+.mw-preview-exercise {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mw-preview-icon {
+    background: rgba(0, 0, 0, 0.2);
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: var(--primary);
+}
+
+.mw-preview-info {
+    flex: 1;
+}
+
+.mw-preview-name {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.mw-preview-detail {
+    color: var(--gray-light);
+    font-size: 0.85rem;
+}
+
+#mw-skip-rest-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: calc(100% - 2rem);
+    margin: 0 1rem 5rem;
+    padding: 0.875rem;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#mw-complete-set-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#mw-complete-set-btn:hover {
+    background: #c0392b;
+}
+
+#mw-complete-set-btn:active {
+    transform: scale(0.98);
+}
+
+#mw-summary-sets {
+    color: #ffffff !important;
+    font-size: 1.25rem;
+    font-weight: 500; 
+}
+
+.mw-template-global-tag {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.mw-no-templates-message {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+}
+
+.mw-workout-complete-icon {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #e74c3c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e74c3c;
+    margin: 0 auto;
+}
+
+.mw-workout-complete-icon i {
+    color: white;
+    font-size: 2.5rem;
+}
+
+.mw-summary-title {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.mw-achievement-text {
+    text-align: center;
+    color: var(--gray-light);
+    margin-bottom: 2rem;
+}
+
+.mw-summary-stats {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 1rem 2rem;
+}
+
+.mw-summary-stat {
+    background: var(--dark-card);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    width: 30%;
+}
+
+.mw-summary-stat-icon {
+    color: var(--primary);
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.mw-summary-stat-label {
+    color: var(--gray-light);
+    margin-bottom: 0.5rem;
+}
+
+.mw-summary-stat-value {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.mw-notes-section {
+    margin: 0 1rem 1rem;
+}
+
+.mw-notes-section h3 {
+    margin-bottom: 0.75rem;
+}
+
+.mw-notes-textarea {
+    width: 100%;
+    background: var(--dark-card);
+    border: none;
+    color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    height: 120px;
+    resize: none;
+}
+
+.mw-rating-section {
+    margin: 0 1rem 1.5rem;
+}
+
+.mw-rating-section h3 {
+    margin-bottom: 0.75rem;
+}
+
+.mw-actions {
+    margin: 1.5rem 1rem 5rem;
+}
+
+#mw-save-workout-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+
+#mw-discard-workout-btn {
+    background: transparent;
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.mw-icon-margin {
+    margin-right: 0.5rem;
+}
+
+.mw-navigation {
+    display: flex;
+    justify-content: space-around;
+    padding: 0.75rem 0;
+    background: var(--dark-card);
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+} 

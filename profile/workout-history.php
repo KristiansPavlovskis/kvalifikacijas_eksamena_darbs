@@ -362,515 +362,73 @@ $chart_data['muscles'] = json_encode($muscle_groups);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../profile/styles.css">
+    <link rel="stylesheet" href="../profile/global-profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link href="../assets/css/variables.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <style>
-        
-        body {
-            background-color: var(--dark);
-            font-family: 'Poppins', sans-serif;
-            color: white;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .main-content {
-            flex: 1;
-            padding: 30px 40px; 
-            width: calc(100% - var(--sidebar-width));
-            max-width: 100%;
-        }
-
-        .dashboard {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-        }
-        
-        @media (min-width: 992px) {
-            .main-content {
-                padding: 30px;
-            }
-        }
-        
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        
-        .page-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin: 0;
-        }
-      
-        .export-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 16px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .desktop-container {
-            display: none;
-        }
-        
-        @media (min-width: 992px) {
-            .desktop-container {
-            display: grid;
-                gap: 24px;
-            }
-            
-            .desktop-main {
-                display: flex;
-                flex-direction: column;
-            }
-        }
-        
-        .view-toggle {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .toggle-btn {
-            width: 40px;
-            height: 40px;
-            background-color: var(--dark-card);
-            border: none;
-            border-radius: 6px;
-            color: var(--gray-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        
-        .toggle-btn.active {
-            background-color: var(--accent);
-            color: white;
-        }
-        
-        .date-filter {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .date-label {
-            color: var(--gray-light);
-        }
-        
-        .date-select {
-            position: relative;
-            background-color: var(--dark-card);
-            border-radius: 6px;
-            padding: 10px 16px;
-            width: 200px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .date-selection {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-        
-        .week-days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            margin-bottom: 12px;
-        }
-        
-        .week-day {
-            color: var(--gray-light);
-            font-size: 14px;
-            padding: 8px 0;
-        }
-        
-        .filters {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-        
-        .filter-group {
-            margin-bottom: 16px;
-        }
-        
-        .filter-label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--gray-light);
-        }
-        
-        .filter-select {
-            width: 100%;
-            background-color: var(--dark-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 10px 12px;
-            border-radius: 6px;
-        }
-        
-        .rating-slider {
-            width: 100%;
-            margin-top: 8px;
-        }
-        
-        .summary-stats {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-        
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .stat-row:last-child {
-            border-bottom: none;
-        }
-        
-        .stat-label {
-            color: var(--gray-light);
-        }
-        
-        .stat-value {
-            font-weight: 600;
-        }
-        
-        .workout-table {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-        
-        .table-header {
-            display: grid;
-            grid-template-columns: 0.8fr 2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.5fr;
-            padding: 16px;
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .workout-row {
-            display: grid;
-            grid-template-columns: 0.8fr 2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.5fr;
-            padding: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            align-items: center;
-        }
-        
-        .workout-row:last-child {
-            border-bottom: none;
-        }
-        
-        .star-rating {
-            color: #F59E0B;
-        }
-        
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 24px;
-        }
-        
-        .page-item {
-            width: 40px;
-            height: 40px;
-            background-color: var(--dark-card);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        
-        .page-item.active {
-            background-color: var(--accent);
-        }
-        
-        .progress-card {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-        
-        .progress-title {
-            margin-top: 0;
-            margin-bottom: 24px;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .chart-container {
-            background-color: var(--dark-bg);
-            border-radius: 8px;
-            height: 180px;
-            margin-bottom: 24px;
-        }
-        
-        .section-title {
-            font-size: 16px;
-            margin-bottom: 12px;
-            color: var(--gray-light);
-        }
-        
-        .mobile-container {
-            display: block;
-        }
-        
-        @media (min-width: 992px) {
-            .mobile-container {
-                display: none;
-            }
-        }
-        
-        .period-tabs {
-            display: flex;
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            margin-bottom: 24px;
-            overflow: hidden;
-        }
-        
-        .period-tab {
-            flex: 1;
-            text-align: center;
-            padding: 16px 12px;
-            cursor: pointer;
-        }
-        
-        .period-tab.active {
-            background-color: var(--accent);
-            color: white;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        
-        .stats-card {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-        }
-        
-        .stats-value {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .stats-value .trend {
-            font-size: 14px;
-            margin-left: 4px;
-        }
-        
-        .stats-label {
-            color: var(--gray-light);
-            font-size: 14px;
-        }
-        
-        .trend-up {
-            color: #10B981;
-        }
-        
-        .trend-down {
-            color: #EF4444;
-        }
-        
-        .workout-card {
-            background-color: var(--dark-card);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        
-        .workout-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
-        }
-        
-        .workout-title {
-            font-size: 18px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .workout-date {
-            color: var(--gray-light);
-            font-size: 14px;
-        }
-
-        .workout-meta {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .workout-volume {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .workout-notes {
-            margin-top: 16px;
-            color: var(--gray-light);
-            font-size: 14px;
-        }
-        
-        .card-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
-        }
-        
-        .card-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        
-        .primary-btn {
-            background-color: var(--accent);
-            color: white;
-        }
-        
-        .secondary-btn {
-            background-color: var(--dark-bg);
-            color: white;
-        }
-        
-        .icon-btn {
-            width: 44px;
-            background-color: var(--dark-bg);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .view-btn {
-            background-color: var(--primary);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            text-align: center;
-            transition: background-color 0.2s ease;
-        }
-        
-        .view-btn:hover {
-            background-color: var(--primary-hover);
-        }
-    </style>
 </head>
 <body>
-    <div class="dashboard">
+    <div class="wh-dashboard">
     <?php include 'sidebar.php'; ?>
 
-    <div class="main-content">
-        <div class="page-header">
-            <h1 class="page-title">Workout History</h1>
+    <div class="wh-main-content">
+        <div class="wh-page-header">
+            <h1 class="wh-page-title">Workout History</h1>
             <div style="display: flex; gap: 16px; align-items: center;">
-                <button class="export-btn">
+                <button class="wh-export-btn">
                     <i class="fas fa-file-export"></i> Export Data
                 </button>
             </div>
         </div>
 
-        <div class="desktop-container">
-            <div class="desktop-main">
+        <div class="wh-desktop-container">
+            <div class="wh-desktop-main">
                 
                 <div style="display: grid; grid-template-columns: 250px 1fr; gap: 24px;">
                     <div>
-                        <div class="filters">
+                        <div class="wh-filters">
                             <h3>Filters</h3>
-                            <div class="filter-group">
-                                <label class="filter-label">Templates</label>
-                                <select class="filter-select" id="template-filter">
+                            <div class="wh-filter-group">
+                                <label class="wh-filter-label">Templates</label>
+                                <select class="wh-filter-select" id="template-filter">
                                     <option value="all">All Templates</option>
                                     
                                 </select>
                             </div>
                             
-                            <div class="filter-group">
-                                <label class="filter-label">Rating</label>
+                            <div class="wh-filter-group">
+                                <label class="wh-filter-label">Rating</label>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="range" min="0" max="5" value="0" step="1" class="rating-slider" id="rating-filter">
+                                    <input type="range" min="0" max="5" value="0" step="1" class="wh-rating-slider" id="rating-filter">
                                     <span id="rating-value">All</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="summary-stats">
+                        <div class="wh-summary-stats">
                             <h3>Summary Stats</h3>
-                            <div class="stat-row">
-                                <span class="stat-label">Total Workouts</span>
-                                <span class="stat-value"><?= $stats['workout_count'] ?? 0 ?></span>
+                            <div class="wh-stat-row">
+                                <span class="wh-stat-label">Total Workouts</span>
+                                <span class="wh-stat-value"><?= $stats['workout_count'] ?? 0 ?></span>
                             </div>
-                            <div class="stat-row">
-                                <span class="stat-label">Avg. Duration</span>
-                                <span class="stat-value"><?= isset($stats['avg_duration']) ? round($stats['avg_duration'], 1) : 0 ?> min</span>
+                            <div class="wh-stat-row">
+                                <span class="wh-stat-label">Avg. Duration</span>
+                                <span class="wh-stat-value"><?= isset($stats['avg_duration']) ? round($stats['avg_duration'], 1) : 0 ?> min</span>
                             </div>
-                            <div class="stat-row">
-                                <span class="stat-label">Total Volume</span>
-                                <span class="stat-value"><?= isset($stats['total_volume']) ? number_format($stats['total_volume'], 1) : 0 ?> kg</span>
+                            <div class="wh-stat-row">
+                                <span class="wh-stat-label">Total Volume</span>
+                                <span class="wh-stat-value"><?= isset($stats['total_volume']) ? number_format($stats['total_volume'], 1) : 0 ?> kg</span>
                             </div>
-                            <div class="stat-row">
-                                <span class="stat-label">Total Calories</span>
-                                <span class="stat-value"><?= isset($stats['total_calories']) ? number_format($stats['total_calories']) : 0 ?></span>
+                            <div class="wh-stat-row">
+                                <span class="wh-stat-label">Total Calories</span>
+                                <span class="wh-stat-value"><?= isset($stats['total_calories']) ? number_format($stats['total_calories']) : 0 ?></span>
                             </div>
                         </div>
                     </div>
                     
                     <div>
-                        <div class="workout-table">
-                            <div class="table-header">
+                        <div class="wh-workout-table">
+                            <div class="wh-table-header">
                                 <div>Date</div>
                                 <div>Workout Name</div>
                                 <div>Duration</div>
@@ -882,31 +440,31 @@ $chart_data['muscles'] = json_encode($muscle_groups);
 
                             <?php if (!empty($workout_logs)): ?>
                                 <?php foreach ($workout_logs as $workout): ?>
-                                    <div class="workout-row">
+                                    <div class="wh-workout-row">
                                         <div><?= date('M d, Y', strtotime($workout['created_at'])) ?></div>
                                         <div><?= htmlspecialchars($workout['name']) ?></div>
                                         <div><?= $workout['duration_minutes'] ?> min</div>
                                         <div><?= $workout['total_volume'] ?> kg</div>
                                         <div><?= $workout['calories_burned'] ?></div>
-                                        <div class="star-rating">
+                                        <div class="wh-star-rating">
                                             <?= str_repeat('★', $workout['rating']) . str_repeat('☆', 5 - $workout['rating']) ?>
                                         </div>
                                         <div>
-                                            <a href="workout-details.php?id=<?= $workout['id'] ?>" class="view-btn">View</a>
+                                            <a href="workout-details.php?id=<?= $workout['id'] ?>" class="wh-view-btn">View</a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </div>
 
-                        <div class="pagination">
-                            <div class="page-item">
+                        <div class="wh-pagination">
+                            <div class="wh-page-item">
                                 <i class="fas fa-chevron-left"></i>
                             </div>
-                            <div class="page-item active">1</div>
-                            <div class="page-item">2</div>
-                            <div class="page-item">3</div>
-                            <div class="page-item">
+                            <div class="wh-page-item active">1</div>
+                            <div class="wh-page-item">2</div>
+                            <div class="wh-page-item">3</div>
+                            <div class="wh-page-item">
                                 <i class="fas fa-chevron-right"></i>
                             </div>
                         </div>
@@ -915,80 +473,80 @@ $chart_data['muscles'] = json_encode($muscle_groups);
             </div>
         </div>
         
-        <div class="mobile-container">
-            <div class="period-tabs">
-                <div class="period-tab active">This Week</div>
-                <div class="period-tab">Last Week</div>
-                <div class="period-tab">This Month</div>
-                <div class="period-tab">Custom</div>
+        <div class="wh-mobile-container">
+            <div class="wh-period-tabs">
+                <div class="wh-period-tab active">This Week</div>
+                <div class="wh-period-tab">Last Week</div>
+                <div class="wh-period-tab">This Month</div>
+                <div class="wh-period-tab">Custom</div>
             </div>
             
-            <div class="stats-grid">
-                <div class="stats-card">
-                    <div class="stats-value">
-                        12<span class="trend trend-up">↑2</span>
+            <div class="wh-stats-grid">
+                <div class="wh-stats-card">
+                    <div class="wh-stats-value">
+                        12<span class="trend wh-trend-up">↑2</span>
                     </div>
-                    <div class="stats-label">Total Workouts</div>
+                    <div class="wh-stats-label">Total Workouts</div>
                 </div>
-                <div class="stats-card">
-                    <div class="stats-value">
-                        45m<span class="trend trend-down">↓5m</span>
+                <div class="wh-stats-card">
+                    <div class="wh-stats-value">
+                        45m<span class="trend wh-trend-down">↓5m</span>
                     </div>
-                    <div class="stats-label">Avg Duration</div>
+                    <div class="wh-stats-label">Avg Duration</div>
                 </div>
-                <div class="stats-card">
-                    <div class="stats-value">
-                        2.4t<span class="trend trend-up">↑0.2</span>
+                <div class="wh-stats-card">
+                    <div class="wh-stats-value">
+                        2.4t<span class="trend wh-trend-up">↑0.2</span>
                     </div>
-                    <div class="stats-label">Total Volume</div>
+                    <div class="wh-stats-label">Total Volume</div>
                 </div>
-                <div class="stats-card">
-                    <div class="stats-value">
-                        8.2k<span class="trend trend-up">↑1.1k</span>
+                <div class="wh-stats-card">
+                    <div class="wh-stats-value">
+                        8.2k<span class="trend wh-trend-up">↑1.1k</span>
                     </div>
-                    <div class="stats-label">Calories</div>
+                    <div class="wh-stats-label">Calories</div>
                 </div>
             </div>
             
             <?php if (!empty($workout_logs)): ?>
                 <?php foreach ($workout_logs as $key => $workout): ?>
                     <?php if ($key <= 1): ?>
-                    <div class="workout-card">
-                        <div class="workout-header">
+                    <div class="wh-workout-card">
+                        <div class="wh-workout-header">
                             <div>
-                                <div class="workout-title">
+                                <div class="wh-workout-title">
                                     <?= $key == 0 ? 'Upper Body Strength' : 'Leg Day' ?>
                                     <i class="fas fa-dumbbell"></i>
                                 </div>
-                                <div class="workout-date">
+                                <div class="wh-workout-date">
                                     <?= $key == 0 ? 'May 6, 2025' : 'May 5, 2025' ?> • 
                                     <?= $key == 0 ? '50' : '65' ?>min
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="workout-meta">
-                            <div class="workout-volume">
+                        <div class="wh-workout-meta">
+                            <div class="wh-workout-volume">
                                 Volume: <?= $key == 0 ? '850kg' : '1200kg' ?>
-                                <span class="trend <?= $key == 0 ? 'trend-up' : 'trend-down' ?>">
+                                <span class="trend <?= $key == 0 ? 'wh-trend-up' : 'wh-trend-down' ?>">
                                     <?= $key == 0 ? '↑50kg' : '↓100kg' ?>
                                 </span>
                             </div>
                         </div>
                         
-                        <div class="star-rating">
+                        <div class="wh-star-rating">
                             <?= $key == 0 ? '★★★★☆' : '★★★☆☆' ?>
                         </div>
 
                         <?php if ($key == 1): ?>
-                        <div class="workout-notes">
+                        <div class="wh-workout-notes">
                             <b>Notes:</b> Felt strong today. Increased weight on squats.
                         </div>
                         <?php endif; ?>
                         
-                        <div class="card-actions">
-                            <button class="card-btn secondary-btn">View Details</button>
-                            <button class="icon-btn">
+                        <div class="wh-card-actions">
+                            <button class="wh-card-btn wh-secondary-btn">View Details</button>
+                            <button class="wh-icon-btn">
                                 <i class="fas fa-share"></i>
                             </button>
                         </div>
@@ -996,35 +554,35 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     <?php endif; ?>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div class="workout-card">
+                <div class="wh-workout-card">
                     <p style="text-align: center;">No workout history found.</p>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 
-    <div id="exportModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
-        <div class="modal-content" style="background-color: var(--dark-card); width: 90%; max-width: 400px; border-radius: 12px; padding: 24px; box-shadow: var(--shadow-lg);">
+    <div id="exportModal" class="wh-modal">
+        <div class="wh-modal-content">
             <h3 style="margin-top: 0;">Export Workout Data</h3>
             <p>Select the time period for your workout data export:</p>
             
             <div style="margin: 20px 0;">
-                <div class="export-option" style="padding: 12px; margin-bottom: 8px; border-radius: 8px; background-color: var(--dark-bg); cursor: pointer;">
+                <div class="wh-export-option">
                     <label>
                         <input type="radio" name="exportPeriod" value="week" checked> Latest Week
                     </label>
                 </div>
-                <div class="export-option" style="padding: 12px; margin-bottom: 8px; border-radius: 8px; background-color: var(--dark-bg); cursor: pointer;">
+                <div class="wh-export-option">
                     <label>
                         <input type="radio" name="exportPeriod" value="month"> Latest Month
                     </label>
                 </div>
-                <div class="export-option" style="padding: 12px; margin-bottom: 8px; border-radius: 8px; background-color: var(--dark-bg); cursor: pointer;">
+                <div class="wh-export-option">
                     <label>
                         <input type="radio" name="exportPeriod" value="year"> Latest Year
                     </label>
                 </div>
-                <div class="export-option" style="padding: 12px; margin-bottom: 8px; border-radius: 8px; background-color: var(--dark-bg); cursor: pointer;">
+                <div class="wh-export-option">
                     <label>
                         <input type="radio" name="exportPeriod" value="all"> All Time
                     </label>
@@ -1032,8 +590,8 @@ $chart_data['muscles'] = json_encode($muscle_groups);
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
-                <button id="cancelExport" class="card-btn secondary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Cancel</button>
-                <button id="confirmExport" class="card-btn primary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Export PDF</button>
+                <button id="cancelExport" class="wh-card-btn wh-secondary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Cancel</button>
+                <button id="confirmExport" class="wh-card-btn wh-primary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Export PDF</button>
             </div>
         </div>
     </div>
@@ -1041,7 +599,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const viewButtons = document.querySelectorAll('.toggle-btn');
+            const viewButtons = document.querySelectorAll('.wh-toggle-btn');
             viewButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     viewButtons.forEach(btn => btn.classList.remove('active'));
@@ -1049,7 +607,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 });
             });
         
-            const periodTabs = document.querySelectorAll('.period-tab');
+            const periodTabs = document.querySelectorAll('.wh-period-tab');
             periodTabs.forEach(tab => {
                 tab.addEventListener('click', function() {
                     periodTabs.forEach(t => t.classList.remove('active'));
@@ -1061,13 +619,13 @@ $chart_data['muscles'] = json_encode($muscle_groups);
             });
             
             function loadMobileWorkouts(period, customDates = null) {
-                const mobileContainer = document.querySelector('.mobile-container');
-                const workoutCards = mobileContainer.querySelectorAll('.workout-card:not(.stats-card)');
+                const mobileContainer = document.querySelector('.wh-mobile-container');
+                const workoutCards = mobileContainer.querySelectorAll('.wh-workout-card:not(.wh-stats-card)');
                 
                 workoutCards.forEach(card => card.remove());
                 
                 const loadingEl = document.createElement('div');
-                loadingEl.className = 'workout-card';
+                loadingEl.className = 'wh-workout-card';
                 loadingEl.innerHTML = '<div style="text-align: center;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p>Loading workouts...</p></div>';
                 mobileContainer.appendChild(loadingEl);
                 
@@ -1146,7 +704,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         
                         if (!data.workouts || data.workouts.length === 0) {
                             const noDataEl = document.createElement('div');
-                            noDataEl.className = 'workout-card';
+                            noDataEl.className = 'wh-workout-card';
                             noDataEl.innerHTML = '<p style="text-align: center;">No workouts found.</p>';
                             mobileContainer.appendChild(noDataEl);
                         } else {
@@ -1181,10 +739,10 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 }
 
                 const elements = {
-                    totalWorkouts: document.querySelector('.stats-grid .stats-card:nth-child(1) .stats-value'),
-                    avgDuration: document.querySelector('.stats-grid .stats-card:nth-child(2) .stats-value'),
-                    totalVolume: document.querySelector('.stats-grid .stats-card:nth-child(3) .stats-value'),
-                    totalCalories: document.querySelector('.stats-grid .stats-card:nth-child(4) .stats-value')
+                    totalWorkouts: document.querySelector('.wh-stats-grid .wh-stats-card:nth-child(1) .wh-stats-value'),
+                    avgDuration: document.querySelector('.wh-stats-grid .wh-stats-card:nth-child(2) .wh-stats-value'),
+                    totalVolume: document.querySelector('.wh-stats-grid .wh-stats-card:nth-child(3) .wh-stats-value'),
+                    totalCalories: document.querySelector('.wh-stats-grid .wh-stats-card:nth-child(4) .wh-stats-value')
                 };
 
                 const values = {
@@ -1202,16 +760,16 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         calories: Math.round(Number(summary.trend.calories) || 0)
                     };
 
-                    elements.totalWorkouts.innerHTML = `${values.totalWorkouts}<span class="trend ${trends.workouts >= 0 ? 'trend-up' : 'trend-down'}">
+                    elements.totalWorkouts.innerHTML = `${values.totalWorkouts}<span class="trend ${trends.workouts >= 0 ? 'wh-trend-up' : 'wh-trend-down'}">
                         ${trends.workouts >= 0 ? '↑' : '↓'}${Math.abs(trends.workouts)}</span>`;
                     
-                    elements.avgDuration.innerHTML = `${values.avgDuration}m<span class="trend ${trends.duration >= 0 ? 'trend-up' : 'trend-down'}">
+                    elements.avgDuration.innerHTML = `${values.avgDuration}m<span class="trend ${trends.duration >= 0 ? 'wh-trend-up' : 'wh-trend-down'}">
                         ${trends.duration >= 0 ? '↑' : '↓'}${Math.abs(trends.duration)}m</span>`;
                     
-                    elements.totalVolume.innerHTML = `${values.totalVolume.toLocaleString()}kg<span class="trend ${trends.volume >= 0 ? 'trend-up' : 'trend-down'}">
+                    elements.totalVolume.innerHTML = `${values.totalVolume.toLocaleString()}kg<span class="trend ${trends.volume >= 0 ? 'wh-trend-up' : 'wh-trend-down'}">
                         ${trends.volume >= 0 ? '↑' : '↓'}${Math.abs(trends.volume)}kg</span>`;
                     
-                    elements.totalCalories.innerHTML = `${values.totalCalories.toLocaleString()}kcal<span class="trend ${trends.calories >= 0 ? 'trend-up' : 'trend-down'}">
+                    elements.totalCalories.innerHTML = `${values.totalCalories.toLocaleString()}kcal<span class="trend ${trends.calories >= 0 ? 'wh-trend-up' : 'wh-trend-down'}">
                         ${trends.calories >= 0 ? '↑' : '↓'}${Math.abs(trends.calories)}kcal</span>`;
                 } else {
                     elements.totalWorkouts.textContent = values.totalWorkouts;
@@ -1237,30 +795,30 @@ $chart_data['muscles'] = json_encode($muscle_groups);
             
             function createWorkoutCard(workout) {
                 const card = document.createElement('div');
-                card.className = 'workout-card';
+                card.className = 'wh-workout-card';
             
                 const date = new Date(workout.created_at);
                 const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 
                 const volumeTrend = workout.volume_trend || { value: 0, direction: 'up' };
-                const trendClass = volumeTrend.direction === 'up' ? 'trend-up' : 'trend-down';
+                const trendClass = volumeTrend.direction === 'up' ? 'wh-trend-up' : 'wh-trend-down';
                 const trendArrow = volumeTrend.direction === 'up' ? '↑' : '↓';
                 
                 card.innerHTML = `
-                    <div class="workout-header">
+                    <div class="wh-workout-header">
                         <div>
-                            <div class="workout-title">
+                            <div class="wh-workout-title">
                                 ${workout.name}
                                 <i class="fas fa-dumbbell"></i>
                             </div>
-                            <div class="workout-date">
+                            <div class="wh-workout-date">
                                 ${formattedDate} • ${workout.duration_minutes}min
                             </div>
                         </div>
                     </div>
                     
-                    <div class="workout-meta">
-                        <div class="workout-volume">
+                    <div class="wh-workout-meta">
+                        <div class="wh-workout-volume">
                             Volume: ${workout.total_volume}kg
                             <span class="trend ${trendClass}">
                                 ${trendArrow}${volumeTrend.value}kg
@@ -1268,14 +826,14 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         </div>
                     </div>
                     
-                    <div class="star-rating">
+                    <div class="wh-star-rating">
                         ${'★'.repeat(workout.rating)}${'☆'.repeat(5 - workout.rating)}
                     </div>
                     
-                    ${workout.notes ? `<div class="workout-notes"><b>Notes:</b> ${workout.notes}</div>` : ''}
+                    ${workout.notes ? `<div class="wh-workout-notes"><b>Notes:</b> ${workout.notes}</div>` : ''}
                     
-                    <div class="card-actions">
-                        <button class="card-btn secondary-btn" onclick="viewWorkoutDetails(${workout.id})">View Details</button>
+                    <div class="wh-card-actions">
+                        <button class="wh-card-btn wh-secondary-btn" onclick="viewWorkoutDetails(${workout.id})">View Details</button>
                     </div>
                 `;
                 
@@ -1357,7 +915,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 const rating = ratingFilter ? ratingFilter.value : 0;
                 
                 let period = 'month';
-                const dateSelectSpan = document.querySelector('.date-select span');
+                const dateSelectSpan = document.querySelector('.wh-date-select span');
                 if (dateSelectSpan) {
                     const dateFilter = dateSelectSpan.textContent;
                     
@@ -1370,14 +928,14 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     }
                 }
                 
-                const tableBody = document.querySelector('.workout-table');
+                const tableBody = document.querySelector('.wh-workout-table');
                 if (!tableBody) {
                     console.error('Workout table not found');
                     return;
                 }
                 
-                const headerRow = tableBody.querySelector('.table-header');
-                const workoutRows = tableBody.querySelectorAll('.workout-row');
+                const headerRow = tableBody.querySelector('.wh-table-header');
+                const workoutRows = tableBody.querySelectorAll('.wh-workout-row');
                 
                 workoutRows.forEach(row => row.remove());
                 
@@ -1430,7 +988,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                             noResultsRow.innerHTML = '<p>No workouts found.</p>';
                             tableBody.appendChild(noResultsRow);
                             
-                            const pagination = document.querySelector('.pagination');
+                            const pagination = document.querySelector('.wh-pagination');
                             if (pagination) {
                                 pagination.style.display = 'none';
                             }
@@ -1442,7 +1000,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                             
                             initPagination(data.workouts.length, data.total_count || data.workouts.length);
                             
-                            const pagination = document.querySelector('.pagination');
+                            const pagination = document.querySelector('.wh-pagination');
                             if (pagination) {
                                 pagination.style.display = 'flex';
                             }
@@ -1470,7 +1028,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         errorRow.innerHTML = '<p>Error loading workouts. Please try again later.</p>';
                         tableBody.appendChild(errorRow);
                         
-                        const pagination = document.querySelector('.pagination');
+                        const pagination = document.querySelector('.wh-pagination');
                         if (pagination) {
                             pagination.style.display = 'none';
                         }
@@ -1490,10 +1048,10 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 }
 
                 const elements = {
-                    totalWorkouts: document.querySelector('.summary-stats .stat-row:nth-child(1) .stat-value'),
-                    avgDuration: document.querySelector('.summary-stats .stat-row:nth-child(2) .stat-value'),
-                    totalVolume: document.querySelector('.summary-stats .stat-row:nth-child(3) .stat-value'),
-                    totalCalories: document.querySelector('.summary-stats .stat-row:nth-child(4) .stat-value')
+                    totalWorkouts: document.querySelector('.wh-summary-stats .wh-stat-row:nth-child(1) .wh-stat-value'),
+                    avgDuration: document.querySelector('.wh-summary-stats .wh-stat-row:nth-child(2) .wh-stat-value'),
+                    totalVolume: document.querySelector('.wh-summary-stats .wh-stat-row:nth-child(3) .wh-stat-value'),
+                    totalCalories: document.querySelector('.wh-summary-stats .wh-stat-row:nth-child(4) .wh-stat-value')
                 };
 
                 const values = {
@@ -1511,7 +1069,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
             
             function createWorkoutRow(workout) {
                 const row = document.createElement('div');
-                row.className = 'workout-row';
+                row.className = 'wh-workout-row';
                 row.dataset.id = workout.id;
                 row.dataset.template = workout.template_id || '';
                 row.dataset.rating = workout.rating || 0;
@@ -1525,11 +1083,11 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     <div>${workout.duration_minutes} min</div>
                     <div>${workout.total_volume} kg</div>
                     <div>${workout.calories_burned || 0}</div>
-                    <div class="star-rating">
+                    <div class="wh-star-rating">
                         ${'★'.repeat(workout.rating)}${'☆'.repeat(5 - workout.rating)}
                     </div>
                     <div>
-                        <a href="workout-details.php?id=${workout.id}" class="view-btn">View</a>
+                        <a href="workout-details.php?id=${workout.id}" class="wh-view-btn">View</a>
                     </div>
                 `;
                 
@@ -1541,7 +1099,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
             
             function initPagination(displayedRows, totalRows = displayedRows) {
                 const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE);
-                const paginationContainer = document.querySelector('.pagination');
+                const paginationContainer = document.querySelector('.wh-pagination');
                 
                 if (!paginationContainer) {
                     console.error('Pagination container not found');
@@ -1551,7 +1109,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 paginationContainer.innerHTML = '';
                 
                 const prevButton = document.createElement('div');
-                prevButton.className = 'page-item';
+                prevButton.className = 'wh-page-item';
                 prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
                 prevButton.addEventListener('click', () => {
                     if (currentPage > 1) {
@@ -1569,7 +1127,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 
                 for (let i = startPage; i <= endPage; i++) {
                     const pageItem = document.createElement('div');
-                    pageItem.className = 'page-item';
+                    pageItem.className = 'wh-page-item';
                     if (i === currentPage) pageItem.classList.add('active');
                     pageItem.textContent = i;
                     pageItem.addEventListener('click', () => goToPage(i));
@@ -1577,7 +1135,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 }
                 
                 const nextButton = document.createElement('div');
-                nextButton.className = 'page-item';
+                nextButton.className = 'wh-page-item';
                 nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
                 nextButton.addEventListener('click', () => {
                     if (currentPage < totalPages) {
@@ -1592,7 +1150,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
             function goToPage(page) {
                 currentPage = page;
                 
-                const rows = document.querySelectorAll('.workout-row');
+                const rows = document.querySelectorAll('.wh-workout-row');
                 const start = (page - 1) * ROWS_PER_PAGE;
                 const end = start + ROWS_PER_PAGE;
                 
@@ -1600,7 +1158,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     row.style.display = (index >= start && index < end) ? '' : 'none';
                 });
 
-                const pageItems = document.querySelectorAll('.page-item');
+                const pageItems = document.querySelectorAll('.wh-page-item');
                 pageItems.forEach(item => {
                     if (!item.querySelector('i')) {
                         item.classList.remove('active');
@@ -1610,8 +1168,8 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     }
                 });
                 
-                const prevButton = document.querySelector('.pagination .page-item:first-child');
-                const nextButton = document.querySelector('.pagination .page-item:last-child');
+                const prevButton = document.querySelector('.wh-pagination .wh-page-item:first-child');
+                const nextButton = document.querySelector('.wh-pagination .wh-page-item:last-child');
                 
                 if (prevButton) {
                     prevButton.style.opacity = page === 1 ? '0.5' : '1';
@@ -1625,7 +1183,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 }
             }
         
-            const dateSelect = document.querySelector('.date-select');
+            const dateSelect = document.querySelector('.wh-date-select');
             if (dateSelect) {
                 dateSelect.addEventListener('click', function() {
                     const dropdown = document.createElement('div');
@@ -1665,7 +1223,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                             dateSelect.querySelector('span').textContent = option.text;
                             document.body.removeChild(dropdown);
                             
-                            const statsValues = document.querySelectorAll('.stat-value');
+                            const statsValues = document.querySelectorAll('.wh-stat-value');
                             statsValues.forEach(stat => {
                                 stat.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                             });
@@ -1689,11 +1247,11 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 });
             }
 
-            const exportButtons = document.querySelectorAll('.export-btn');
+            const exportButtons = document.querySelectorAll('.wh-export-btn');
             const exportModal = document.getElementById('exportModal');
             const confirmExport = document.getElementById('confirmExport');
             const cancelExport = document.getElementById('cancelExport');
-            const exportOptions = document.querySelectorAll('.export-option');
+            const exportOptions = document.querySelectorAll('.wh-export-option');
 
             exportButtons.forEach(button => {
                 button.addEventListener('click', function() {
@@ -1844,8 +1402,8 @@ $chart_data['muscles'] = json_encode($muscle_groups);
           
             window.setupCustomDateRange = function() {
                 const modalContent = `
-                    <div id="customDateModal" class="modal" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
-                        <div class="modal-content" style="background-color: var(--dark-card); width: 90%; max-width: 400px; border-radius: 12px; padding: 24px; box-shadow: var(--shadow-lg);">
+                    <div id="customDateModal" class="wh-modal" style="display: flex;">
+                        <div class="wh-modal-content">
                             <h3 style="margin-top: 0;">Select Date Range</h3>
                             
                             <div style="margin: 20px 0;">
@@ -1860,8 +1418,8 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
-                                <button id="cancelCustomDate" class="card-btn secondary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Cancel</button>
-                                <button id="applyCustomDate" class="card-btn primary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Apply</button>
+                                <button id="cancelCustomDate" class="wh-card-btn wh-secondary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Cancel</button>
+                                <button id="applyCustomDate" class="wh-card-btn wh-primary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Apply</button>
                             </div>
                         </div>
                     </div>
@@ -1904,8 +1462,8 @@ $chart_data['muscles'] = json_encode($muscle_groups);
             
             loadWorkouts();
             
-            if (document.querySelector('.period-tab.active')) {
-                const activePeriod = document.querySelector('.period-tab.active').textContent.trim().toLowerCase().replace(/\s/g, '-');
+            if (document.querySelector('.wh-period-tab.active')) {
+                const activePeriod = document.querySelector('.wh-period-tab.active').textContent.trim().toLowerCase().replace(/\s/g, '-');
                 loadMobileWorkouts(activePeriod);
             }
         });

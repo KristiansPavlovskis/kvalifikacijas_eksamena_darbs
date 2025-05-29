@@ -357,1269 +357,28 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/variables.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: var(--dark);
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.6;
-            width: 100%;
-            overflow-x: hidden;
-        }
-
-        .dashboard {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-        }
-
-        .emoji-icon {
-            font-size: 1.5rem;
-            margin-right: 10px;
-            display: inline-block;
-            width: 24px;
-            text-align: center;
-        }
-
-        .categories {
-            width: 200px;
-            background-color: #1a1b26;
-            padding: 20px 0;
-        }
-        
-        .categories h3 {
-            padding: 0 20px;
-            margin-bottom: 15px;
-            font-size: 18px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .category-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .category-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background-color: #1a1b26;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .category-item:hover {
-            transform: translateX(4px);
-            background-color: #24273a;
-        }
-        
-        .category-icon {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            background-color: #0f111a;
-            display: grid;
-            grid-template-columns: 220px 1fr 300px;
-            gap: 20px;
-        }
-
-        .left-filters {
-            background-color: #1a1b26;
-            border-radius: 12px;
-            padding: 20px;
-            height: fit-content;
-            position: sticky;
-            top: 20px;
-        }
-
-        .filter-category {
-            margin-bottom: 30px;
-        }
-
-        .filter-category h3 {
-            color: white;
-            font-size: 18px;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .filter-option {
-            display: flex;
-            align-items: center;
-            padding: 3px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: #a9b1d6;
-            position: relative;
-            margin-bottom: 8px;
-        }
-
-        .filter-option:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .filter-option.active {
-            background-color: #24273a;
-            color: white;
-        }
-
-        .filter-option i {
-            margin-right: 12px;
-            font-size: 18px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .filter-count {
-            position: relative;
-            display: inline-block;
-            margin-right: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #a9b1d6;
-        }
-
-        .filter-count.green {
-            background-color: #73daca;
-        }
-
-        .filter-count.red {
-            background-color: #f7768e;
-        }
-
-        .filter-count.blue {
-            background-color: #7aa2f7;
-        }
-
-        .goal-cards {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .goal-card {
-            background-color: #1a1b26;
-            border-radius: 12px;
-            padding: 20px;
-            position: relative;
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-            min-height: 150px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .goal-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .goals-header {
-            grid-column: 1 / -1;
-        }
-
-        @media (max-width: 1200px) {
-            .goal-cards {
-                grid-template-columns: 1fr 1fr;
-                gap: 16px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .goal-cards {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-        }
-
-        .right-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .goals-summary, .upcoming-deadlines, .suggested-goals {
-            background-color: #1a1b26;
-            border-radius: 12px;
-            padding: 20px;
-            height: fit-content;
-        }
-
-        .goal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .goal-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .action-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            color: #a9b1d6;
-            transition: all 0.2s;
-        }
-        
-        .action-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .edit-btn:hover {
-            color: #7aa2f7;
-        }
-        
-        .delete-btn:hover {
-            color: #f7768e;
-        }
-        
-        .goal-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: white;
-        }
-        
-        .goal-description {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 5px;
-        }
-        
-        .goal-target {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        .goal-value {
-            font-size: 14px;
-        }
-        
-        .goal-percentage {
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .goal-progress {
-            margin: 16px 0;
-        }
-        
-        .progress-bar {
-            height: 8px;
-            background-color: #24273a;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-        
-        .progress {
-            height: 100%;
-            background: linear-gradient(90deg, #7aa2f7 0%, #bb9af7 100%);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-        
-        .progress-numbers {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #a9b1d6;
-        }
-        
-        .goal-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 16px;
-            font-size: 14px;
-            color: #a9b1d6;
-        }
-        
-        .goal-type {
-            padding: 4px 12px;
-            border-radius: 16px;
-            background-color: #24273a;
-            font-size: 14px;
-        }
-
-        .goals-summary h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-        
-        .completion-rate {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            margin-top: 16px;
-        }
-        
-        .progress-circle {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: conic-gradient(#7aa2f7 var(--progress), #24273a var(--progress));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .progress-circle::before {
-            content: '';
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            background-color: #1a1b26;
-            border-radius: 50%;
-        }
-
-        .progress-text {
-            position: relative;
-            font-size: 24px;
-            font-weight: bold;
-            color: #c0caf5;
-        }
-
-        .upcoming-deadlines h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-        
-        .upcoming-deadlines ul {
-            list-style: none;
-            padding: 0;
-            margin: 16px 0 0 0;
-        }
-        
-        .upcoming-deadlines li {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #24273a;
-        }
-        
-        .upcoming-deadlines li:last-child {
-            border-bottom: none;
-        }
-        
-        .deadline-goal {
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .deadline-date {
-            font-size: 14px;
-            color: #a9b1d6;
-        }
-
-        .suggested-goals h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-        
-        .suggested-goal {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background-color: #24273a;
-            border-radius: 8px;
-            margin-top: 12px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-        
-        .suggested-goal:hover {
-            transform: translateX(4px);
-        }
-        
-        .goal-icon {
-            font-size: 24px;
-        }
-        
-        .goal-info h3 {
-            font-size: 16px;
-            margin: 0 0 4px 0;
-        }
-        
-        .goal-info p {
-            font-size: 14px;
-            color: #a9b1d6;
-            margin: 0;
-        }
-
-        .mobile-view {
-            display: none;
-        }
-        
-        @media (max-width: 1200px) {
-            .main-content {
-                grid-template-columns: 1fr 250px;
-                gap: 16px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard {
-                flex-direction: column;
-            }
-            
-            .categories, .main-content {
-                display: none !important;
-            }
-            
-            .mobile-view {
-                display: block;
-            }
-            
-            .mobile-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 15px;
-                background-color: #1a1b26;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                position: sticky;
-                top: 0;
-                z-index: 10;
-            }
-            
-            .mobile-title {
-                font-size: 18px;
-                font-weight: 600;
-            }
-            
-            .mobile-filter {
-                width: 40px;
-                height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background-color: rgba(255, 255, 255, 0.1);
-                border-radius: 50%;
-            }
-            
-            .mobile-progress {
-                padding: 20px;
-                text-align: center;
-            }
-            
-            .progress-circle {
-                width: 120px;
-                height: 120px;
-                margin: 0 auto 15px;
-                position: relative;
-            }
-            
-            .progress-text {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                font-size: 24px;
-                font-weight: 700;
-            }
-            
-            .mobile-tabs {
-                display: flex;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                margin-bottom: 20px;
-            }
-            
-            .mobile-tab {
-                flex: 1;
-                text-align: center;
-                padding: 10px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 500;
-            }
-            
-            .mobile-tab.active {
-                color: #ff4d4d;
-                position: relative;
-            }
-            
-            .mobile-tab.active::after {
-                content: '';
-                position: absolute;
-                bottom: -1px;
-                left: 0;
-                width: 100%;
-                height: 2px;
-                background-color: #ff4d4d;
-            }
-            
-            .mobile-goal-card {
-                background-color: #1a1b26;
-                border-radius: 12px;
-                padding: 15px;
-                margin-bottom: 15px;
-            }
-            
-            .mobile-goal-title {
-                font-size: 16px;
-                font-weight: 600;
-                margin-bottom: 10px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            
-            .mobile-goal-actions {
-                display: flex;
-                gap: 4px;
-            }
-            
-            .mobile-add-button {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                width: 56px;
-                height: 56px;
-                border-radius: 50%;
-                background-color: #ff4d4d;
-                color: white;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 24px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-                z-index: 100;
-                border: none;
-                cursor: pointer;
-            }
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: 0.3s;
-        }
-
-        .modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background-color: #1a1b26;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 1000px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 15px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-        }
-
-        .modal-footer {
-            padding: 15px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border-radius: 5px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            transition: 0.2s;
-        }
-
-        .btn-secondary {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .btn-primary {
-            background-color: #ff4d4d;
-            color: white;
-        }
-
-        .btn-danger {
-            background-color: #e63946;
-            color: white;
-        }
-
-        .filter-section {
-            background-color: #1a1b26;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .filter-section h3 {
-            color: #c0caf5;
-            font-size: 16px;
-            margin-bottom: 16px;
-            font-weight: 500;
-        }
-
-        .filter-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: #a9b1d6;
-            position: relative;
-        }
-
-        .filter-item:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .filter-item.active {
-            background-color: #24273a;
-            color: #c0caf5;
-        }
-
-        .filter-item i {
-            width: 24px;
-            margin-right: 12px;
-            font-size: 18px;
-        }
-
-        .filter-count {
-            position: relative;
-            display: inline-block;
-            margin-right: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #a9b1d6;
-        }
-
-        .filter-count.red {
-            background-color: #f7768e;
-        }
-
-        .filter-count.green {
-            background-color: #73daca;
-        }
-
-        .filter-count.blue {
-            background-color: #7aa2f7;
-        }
-
-        .goals-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .create-goal-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: #ff4d4d;
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-        
-        .create-goal-btn:hover {
-            background-color: #ff3333;
-        }
-
-        .goal-form-container {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 20px;
-        }
-        
-        .goal-form {
-            background-color: #1a1b26;
-            border-radius: 12px;
-        }
-        
-        .form-section {
-            margin-bottom: 24px;
-        }
-        
-        .form-section h3 {
-            font-size: 16px;
-            color: #a9b1d6;
-            margin-bottom: 16px;
-        }
-        
-        .goal-types {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        
-        .goal-type-option {
-            background-color: #24273a;
-            border-radius: 8px;
-            padding: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-        }
-        
-        .goal-type-option:hover, 
-        .goal-type-option.selected {
-            background-color: #2a2d45;
-            transform: translateY(-2px);
-        }
-        
-        .goal-type-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        
-        .goal-type-label {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .goal-type-desc {
-            font-size: 12px;
-            color: #a9b1d6;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .form-actions {
-            margin-top: 24px;
-            display: flex;
-            justify-content: flex-end;
-        }
-        
-        .goal-preview {
-            padding: 20px;
-            background-color: #1a1b26;
-            border-radius: 12px;
-        }
-        
-        .goal-preview h3 {
-            font-size: 16px;
-            color: #a9b1d6;
-            margin-bottom: 16px;
-        }
-        
-        .preview-card {
-            background-color: #24273a;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        
-        .preview-header h4 {
-            font-size: 18px;
-            margin: 0;
-        }
-        
-        .status-badge {
-            background-color: #ff4d4d;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .preview-progress {
-            margin-bottom: 16px;
-        }
-        
-        .preview-progress .progress-bar {
-            height: 8px;
-            background-color: #1a1b26;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-        
-        .preview-progress .progress {
-            height: 100%;
-            background: linear-gradient(90deg, #ff4d4d 0%, #ff8080 100%);
-            border-radius: 4px;
-        }
-        
-        .preview-progress .progress-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #a9b1d6;
-        }
-        
-        .preview-deadline {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            color: #a9b1d6;
-            font-size: 14px;
-        }
-        
-        .preview-actions {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-        
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .btn-outline:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-        
-        .pagination {
-            grid-column: 1 / -1;
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .pagination-info {
-            color: #a9b1d6;
-            font-size: 14px;
-            text-align: center;
-        }
-        
-        .pagination-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .pagination-button {
-            background-color: #1a1b26;
-            color: #c0caf5;
-            border: 1px solid #24273a;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 14px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 40px;
-        }
-        
-        .pagination-button:hover {
-            background-color: #24273a;
-            transform: translateY(-2px);
-        }
-        
-        .pagination-button.active {
-            background-color: #ff4d4d;
-            color: white;
-            border-color: #ff4d4d;
-        }
-        
-        .pagination-prev, .pagination-next {
-            padding: 8px 16px;
-        }
-        
-        .pagination-prev i {
-            margin-right: 6px;
-        }
-        
-        .pagination-next i {
-            margin-left: 6px;
-        }
-        
-        .pagination-ellipsis {
-            color: #a9b1d6;
-            padding: 0 8px;
-        }
-        
-        @media (max-width: 768px) {
-            .pagination {
-                margin-top: 20px;
-            }
-            
-            .pagination-button {
-                padding: 6px 10px;
-                min-width: 36px;
-            }
-            
-            .pagination-prev, .pagination-next {
-                padding: 6px 10px;
-            }
-        }
-        
-        .mobile-goal-form {
-            display: none;
-            max-width: 100%;
-            height: 100%;
-            border-radius: 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-        }
-        
-        .mobile-form-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .back-button {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        
-        .mobile-form-steps {
-            padding: 20px;
-            overflow-y: auto;
-            max-height: calc(100vh - 140px);
-        }
-        
-        .form-step {
-            display: none;
-        }
-        
-        .form-step[data-step="1"] {
-            display: block;
-        }
-        
-        .goal-types-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 24px;
-        }
-        
-        .goal-type-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: #24273a;
-            border-radius: 8px;
-            padding: 20px;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-            gap: 8px;
-        }
-        
-        .goal-type-card:hover,
-        .goal-type-card.selected {
-            background-color: #2a2d45;
-            transform: translateY(-2px);
-        }
-        
-        .goal-type-card .goal-type-icon {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-        
-        .goal-type-card .goal-type-name {
-            font-weight: 500;
-        }
-        
-        .mobile-form-actions {
-            padding: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            position: sticky;
-            bottom: 0;
-            background-color: #1a1b26;
-        }
-        
-        .btn-continue, .btn-create {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        
-        .btn-create {
-            display: none;
-        }
-        
-        @media (max-width: 768px) {
-            .desktop-goal-form {
-                display: none;
-            }
-            
-            .mobile-goal-form {
-                display: block;
-            }
-            
-            .modal-content {
-                width: 100%;
-                height: 100%;
-                max-width: none;
-                max-height: none;
-                border-radius: 0;
-            }
-        }
-
-        .container-column {
-            display: flex;
-            flex-direction: column;
-            width: -webkit-fill-available;
-        }
-        
-        .goal-card[data-status="on-track"] .goal-type {
-            background-color: #73daca;
-            color: #1a1b26;
-        }
-        
-        .goal-card[data-status="behind"] .goal-type {
-            background-color: #f7768e;
-            color: #1a1b26;
-        }
-        
-        .goal-card[data-status="completed"] .goal-type {
-            background-color: #7aa2f7;
-            color: #1a1b26;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: 8px;
-            font-weight: 500;
-        }
-        
-        .status-badge.on-track {
-            background-color: #73daca;
-            color: #1a1b26;
-        }
-        
-        .status-badge.behind {
-            background-color: #f7768e;
-            color: #1a1b26;
-        }
-        
-        .status-badge.completed {
-            background-color: #7aa2f7;
-            color: #1a1b26;
-        }
-        
-        .emoji-icon {
-            font-size: 1.5rem;
-            margin-right: 10px;
-            display: inline-block;
-            width: 24px;
-            text-align: center;
-        }
-        
-        .filter-option {
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            margin-bottom: 5px;
-        }
-        
-        .filter-option.active {
-            background-color: rgba(255, 255, 255, 0.1);
-            transform: translateX(4px);
-        }
-
-        .no-goals, .empty-state, .no-matches {
-            text-align: center;
-            padding: 30px;
-            background-color: #1a1b26;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .has-goals .no-goals,
-        .has-goals .empty-state {
-            display: none;
-        }
-        
-        .empty-state-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
-            color: #7aa2f7;
-        }
-        
-        .empty-state-title {
-            margin-bottom: 15px;
-            font-size: 20px;
-        }
-        
-        .empty-state-text {
-            margin-bottom: 20px;
-            color: #a9b1d6;
-        }
-        
-        @media (max-width: 768px) {
-            .empty-state {
-                margin: 20px;
-            }
-        }
-    </style>
+    <link href="global-profile.css" rel="stylesheet">
 </head>
 <body>
-    <div class="dashboard">
+    <div class="goal-dashboard">
         <?php require_once 'sidebar.php'; ?>
-        <div class="container-column">
-        <div class="goals-header">
+        <div class="goal-container-column">
+        <div class="goal-goals-header">
                     <h2>Your Active Goals</h2>
-                    <button class="btn btn-primary create-goal-btn" id="addGoalBtn">
+                    <button class="goal-btn goal-btn-primary goal-create-btn" id="addGoalBtn">
                         <i class="fas fa-plus"></i> Create New Goal
                     </button>
         </div>
-        <div class="main-content">
-            <div class="left-filters">
-                <div class="filter-category">
+        <div class="goal-main-content">
+            <div class="goal-left-filters">
+                <div class="goal-filter-category">
                     <h3>Categories</h3>
-                    <div class="filter-option active" data-filter="all">
-                        <span class="filter-count"><?= count($goals) ?></span>
+                    <div class="goal-filter-option active" data-filter="all">
+                        <span class="goal-filter-count"><?= count($goals) ?></span>
                         <span>All Categories</span>
                     </div>
                     <?php foreach ($goalTypeIcons as $type => $icon): ?>
-                        <div class="filter-option" data-filter="<?= htmlspecialchars($type) ?>">
+                        <div class="goal-filter-option" data-filter="<?= htmlspecialchars($type) ?>">
                             <?php 
                             $typeCount = 0;
                             foreach ($goals as $goal) {
@@ -1628,18 +387,18 @@ try {
                                 }
                             }
                             ?>
-                            <span class="filter-count"><?= $typeCount ?></span>
+                            <span class="goal-filter-count"><?= $typeCount ?></span>
                             <span><?= ucfirst(htmlspecialchars($type)) ?></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
-                <div class="filter-category">
+                <div class="goal-filter-category">
                     <h3>Status</h3>
-                    <div class="filter-option active" data-status="all">
-                        <span class="filter-count"><?= count($goals) ?></span>
+                    <div class="goal-filter-option active" data-status="all">
+                        <span class="goal-filter-count"><?= count($goals) ?></span>
                         <span>All Status</span>
                     </div>
-                    <div class="filter-option" data-status="on-track">
+                    <div class="goal-filter-option" data-status="on-track">
                         <?php
                         $onTrackCount = 0;
                         foreach ($goals as $goal) {
@@ -1648,10 +407,10 @@ try {
                             }
                         }
                         ?>
-                        <span class="filter-count"><?= $onTrackCount ?></span>
+                        <span class="goal-filter-count"><?= $onTrackCount ?></span>
                         <span>On Track</span>
                     </div>
-                    <div class="filter-option" data-status="behind">
+                    <div class="goal-filter-option" data-status="behind">
                         <?php
                         $behindCount = 0;
                         foreach ($goals as $goal) {
@@ -1660,10 +419,10 @@ try {
                             }
                         }
                         ?>
-                        <span class="filter-count"><?= $behindCount ?></span>
+                        <span class="goal-filter-count"><?= $behindCount ?></span>
                         <span>Behind</span>
                     </div>
-                    <div class="filter-option" data-status="completed">
+                    <div class="goal-filter-option" data-status="completed">
                         <?php
                         $completedCount = 0;
                         foreach ($goals as $goal) {
@@ -1672,20 +431,20 @@ try {
                             }
                         }
                         ?>
-                        <span class="filter-count"><?= $completedCount ?></span>
+                        <span class="goal-filter-count"><?= $completedCount ?></span>
                         <span>Completed</span>
                     </div>
                 </div>
             </div>
-            <div class="goal-cards">
+            <div class="goal-goal-cards">
                 <?php if (empty($active_goals)): ?>
-                    <div class="no-goals" style="display: block !important;">
-                        <div class="empty-state-icon">
+                    <div class="goal-no-goals" style="display: block !important;">
+                        <div class="goal-empty-state-icon">
                             <i class="fas fa-bullseye"></i>
                         </div>
-                        <h3 class="empty-state-title">You haven't set any fitness goals yet</h3>
-                        <p class="empty-state-text">Setting clear goals is the first step toward achieving your fitness dreams</p>
-                        <button class="btn btn-primary create-goal-btn">
+                        <h3 class="goal-empty-state-title">You haven't set any fitness goals yet</h3>
+                        <p class="goal-empty-state-text">Setting clear goals is the first step toward achieving your fitness dreams</p>
+                        <button class="goal-btn goal-btn-primary goal-create-btn">
                             <i class="fas fa-plus"></i> Create Your First Goal
                         </button>
                     </div>
@@ -1710,13 +469,13 @@ try {
                             <div class="goal-header">
                                 <h3>
                                     <?= htmlspecialchars($goal['title']) ?>
-                                    <span class="status-badge <?= $status ?>"><?= ucfirst($status) ?></span>
+                                    <span class="goal-status-badge <?= $status ?>"><?= ucfirst($status) ?></span>
                                 </h3>
                                 <div class="goal-actions">
-                                    <button class="action-btn edit-btn" onclick="editGoal(<?= $goal['id'] ?>); event.stopPropagation();">
+                                    <button class="goal-action-btn goal-edit-btn" onclick="editGoal(<?= $goal['id'] ?>); event.stopPropagation();">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="action-btn delete-btn" onclick="deleteGoal(<?= $goal['id'] ?>); event.stopPropagation();">
+                                    <button class="goal-action-btn goal-delete-btn" onclick="deleteGoal(<?= $goal['id'] ?>); event.stopPropagation();">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                     <span class="goal-type"><?= htmlspecialchars(ucfirst($goal['goal_type'])) ?></span>
@@ -1724,10 +483,10 @@ try {
                             </div>
                             <p class="goal-description"><?= htmlspecialchars($goal['description'] ?: 'No description provided') ?></p>
                             <div class="goal-progress" data-completed="<?= $goal['completed'] ? 'true' : 'false' ?>">
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: <?= $progress ?>%"></div>
+                                <div class="goal-progress-bar">
+                                    <div class="goal-progress-fill" style="width: <?= $progress ?>%"></div>
                                 </div>
-                                <div class="progress-numbers">
+                                <div class="goal-progress-numbers">
                                     <span class="current"><?= $goal['current_value'] ?></span>
                                     <span class="target">/ <?= $goal['target_value'] ?></span>
                                 </div>
@@ -1741,14 +500,14 @@ try {
                 <?php endif; ?>
                 
                 <?php if (isset($total_pages) && $total_pages > 1): ?>
-                <div class="pagination">
-                    <div class="pagination-info">
+                <div class="goal-pagination">
+                    <div class="goal-pagination-info">
                         Showing <?= min(($page - 1) * $goals_per_page + 1, $total_goals) ?> to 
                         <?= min($page * $goals_per_page, $total_goals) ?> of <?= $total_goals ?> goals
                     </div>
-                    <div class="pagination-controls">
+                    <div class="goal-pagination-controls">
                         <?php if ($page > 1): ?>
-                            <a href="?page=<?= $page - 1 ?>" class="pagination-button pagination-prev">
+                            <a href="?page=<?= $page - 1 ?>" class="goal-pagination-button goal-pagination-prev">
                                 <i class="fas fa-chevron-left"></i> Previous
                             </a>
                         <?php endif; ?>
@@ -1759,27 +518,27 @@ try {
                         $end_page = min($total_pages, $page + $range);
                         
                         if ($start_page > 1) {
-                            echo '<a href="?page=1" class="pagination-button">1</a>';
+                            echo '<a href="?page=1" class="goal-pagination-button">1</a>';
                             if ($start_page > 2) {
-                                echo '<span class="pagination-ellipsis">...</span>';
+                                echo '<span class="goal-pagination-ellipsis">...</span>';
                             }
                         }
                         
                         for ($i = $start_page; $i <= $end_page; $i++) {
                             $active_class = ($i == $page) ? 'active' : '';
-                            echo '<a href="?page=' . $i . '" class="pagination-button ' . $active_class . '">' . $i . '</a>';
+                            echo '<a href="?page=' . $i . '" class="goal-pagination-button ' . $active_class . '">' . $i . '</a>';
                         }
                         
                         if ($end_page < $total_pages) {
                             if ($end_page < $total_pages - 1) {
-                                echo '<span class="pagination-ellipsis">...</span>';
+                                echo '<span class="goal-pagination-ellipsis">...</span>';
                             }
-                            echo '<a href="?page=' . $total_pages . '" class="pagination-button">' . $total_pages . '</a>';
+                            echo '<a href="?page=' . $total_pages . '" class="goal-pagination-button">' . $total_pages . '</a>';
                         }
                         ?>
                         
                         <?php if ($page < $total_pages): ?>
-                            <a href="?page=<?= $page + 1 ?>" class="pagination-button pagination-next">
+                            <a href="?page=<?= $page + 1 ?>" class="goal-pagination-button goal-pagination-next">
                                 Next <i class="fas fa-chevron-right"></i>
                             </a>
                         <?php endif; ?>
@@ -1788,18 +547,27 @@ try {
                 <?php endif; ?>
             </div>
 
-            <div class="right-sidebar">
-                <div class="goals-summary">
+            <div class="goal-right-sidebar">
+                <div class="goal-summary">
                     <h2>Goals Summary</h2>
-                    <div class="completion-rate">
-                        <div class="progress-circle" data-progress="<?= $completionRate ?>">
-                            <span class="progress-text"><?= $completionRate ?>%</span>
+                    <div class="goal-completion-rate">
+                        <div class="goal-progress-circle" data-progress="<?= $completionRate ?>">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="54" fill="none" stroke="#2a2b36" stroke-width="12" />
+                                <?php
+                                $circumference = 2 * 3.14159 * 54;
+                                $dashOffset = $circumference - ($circumference * $completionRate / 100);
+                                ?>
+                                <circle cx="60" cy="60" r="54" fill="none" stroke="#ff4d4d" stroke-width="12" 
+                                        stroke-dasharray="<?= $circumference ?>" stroke-dashoffset="<?= $dashOffset ?>" transform="rotate(-90 60 60)" />
+                            </svg>
+                            <div class="goal-progress-text"><?= $completionRate ?>%</div>
                         </div>
                         <p>Completion Rate</p>
                     </div>
                 </div>
 
-                <div class="upcoming-deadlines">
+                <div class="goal-upcoming-deadlines">
                     <h2>Upcoming Deadlines</h2>
                     <?php if (empty($upcomingDeadlines)): ?>
                         <p>No upcoming deadlines</p>
@@ -1809,8 +577,8 @@ try {
                                 $daysLeft = ceil((strtotime($goal['deadline']) - time()) / (60 * 60 * 24));
                             ?>
                                 <li>
-                                    <span class="deadline-goal"><?= htmlspecialchars($goal['title']) ?></span>
-                                    <span class="deadline-date"><?= $daysLeft ?> days left</span>
+                                    <span class="goal-deadline-goal"><?= htmlspecialchars($goal['title']) ?></span>
+                                    <span class="goal-deadline-date"><?= $daysLeft ?> days left</span>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
@@ -1820,16 +588,16 @@ try {
             </div>
         </div>
 
-        <div class="mobile-view">
-            <div class="mobile-header">
-                <h1 class="mobile-title">My Fitness Goals</h1>
-                <div class="mobile-filter">
+        <div class="goal-mobile-view">
+            <div class="goal-mobile-header">
+                <h1 class="goal-mobile-title">My Fitness Goals</h1>
+                <div class="goal-mobile-filter">
                     <i class="fas fa-filter"></i>
                 </div>
             </div>
             
-            <div class="mobile-progress">
-                <div class="progress-circle" data-progress="<?= $completionRate ?>">
+            <div class="goal-mobile-progress">
+                <div class="goal-progress-circle" data-progress="<?= $completionRate ?>">
                     <svg width="120" height="120" viewBox="0 0 120 120">
                         <circle cx="60" cy="60" r="54" fill="none" stroke="#2a2b36" stroke-width="12" />
                         <?php
@@ -1837,9 +605,9 @@ try {
                         $dashOffset = $circumference - ($circumference * $completionRate / 100);
                         ?>
                         <circle cx="60" cy="60" r="54" fill="none" stroke="#ff4d4d" stroke-width="12" 
-                                stroke-dasharray="<?= $circumference ?>" stroke-dashoffset="<?= $dashOffset ?>" />
+                                stroke-dasharray="<?= $circumference ?>" stroke-dashoffset="<?= $dashOffset ?>" transform="rotate(-90 60 60)" />
                     </svg>
-                    <div class="progress-text"><?= $completionRate ?>%</div>
+                    <div class="goal-progress-text"><?= $completionRate ?>%</div>
                 </div>
                 <div>Overall Progress</div>
                 <?php
@@ -1860,21 +628,21 @@ try {
                 <?php endif; ?>
             </div>
             
-            <div class="mobile-tabs">
-                <div class="mobile-tab active" data-filter="active">Active</div>
-                <div class="mobile-tab" data-filter="completed">Completed</div>
-                <div class="mobile-tab" data-filter="all">All</div>
+            <div class="goal-mobile-tabs">
+                <div class="goal-mobile-tab active" data-filter="active">Active</div>
+                <div class="goal-mobile-tab" data-filter="completed">Completed</div>
+                <div class="goal-mobile-tab" data-filter="all">All</div>
             </div>
             
-            <div class="mobile-goals">
+            <div class="goal-mobile-goals">
                 <?php if (empty($active_goals)): ?>
-                    <div class="empty-state" style="display: block !important;">
-                        <div class="empty-state-icon">
+                    <div class="goal-empty-state" style="display: block !important;">
+                        <div class="goal-empty-state-icon">
                             <i class="fas fa-bullseye"></i>
                         </div>
-                        <h3 class="empty-state-title">You haven't set any fitness goals yet</h3>
-                        <p class="empty-state-text">Setting clear goals is the first step toward achieving your fitness dreams</p>
-                        <button class="btn btn-primary" id="mobileAddGoalBtn">
+                        <h3 class="goal-empty-state-title">You haven't set any fitness goals yet</h3>
+                        <p class="goal-empty-state-text">Setting clear goals is the first step toward achieving your fitness dreams</p>
+                        <button class="goal-btn goal-btn-primary" id="mobileAddGoalBtn">
                             <i class="fas fa-plus"></i> Create Your First Goal
                         </button>
                     </div>
@@ -1883,14 +651,14 @@ try {
                         $progress = calculateProgress($goal['current_value'], $goal['target_value']);
                         $isCompleted = $goal['completed'] ? 'true' : 'false';
                     ?>
-                        <div class="mobile-goal-card" data-completed="<?= $isCompleted ?>" onclick="viewGoal(<?= $goal['id'] ?>)">
-                            <div class="mobile-goal-title">
+                        <div class="goal-mobile-goal-card" data-completed="<?= $isCompleted ?>" onclick="viewGoal(<?= $goal['id'] ?>)">
+                            <div class="goal-mobile-goal-title">
                                 <?= htmlspecialchars($goal['title']) ?>
-                                <div class="mobile-goal-actions">
-                                    <button class="action-btn edit-btn" onclick="editGoal(<?= $goal['id'] ?>); event.stopPropagation();">
+                                <div class="goal-mobile-goal-actions">
+                                    <button class="goal-action-btn goal-edit-btn" onclick="editGoal(<?= $goal['id'] ?>); event.stopPropagation();">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="action-btn delete-btn" onclick="deleteGoal(<?= $goal['id'] ?>); event.stopPropagation();">
+                                    <button class="goal-action-btn goal-delete-btn" onclick="deleteGoal(<?= $goal['id'] ?>); event.stopPropagation();">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -1916,38 +684,38 @@ try {
                 <?php endif; ?>
             </div>
             
-            <button class="mobile-add-button" id="mobileAddGoalBtn">
+            <button class="goal-mobile-add-button" id="mobileAddGoalBtn">
                 <i class="fas fa-plus"></i>
             </button>
         </div>
         </div>
     </div>
     
-    <div class="modal" id="addGoalModal">
-        <div class="modal-content desktop-goal-form">
-            <div class="modal-header">
-                <h2 class="modal-title">Create New Goal</h2>
-                <button class="modal-close">&times;</button>
+    <div class="goal-modal" id="addGoalModal">
+        <div class="goal-modal-content goal-desktop-goal-form">
+            <div class="goal-modal-header">
+                <h2 class="goal-modal-title">Create New Goal</h2>
+                <button class="goal-modal-close">&times;</button>
             </div>
             
-            <div class="modal-body">
+            <div class="goal-modal-body">
                 <div class="goal-form-container">
                     <div class="goal-form">
                         <form action="current-goal.php" method="post" id="goalForm">
                             <input type="hidden" name="add_goal" value="1">
                             
-                            <div class="form-section">
+                            <div class="goal-form-section">
                                 <h3>Basic Information</h3>
-                                <div class="form-group">
-                                    <input type="text" id="title" name="title" class="form-control" placeholder="Goal Title" required>
+                                <div class="goal-form-group">
+                                    <input type="text" id="title" name="title" class="goal-form-control" placeholder="Goal Title" required>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <textarea id="description" name="description" class="form-control" rows="3" placeholder="Description"></textarea>
+                                <div class="goal-form-group">
+                                    <textarea id="description" name="description" class="goal-form-control" rows="3" placeholder="Description"></textarea>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <select id="goal_type" name="goal_type" class="form-control" required>
+                                <div class="goal-form-group">
+                                    <select id="goal_type" name="goal_type" class="goal-form-control" required>
                                         <option value="">Select Category</option>
                                         <?php foreach ($goalTypeIcons as $type => $icon): ?>
                                             <option value="<?= htmlspecialchars($type) ?>">
@@ -1958,7 +726,7 @@ try {
                                 </div>
                             </div>
                             
-                            <div class="form-section">
+                            <div class="goal-form-section">
                                 <h3>Goal Type</h3>
                                 <div class="goal-types">
                                     <div class="goal-type-option" data-type="strength">
@@ -1974,20 +742,20 @@ try {
                                 </div>
                             </div>
                             
-                            <div class="form-section">
+                            <div class="goal-form-section">
                                 <h3>Target Setting</h3>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <input type="number" id="current_value" name="current_value" class="form-control" step="0.01" placeholder="Starting Value" value="0">
+                                <div class="goal-form-row">
+                                    <div class="goal-form-group">
+                                        <input type="number" id="current_value" name="current_value" class="goal-form-control" step="0.01" placeholder="Starting Value" value="0">
                                     </div>
                                     
-                                    <div class="form-group">
-                                        <input type="number" id="target_value" name="target_value" class="form-control" step="0.01" placeholder="Target Value" required>
+                                    <div class="goal-form-group">
+                                        <input type="number" id="target_value" name="target_value" class="goal-form-control" step="0.01" placeholder="Target Value" required>
                                     </div>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <select id="unit" name="unit" class="form-control">
+                                <div class="goal-form-group">
+                                    <select id="unit" name="unit" class="goal-form-control">
                                         <option value="">Select Unit</option>
                                         <option value="kg">Kilograms (kg)</option>
                                         <option value="lb">Pounds (lb)</option>
@@ -1999,53 +767,53 @@ try {
                                 </div>
                             </div>
                             
-                            <div class="form-section">
+                            <div class="goal-form-section">
                                 <h3>Timeline</h3>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <input type="date" id="start_date" name="start_date" class="form-control" required>
+                                <div class="goal-form-row">
+                                    <div class="goal-form-group">
+                                        <input type="date" id="start_date" name="start_date" class="goal-form-control" required>
                                     </div>
                                     
-                                    <div class="form-group">
-                                        <input type="date" id="deadline" name="deadline" class="form-control" required>
+                                    <div class="goal-form-group">
+                                        <input type="date" id="deadline" name="deadline" class="goal-form-control" required>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">Create Goal</button>
+                            <div class="goal-form-actions">
+                                <button type="submit" class="goal-btn goal-btn-primary">Create Goal</button>
                             </div>
                         </form>
                     </div>
                     
                     <div class="goal-preview">
                         <h3>Goal Preview</h3>
-                        <div class="preview-card">
-                            <div class="preview-header">
+                        <div class="goal-preview-card">
+                            <div class="goal-preview-header">
                                 <h4 id="preview-title">Your Goal Title</h4>
-                                <span class="status-badge">In Progress</span>
+                                <span class="goal-status-badge">In Progress</span>
                             </div>
                             
-                            <div class="preview-progress">
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: 0%"></div>
+                            <div class="goal-preview-progress">
+                                <div class="goal-progress-bar">
+                                    <div class="goal-progress-fill" style="width: 0%"></div>
                                 </div>
-                                <div class="progress-info">
+                                <div class="goal-progress-info">
                                     <span>Current: <span id="preview-current">0</span></span>
                                     <span>Target: <span id="preview-target">100</span></span>
                                 </div>
                             </div>
                             
-                            <div class="preview-deadline">
+                            <div class="goal-preview-deadline">
                                 <i class="far fa-calendar-alt"></i>
                                 <span>Deadline: <span id="preview-deadline">Dec 31, 2023</span></span>
                             </div>
                             
-                            <div class="preview-actions">
-                                <button class="btn btn-outline">
+                            <div class="goal-preview-actions">
+                                <button class="goal-btn-outline">
                                     <i class="fas fa-share"></i> Share
                                 </button>
-                                <button class="btn btn-outline">
+                                <button class="goal-btn-outline">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
                             </div>
@@ -2055,21 +823,21 @@ try {
             </div>
         </div>
         
-        <div class="modal-content mobile-goal-form">
-            <div class="mobile-form-header">
-                <button class="back-button" id="mobileFormBack"><i class="fas fa-arrow-left"></i></button>
+        <div class="goal-modal-content goal-mobile-goal-form">
+            <div class="goal-mobile-form-header">
+                <button class="goal-back-button" id="mobileFormBack"><i class="fas fa-arrow-left"></i></button>
                 <h2>Create New Goal</h2>
-                <button class="modal-close">&times;</button>
+                <button class="goal-modal-close">&times;</button>
             </div>
             
-            <div class="mobile-form-steps">
-                <div class="form-step" data-step="1">
-                    <div class="form-group">
-                        <input type="text" name="mobile_title" placeholder="Enter your goal title" class="form-control">
+            <div class="goal-mobile-form-steps">
+                <div class="goal-form-step" data-step="1">
+                    <div class="goal-form-group">
+                        <input type="text" name="mobile_title" placeholder="Enter your goal title" class="goal-form-control">
                     </div>
                     
-                    <div class="form-group">
-                        <textarea name="mobile_description" placeholder="Add some details about your goal" class="form-control" rows="4"></textarea>
+                    <div class="goal-form-group">
+                        <textarea name="mobile_description" placeholder="Add some details about your goal" class="goal-form-control" rows="4"></textarea>
                     </div>
                     
                     <div class="goal-types-grid">
@@ -2100,22 +868,22 @@ try {
                     </div>
                 </div>
                 
-                <div class="form-step" data-step="2">
+                <div class="goal-form-step" data-step="2">
                     <h3>Set Your Target</h3>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Starting Value</label>
-                        <input type="number" name="mobile_current_value" class="form-control" step="0.01" value="0">
+                        <input type="number" name="mobile_current_value" class="goal-form-control" step="0.01" value="0">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Target Value</label>
-                        <input type="number" name="mobile_target_value" class="form-control" step="0.01" required>
+                        <input type="number" name="mobile_target_value" class="goal-form-control" step="0.01" required>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Unit</label>
-                        <select name="mobile_unit" class="form-control">
+                        <select name="mobile_unit" class="goal-form-control">
                             <option value="kg">Kilograms (kg)</option>
                             <option value="lb">Pounds (lb)</option>
                             <option value="reps">Repetitions</option>
@@ -2124,51 +892,51 @@ try {
                         </select>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Start Date</label>
-                        <input type="date" name="mobile_start_date" class="form-control">
+                        <input type="date" name="mobile_start_date" class="goal-form-control">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Target Date</label>
-                        <input type="date" name="mobile_deadline" class="form-control">
+                        <input type="date" name="mobile_deadline" class="goal-form-control">
                     </div>
                 </div>
             </div>
             
-            <div class="mobile-form-actions">
-                <button class="btn btn-primary btn-continue" id="mobileFormContinue">Continue</button>
-                <button class="btn btn-primary btn-create" id="mobileFormCreate">Create Goal</button>
+            <div class="goal-mobile-form-actions">
+                <button class="goal-btn goal-btn-primary goal-btn-continue" id="mobileFormContinue">Continue</button>
+                <button class="goal-btn goal-btn-primary goal-btn-create" id="mobileFormCreate">Create Goal</button>
             </div>
         </div>
     </div>
     
-    <div class="modal" id="editGoalModal">
-        <div class="modal-content desktop-goal-form">
-            <div class="modal-header">
-                <h2 class="modal-title">Edit Goal</h2>
-                <button class="modal-close">&times;</button>
+    <div class="goal-modal" id="editGoalModal">
+        <div class="goal-modal-content goal-desktop-goal-form">
+            <div class="goal-modal-header">
+                <h2 class="goal-modal-title">Edit Goal</h2>
+                <button class="goal-modal-close">&times;</button>
             </div>
             
-            <div class="modal-body">
+            <div class="goal-modal-body">
                 <div class="goal-form-container">
                     <div class="goal-form">
                         <form action="current-goal.php" method="post" id="editGoalForm">
                             <input type="hidden" name="update_goal" value="1">
                             <input type="hidden" name="goal_id" id="edit_goal_id">
                             
-                            <div class="form-section">
+                            <div class="goal-form-section">
                                 <h3>Basic Information</h3>
-                                <div class="form-group">
-                                    <input type="text" id="edit_title" name="title" class="form-control" placeholder="Goal Title" required>
+                                <div class="goal-form-group">
+                                    <input type="text" id="edit_title" name="title" class="goal-form-control" placeholder="Goal Title" required>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <textarea id="edit_description" name="description" class="form-control" rows="3" placeholder="Description"></textarea>
+                                <div class="goal-form-group">
+                                    <textarea id="edit_description" name="description" class="goal-form-control" rows="3" placeholder="Description"></textarea>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <select id="edit_goal_type" name="goal_type" class="form-control" required>
+                                <div class="goal-form-group">
+                                    <select id="edit_goal_type" name="goal_type" class="goal-form-control" required>
                                         <option value="">Select Category</option>
                                         <?php foreach ($goalTypeIcons as $type => $icon): ?>
                                             <option value="<?= htmlspecialchars($type) ?>">
@@ -2179,58 +947,58 @@ try {
                                 </div>
                             </div>
                             
-                            <div class="form-section">
+                            <div class="goal-form-section">
                                 <h3>Target Setting</h3>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <input type="number" id="edit_current_value" name="current_value" class="form-control" step="0.01" placeholder="Current Value" value="0">
+                                <div class="goal-form-row">
+                                    <div class="goal-form-group">
+                                        <input type="number" id="edit_current_value" name="current_value" class="goal-form-control" step="0.01" placeholder="Current Value" value="0">
                                     </div>
                                     
-                                    <div class="form-group">
-                                        <input type="number" id="edit_target_value" name="target_value" class="form-control" step="0.01" placeholder="Target Value" required>
+                                    <div class="goal-form-group">
+                                        <input type="number" id="edit_target_value" name="target_value" class="goal-form-control" step="0.01" placeholder="Target Value" required>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="form-section">
+                            <div class="goal-form-section">
                                 <h3>Timeline</h3>
-                                <div class="form-group">
-                                    <input type="date" id="edit_deadline" name="deadline" class="form-control" required>
+                                <div class="goal-form-group">
+                                    <input type="date" id="edit_deadline" name="deadline" class="goal-form-control" required>
                                 </div>
                                 
-                                <div class="form-group checkbox-group">
-                                    <div class="checkbox-item">
+                                <div class="goal-form-group goal-checkbox-group">
+                                    <div class="goal-checkbox-item">
                                         <input type="checkbox" id="edit_completed" name="completed" value="1">
                                         <label for="edit_completed">Mark as completed</label>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">Update Goal</button>
+                            <div class="goal-form-actions">
+                                <button type="submit" class="goal-btn goal-btn-primary">Update Goal</button>
                             </div>
                         </form>
                     </div>
                     
                     <div class="goal-preview">
                         <h3>Goal Preview</h3>
-                        <div class="preview-card">
-                            <div class="preview-header">
+                        <div class="goal-preview-card">
+                            <div class="goal-preview-header">
                                 <h4 id="edit-preview-title">Your Goal Title</h4>
-                                <span class="status-badge">In Progress</span>
+                                <span class="goal-status-badge">In Progress</span>
                             </div>
                             
-                            <div class="preview-progress">
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: 0%"></div>
+                            <div class="goal-preview-progress">
+                                <div class="goal-progress-bar">
+                                    <div class="goal-progress-fill" style="width: 0%"></div>
                                 </div>
-                                <div class="progress-info">
+                                <div class="goal-progress-info">
                                     <span>Current: <span id="edit-preview-current">0</span></span>
                                     <span>Target: <span id="edit-preview-target">100</span></span>
                                 </div>
                             </div>
                             
-                            <div class="preview-deadline">
+                            <div class="goal-preview-deadline">
                                 <i class="far fa-calendar-alt"></i>
                                 <span>Deadline: <span id="edit-preview-deadline">Not set</span></span>
                             </div>
@@ -2240,28 +1008,28 @@ try {
             </div>
         </div>
         
-        <div class="modal-content mobile-goal-form">
-            <div class="mobile-form-header">
-                <button class="back-button" id="mobileEditFormBack"><i class="fas fa-arrow-left"></i></button>
+        <div class="goal-modal-content goal-mobile-goal-form">
+            <div class="goal-mobile-form-header">
+                <button class="goal-back-button" id="mobileEditFormBack"><i class="fas fa-arrow-left"></i></button>
                 <h2>Edit Goal</h2>
-                <button class="modal-close">&times;</button>
+                <button class="goal-modal-close">&times;</button>
             </div>
             
-            <div class="mobile-form-steps">
-                <div class="form-step" data-step="1">
-                    <div class="form-group">
+            <div class="goal-mobile-form-steps">
+                <div class="goal-form-step" data-step="1">
+                    <div class="goal-form-group">
                         <label>Goal Title</label>
-                        <input type="text" name="mobile_edit_title" id="mobile_edit_title" placeholder="Enter your goal title" class="form-control">
+                        <input type="text" name="mobile_edit_title" id="mobile_edit_title" placeholder="Enter your goal title" class="goal-form-control">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Description</label>
-                        <textarea name="mobile_edit_description" id="mobile_edit_description" placeholder="Add some details about your goal" class="form-control" rows="4"></textarea>
+                        <textarea name="mobile_edit_description" id="mobile_edit_description" placeholder="Add some details about your goal" class="goal-form-control" rows="4"></textarea>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Category</label>
-                        <select name="mobile_edit_goal_type" id="mobile_edit_goal_type" class="form-control">
+                        <select name="mobile_edit_goal_type" id="mobile_edit_goal_type" class="goal-form-control">
                             <option value="">Select Category</option>
                             <?php foreach ($goalTypeIcons as $type => $icon): ?>
                                 <option value="<?= htmlspecialchars($type) ?>">
@@ -2272,26 +1040,26 @@ try {
                     </div>
                 </div>
                 
-                <div class="form-step" data-step="2">
+                <div class="goal-form-step" data-step="2">
                     <h3>Set Your Target</h3>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Current Value</label>
-                        <input type="number" name="mobile_edit_current_value" id="mobile_edit_current_value" class="form-control" step="0.01">
+                        <input type="number" name="mobile_edit_current_value" id="mobile_edit_current_value" class="goal-form-control" step="0.01">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Target Value</label>
-                        <input type="number" name="mobile_edit_target_value" id="mobile_edit_target_value" class="form-control" step="0.01" required>
+                        <input type="number" name="mobile_edit_target_value" id="mobile_edit_target_value" class="goal-form-control" step="0.01" required>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="goal-form-group">
                         <label>Target Date</label>
-                        <input type="date" name="mobile_edit_deadline" id="mobile_edit_deadline" class="form-control">
+                        <input type="date" name="mobile_edit_deadline" id="mobile_edit_deadline" class="goal-form-control">
                     </div>
                     
-                    <div class="form-group checkbox-group">
-                        <div class="checkbox-item">
+                    <div class="goal-form-group goal-checkbox-group">
+                        <div class="goal-checkbox-item">
                             <input type="checkbox" id="mobile_edit_completed" name="mobile_edit_completed">
                             <label for="mobile_edit_completed">Mark as completed</label>
                         </div>
@@ -2299,9 +1067,9 @@ try {
                 </div>
             </div>
             
-            <div class="mobile-form-actions">
-                <button class="btn btn-primary btn-continue" id="mobileEditFormContinue">Continue</button>
-                <button class="btn btn-primary btn-update" id="mobileEditFormUpdate">Update Goal</button>
+            <div class="goal-mobile-form-actions">
+                <button class="goal-btn goal-btn-primary goal-btn-continue" id="mobileEditFormContinue">Continue</button>
+                <button class="goal-btn goal-btn-primary goal-btn-update" id="mobileEditFormUpdate">Update Goal</button>
             </div>
         </div>
     </div>
@@ -2310,13 +1078,13 @@ try {
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const modals = document.querySelectorAll('.modal');
+            const modals = document.querySelectorAll('.goal-modal');
             const addGoalBtn = document.getElementById('addGoalBtn');
             const mobileAddGoalBtn = document.getElementById('mobileAddGoalBtn');
             const startNewGoalBtn = document.getElementById('startNewGoalBtn');
             const updateGoalBtns = document.querySelectorAll('.update-goal-btn');
             const deleteGoalBtns = document.querySelectorAll('.delete-goal-btn');
-            const closeBtns = document.querySelectorAll('.modal-close, .close-modal');
+            const closeBtns = document.querySelectorAll('.goal-modal-close, .close-modal');
             
             let currentCategoryFilter = 'all';
             let currentStatusFilter = 'all';
@@ -2343,7 +1111,7 @@ try {
                 });
                 
                 const visibleGoals = Array.from(goalCards).filter(card => card.style.display !== 'none');
-                const noGoalsElement = document.querySelector('.no-goals');
+                const noGoalsElement = document.querySelector('.goal-no-goals');
                 
                 if (noGoalsElement && visibleGoals.length === 0 && goalCards.length > 0) {
                     const filterNoMatchElement = createNoGoalsElement();
@@ -2357,7 +1125,7 @@ try {
             
             function createNoGoalsElement() {
                 const noMatchElement = document.createElement('div');
-                noMatchElement.className = 'no-matches';
+                noMatchElement.className = 'goal-no-matches';
                 noMatchElement.style.padding = '20px';
                 noMatchElement.style.textAlign = 'center';
                 noMatchElement.style.backgroundColor = '#1a1b26';
@@ -2379,17 +1147,17 @@ try {
                     <p>Try changing your filters or <a href="#" onclick="document.getElementById('addGoalBtn').click(); return false;">add a new goal</a>.</p>
                 `;
                 
-                const existingNoMatch = document.querySelector('.no-matches');
+                const existingNoMatch = document.querySelector('.goal-no-matches');
                 if (existingNoMatch) {
                     existingNoMatch.remove();
                 }
                 
-                document.querySelector('.goal-cards').appendChild(noMatchElement);
+                document.querySelector('.goal-goal-cards').appendChild(noMatchElement);
                 return noMatchElement;
             }
             
-            const categoryFilters = document.querySelectorAll('.filter-category:nth-child(1) .filter-option');
-            const statusFilters = document.querySelectorAll('.filter-category:nth-child(2) .filter-option');
+            const categoryFilters = document.querySelectorAll('.goal-filter-category:nth-child(1) .goal-filter-option');
+            const statusFilters = document.querySelectorAll('.goal-filter-category:nth-child(2) .goal-filter-option');
             
             categoryFilters.forEach(filter => {
                 filter.addEventListener('click', function() {
@@ -2444,7 +1212,7 @@ try {
                 document.getElementById('addGoalBtn'),
                 document.getElementById('mobileAddGoalBtn'),
                 document.getElementById('startNewGoalBtn'),
-                document.querySelector('.empty-state .btn')
+                document.querySelector('.goal-empty-state .goal-btn')
             ];
             
             addGoalButtons.forEach(btn => {
@@ -2481,7 +1249,7 @@ try {
                 });
             });
             
-            const mobileTabs = document.querySelectorAll('.mobile-tab');
+            const mobileTabs = document.querySelectorAll('.goal-mobile-tab');
             mobileTabs.forEach(tab => {
                 tab.addEventListener('click', function() {
                     mobileTabs.forEach(t => t.classList.remove('active'));
@@ -2490,7 +1258,7 @@ try {
                     const filter = this.getAttribute('data-filter');
                     console.log(`Selected tab: ${this.textContent}, filter: ${filter}`);
                     
-                    const mobileGoalCards = document.querySelectorAll('.mobile-goal-card');
+                    const mobileGoalCards = document.querySelectorAll('.goal-mobile-goal-card');
                     mobileGoalCards.forEach(card => {
                         const isCompleted = card.hasAttribute('data-completed') && card.getAttribute('data-completed') === 'true';
                         
@@ -2506,7 +1274,7 @@ try {
                     });
                     
                     const visibleGoals = Array.from(mobileGoalCards).filter(card => card.style.display !== 'none');
-                    const emptyState = document.querySelector('.mobile-goals .empty-state');
+                    const emptyState = document.querySelector('.goal-mobile-goals .goal-empty-state');
                     
                     if (emptyState) {
                         if (visibleGoals.length === 0 && mobileGoalCards.length > 0) {
@@ -2518,7 +1286,7 @@ try {
                                 message = 'You haven\'t completed any goals yet.';
                             }
                             
-                            const emptyTitle = emptyState.querySelector('.empty-state-title');
+                            const emptyTitle = emptyState.querySelector('.goal-empty-state-title');
                             if (emptyTitle) {
                                 emptyTitle.textContent = message;
                             }
@@ -2533,12 +1301,6 @@ try {
                 });
             });
             
-            const progressCircle = document.querySelector('.progress-circle');
-            if (progressCircle) {
-                const progress = progressCircle.dataset.progress;
-                progressCircle.style.setProperty('--progress', `${progress}%`);
-            }
-
             const categoryItems = document.querySelectorAll('.category-item');
             categoryItems.forEach(item => {
                 item.addEventListener('click', function() {
@@ -2574,17 +1336,17 @@ try {
                 });
             });
 
-            const filterItems = document.querySelectorAll('.filter-item');
+            const filterItems = document.querySelectorAll('.goal-filter-item');
             filterItems.forEach(item => {
                 item.addEventListener('click', function() {
-                    const siblings = item.parentElement.querySelectorAll('.filter-item');
+                    const siblings = item.parentElement.querySelectorAll('.goal-filter-item');
                     siblings.forEach(sibling => sibling.classList.remove('active'));
                     
                     item.classList.add('active');
 
-                    const category = document.querySelector('.filter-section:nth-child(1) .filter-item.active')?.textContent.trim();
-                    const timePeriod = document.querySelector('.filter-section:nth-child(2) .filter-item.active')?.textContent.trim();
-                    const status = document.querySelector('.filter-section:nth-child(3) .filter-item.active')?.textContent.trim();
+                    const category = document.querySelector('.goal-filter-section:nth-child(1) .goal-filter-item.active')?.textContent.trim();
+                    const timePeriod = document.querySelector('.goal-filter-section:nth-child(2) .goal-filter-item.active')?.textContent.trim();
+                    const status = document.querySelector('.goal-filter-section:nth-child(3) .goal-filter-item.active')?.textContent.trim();
 
                     console.log('Filtering by:', { category, timePeriod, status });
                 });
@@ -2613,13 +1375,13 @@ try {
                     }
                 });
 
-                const onTrackFilter = document.querySelector('.filter-option[data-status="on-track"]');
-                const behindFilter = document.querySelector('.filter-option[data-status="behind"]');
-                const completedFilter = document.querySelector('.filter-option[data-status="completed"]');
+                const onTrackFilter = document.querySelector('.goal-filter-option[data-status="on-track"]');
+                const behindFilter = document.querySelector('.goal-filter-option[data-status="behind"]');
+                const completedFilter = document.querySelector('.goal-filter-option[data-status="completed"]');
                 
-                if (onTrackFilter) onTrackFilter.querySelector('.filter-count').textContent = onTrack;
-                if (behindFilter) behindFilter.querySelector('.filter-count').textContent = behind;
-                if (completedFilter) completedFilter.querySelector('.filter-count').textContent = completed;
+                if (onTrackFilter) onTrackFilter.querySelector('.goal-filter-count').textContent = onTrack;
+                if (behindFilter) behindFilter.querySelector('.goal-filter-count').textContent = behind;
+                if (completedFilter) completedFilter.querySelector('.goal-filter-count').textContent = completed;
             }
 
             updateStatusCounts();
@@ -2675,7 +1437,7 @@ try {
                 let progress = (current / target) * 100;
                 progress = Math.min(100, Math.max(0, progress));
                 
-                document.querySelector('.preview-progress .progress').style.width = progress + '%';
+                document.querySelector('.goal-preview-progress .goal-progress-fill').style.width = progress + '%';
             }
             
             const goalTypeOptions = document.querySelectorAll('.goal-type-option');
@@ -2687,7 +1449,7 @@ try {
                 });
             });
             
-            const mobileFormSteps = document.querySelectorAll('.form-step');
+            const mobileFormSteps = document.querySelectorAll('.goal-form-step');
             const mobileFormContinue = document.getElementById('mobileFormContinue');
             const mobileFormCreate = document.getElementById('mobileFormCreate');
             const mobileFormBack = document.getElementById('mobileFormBack');
@@ -2718,7 +1480,7 @@ try {
                     formStep.style.display = 'none';
                 });
                 
-                const stepToShow = document.querySelector(`.form-step[data-step="${step}"]`);
+                const stepToShow = document.querySelector(`.goal-form-step[data-step="${step}"]`);
                 if (stepToShow) {
                     stepToShow.style.display = 'block';
                     currentStep = step;
@@ -2821,7 +1583,7 @@ try {
                             });
                             
                             const progress = Math.min(100, (goal.current_value / goal.target_value) * 100) || 0;
-                            document.querySelector('#editGoalModal .preview-progress .progress').style.width = progress + '%';
+                            document.querySelector('#editGoalModal .goal-preview-progress .goal-progress-fill').style.width = progress + '%';
                             
                             showEditStep(1);
                             
@@ -2926,13 +1688,13 @@ try {
                 let progress = (current / target) * 100;
                 progress = Math.min(100, Math.max(0, progress));
                 
-                document.querySelector('#editGoalModal .preview-progress .progress').style.width = progress + '%';
+                document.querySelector('#editGoalModal .goal-preview-progress .goal-progress-fill').style.width = progress + '%';
             }
 
-            const filterOptions = document.querySelectorAll('.filter-option');
+            const filterOptions = document.querySelectorAll('.goal-filter-option');
             filterOptions.forEach(option => {
                 option.addEventListener('click', function() {
-                    const siblings = this.parentElement.querySelectorAll('.filter-option');
+                    const siblings = this.parentElement.querySelectorAll('.goal-filter-option');
                     siblings.forEach(sibling => sibling.classList.remove('active'));
                     
                     this.classList.add('active');
@@ -2942,8 +1704,8 @@ try {
                 });
             });
 
-            const mobileGoalsContainer = document.querySelector('.mobile-goals');
-            if (mobileGoalsContainer && document.querySelectorAll('.mobile-goal-card').length > 0) {
+            const mobileGoalsContainer = document.querySelector('.goal-mobile-goals');
+            if (mobileGoalsContainer && document.querySelectorAll('.goal-mobile-goal-card').length > 0) {
                 mobileGoalsContainer.classList.add('has-goals');
             }
 
@@ -2972,12 +1734,12 @@ try {
             }
             
             function showEditStep(step) {
-                const editFormSteps = document.querySelectorAll('#editGoalModal .form-step');
+                const editFormSteps = document.querySelectorAll('#editGoalModal .goal-form-step');
                 editFormSteps.forEach(formStep => {
                     formStep.style.display = 'none';
                 });
                 
-                const stepToShow = document.querySelector(`#editGoalModal .form-step[data-step="${step}"]`);
+                const stepToShow = document.querySelector(`#editGoalModal .goal-form-step[data-step="${step}"]`);
                 if (stepToShow) {
                     stepToShow.style.display = 'block';
                     currentEditStep = step;
@@ -3006,10 +1768,10 @@ try {
                 });
             }
 
-            const activeTab = document.querySelector('.mobile-tab.active');
+            const activeTab = document.querySelector('.goal-mobile-tab.active');
             if (activeTab) {
                 const defaultFilter = activeTab.getAttribute('data-filter');
-                const mobileGoalCards = document.querySelectorAll('.mobile-goal-card');
+                const mobileGoalCards = document.querySelectorAll('.goal-mobile-goal-card');
                 mobileGoalCards.forEach(card => {
                     const isCompleted = card.hasAttribute('data-completed') && card.getAttribute('data-completed') === 'true';
                     
@@ -3024,6 +1786,28 @@ try {
                     }
                 });
             }
+
+            const progressCircles = document.querySelectorAll('.goal-progress-circle');
+            progressCircles.forEach(progressCircle => {
+                if (progressCircle) {
+                    const progress = progressCircle.dataset.progress;
+                    console.log(`Updating progress circle with value: ${progress}%`);
+                    
+                    const circle = progressCircle.querySelector('svg circle:nth-child(2)');
+                    if (circle) {
+                        const radius = circle.getAttribute('r');
+                        const circumference = 2 * Math.PI * radius;
+                        const dashOffset = circumference - (circumference * progress / 100);
+                        circle.style.strokeDasharray = circumference;
+                        circle.style.strokeDashoffset = dashOffset;
+                    }
+                    
+                    const progressText = progressCircle.querySelector('.goal-progress-text');
+                    if (progressText) {
+                        progressText.textContent = `${progress}%`;
+                    }
+                }
+            });
         });
     </script> 
 </body>

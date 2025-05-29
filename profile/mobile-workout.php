@@ -140,553 +140,44 @@ function formatLastUsed($lastUsedDate) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/variables.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        }
-        
-        body {
-            background-color: var(--dark-bg);
-            color: #ffffff;
-            overflow: hidden;
-            height: 100vh;
-        }
-                
-        .step-container {
-            width: 100%;
-            height: 100vh;
-            position: absolute;
-            transition: transform 0.3s ease-in-out;
-            left: 0;
-            top: 0;
-            transform: translateX(100%);
-            z-index: 5;
-            visibility: hidden;
-            opacity: 0;
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        }
-
-        #step1 {
-            transform: translateX(0%);
-            z-index: 2;
-        }
-
-        .step-active {
-            transform: translateX(0%) !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            z-index: 15 !important;
-        }
-
-        .step-previous {
-            transform: translateX(-100%) !important;
-            z-index: 1 !important;
-        }
-
-        .step-next {
-            transform: translateX(100%) !important;
-            z-index: 1 !important;
-        }
-        
-        .mobile-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: var(--dark-bg);
-            color: white;
-        }
-
-        .mobile-header {
-            background: var(--dark-card);
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .back-button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .header-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            flex: 1;
-        }
-        
-        .header-timer {
-            color: var(--primary);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .header-calories {
-            color: var(--primary);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .mobile-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-        
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--gray-light);
-            text-decoration: none;
-            font-size: 0.8rem;
-        }
-        
-        .nav-item i {
-            font-size: 1.2rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        .nav-item.active {
-            color: var(--primary);
-        }
-
-        .mobile-tabs {
-            display: flex;
-            gap: 0.5rem;
-            overflow-x: auto;
-            padding: 1rem 1rem 0.5rem;
-            margin-bottom: 1rem;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        
-        .mobile-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .mobile-tab {
-            background: var(--dark-card);
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-
-        .mobile-tab.active {
-            background: var(--primary);
-        }
-
-        .mobile-templates {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 1rem 1rem;
-        }
-
-        .mobile-template-card {
-            background: var(--dark-card);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-        }
-        
-        .mobile-template-card.selected {
-            border: 2px solid var(--primary);
-        }
-
-        .mobile-template-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .mobile-template-title {
-            font-weight: 600;
-        }
-
-        .mobile-template-edit {
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .mobile-template-meta {
-            color: var(--gray-light);
-            font-size: 0.9rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-        
-        .mobile-template-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .begin-workout-container {
-            margin: 1rem 1rem 5rem;
-        }
-        
-        #begin-workout-btn {
-            background: var(--dark-card);
-            color: white;
-            border: none;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            width: 100%;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        #begin-workout-btn:not([disabled]) {
-            background: var(--primary);
-        }
-        
-        #begin-workout-btn[disabled] {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .workout-progress {
-            padding: 0.75rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            background-color: rgba(0, 0, 0, 0.2);
-            color: white;
-        }
-        
-        .exercise-card {
-            background: var(--dark-card);
-            border-radius: 0.5rem;
-            padding: 1.25rem;
-            margin: 1rem;
-            margin-bottom: 5rem;
-        }
-        
-        .exercise-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.25rem;
-        }
-        
-        .exercise-header h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        #set-counter {
-            color: var(--primary);
-            font-weight: 500;
-        }
-        
-        .previous-set {
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 0.375rem;
-            padding: 1rem;
-            margin-bottom: 1.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .set-label {
-            color: var(--gray-light);
-            font-size: 0.9rem;
-        }
-        
-        .set-info {
-            font-weight: 500;
-            color: #3498db;
-        }
-        
-        .set-completion-mark {
-            color: #2ecc71;
-            font-size: 1.25rem;
-        }
-        
-        .input-label {
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        
-        .number-input {
-            display: flex;
-            margin-bottom: 0.5rem;
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 0.375rem;
-            overflow: hidden;
-        }
-        
-        .number-input button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            padding: 0.5rem 1.25rem;
-            cursor: pointer;
-        }
-        
-        .number-input input {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            text-align: center;
-            width: 100%;
-            padding: 0.5rem;
-        }
-        
-        .input-hint {
-            color: var(--gray-light);
-            font-size: 0.85rem;
-            margin-bottom: 1.25rem;
-        }
-        
-        .exercise-image {
-            padding: 0 1rem 5rem;
-        }
-        
-        .exercise-image img {
-            width: 100%;
-            border-radius: 0.5rem;
-            object-fit: cover;
-            height: 200px;
-        }
-        
-        .rest-message {
-            text-align: center;
-            padding: 1.5rem 1rem;
-        }
-        
-        .rest-message h2 {
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-        }
-        
-        .rating-options {
-            display: flex;
-            justify-content: center;
-            gap: 0.75rem;
-        }
-        
-        .rating-option {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--dark-card);
-            cursor: pointer;
-        }
-        
-        .rating-option.selected {
-            border: 2px solid var(--primary);
-        }
-        
-        .rating-icon {
-            font-size: 1.5rem;
-        }
-        
-        .rest-timer {
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .timer-circle {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            border: 8px solid var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            transform: translateZ(0);
-            isolation: isolate;
-        }
-        
-        .timer-display {
-            font-size: 3rem;
-            font-weight: 700;
-        }
-        
-        .timer-controls {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .timer-adjust-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            cursor: pointer;
-        }
-        
-        .next-exercise-preview {
-            background: var(--dark-card);
-            margin: 1.5rem 1rem;
-            border-radius: 0.5rem;
-            padding: 1rem;
-        }
-        
-        .preview-header {
-            color: var(--gray-light);
-            margin-bottom: 0.75rem;
-        }
-        
-        .preview-exercise {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .preview-icon {
-            background: rgba(0, 0, 0, 0.2);
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            color: var(--primary);
-        }
-        
-        .preview-info {
-            flex: 1;
-        }
-        
-        .preview-name {
-            font-weight: 500;
-            margin-bottom: 0.25rem;
-        }
-        
-        .preview-detail {
-            color: var(--gray-light);
-            font-size: 0.85rem;
-        }
-        
-        #skip-rest-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: calc(100% - 2rem);
-            margin: 0 1rem 5rem;
-            padding: 0.875rem;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        #complete-set-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 100%;
-            margin-top: 1.5rem;
-            padding: 1rem;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        #complete-set-btn:hover {
-            background: #c0392b;
-        }
-
-        #complete-set-btn:active {
-            transform: scale(0.98);
-        }
-        
-        #summary-sets {
-        color: #ffffff !important;
-        font-size: 1.25rem;
-        font-weight: 500; 
-        }
-        
-        .mobile-template-global-tag {
-            background-color: var(--primary);
-            color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 1rem;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-        
-        .no-templates-message {
-            text-align: center;
-            padding: 2rem;
-            color: #999;
-        }
-    </style>
+    <link href="../assets/css/mobile-workout.css" rel="stylesheet">
 </head>
-<body>
-    <div class="step-container" id="step1">
-        <div class="mobile-container">
-            <div class="mobile-header">
-                <button class="back-button" onclick="window.history.back()">
+<body class="mw-body">
+    <div class="mw-step-container" id="mw-step1">
+        <div class="mw-container">
+            <div class="mw-header">
+                <button class="mw-back-button" onclick="window.history.back()">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <div class="header-title">Start Workout</div>
+                <div class="mw-header-title">Start Workout</div>
             </div>
 
-            <div class="mobile-content step1-content">
-                <div class="mobile-tabs">
-                    <div class="mobile-tab active" data-category="personal">Personal Templates</div>
-                    <div class="mobile-tab" data-category="global">Global Templates</div>
+            <div class="mw-content step1-content">
+                <div class="mw-tabs">
+                    <div class="mw-tab active" data-category="personal">Personal Templates</div>
+                    <div class="mw-tab" data-category="global">Global Templates</div>
                 </div>
 
-                <div class="mobile-templates">
+                <div class="mw-templates">
                     <?php if ($templates && mysqli_num_rows($templates) > 0): ?>
                         <?php while ($template = mysqli_fetch_assoc($templates)): 
                             $lastUsed = formatLastUsed($template['last_used']);
                         ?>
-                            <div class="mobile-template-card" data-id="<?php echo $template['id']; ?>" data-name="<?php echo htmlspecialchars($template['name']); ?>" data-category="personal">
-                                <div class="mobile-template-header">
-                                    <div class="mobile-template-title"><?php echo htmlspecialchars($template['name']); ?></div>
-                                    <a href="workout-templates.php?edit=<?php echo $template['id']; ?>" class="mobile-template-edit">edit template</a>
+                            <div class="mw-template-card" data-id="<?php echo $template['id']; ?>" data-name="<?php echo htmlspecialchars($template['name']); ?>" data-category="personal">
+                                <div class="mw-template-header">
+                                    <div class="mw-template-title"><?php echo htmlspecialchars($template['name']); ?></div>
+                                    <a href="workout-templates.php?edit=<?php echo $template['id']; ?>" class="mw-template-edit">edit template</a>
                                 </div>
-                                <div class="mobile-template-meta">
-                                    <div class="mobile-template-meta-item">
+                                <div class="mw-template-meta">
+                                    <div class="mw-template-meta-item">
                                         <i class="fas fa-dumbbell"></i>
                                         <span><?php echo $template['exercise_count']; ?> exercises</span>
                                     </div>
-                                    <div class="mobile-template-meta-item">
+                                    <div class="mw-template-meta-item">
                                         <i class="fas fa-clock"></i>
                                         <span><?php echo $template['estimated_time'] ?? '45'; ?> min</span>
                                     </div>
-                                    <div class="mobile-template-meta-item">
+                                    <div class="mw-template-meta-item">
                                         <i class="fas fa-calendar-check"></i>
                                         <span>Last: <?php echo $lastUsed; ?></span>
                                     </div>
@@ -694,7 +185,7 @@ function formatLastUsed($lastUsedDate) {
                             </div>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <div class="no-templates-message personal-message">
+                        <div class="mw-no-templates-message personal-message">
                             <p>You don't have any personal templates yet.</p>
                             <p>Create your first template in the Templates section!</p>
                         </div>
@@ -702,21 +193,21 @@ function formatLastUsed($lastUsedDate) {
                     
                     <?php if ($global_templates && mysqli_num_rows($global_templates) > 0): ?>
                         <?php while ($template = mysqli_fetch_assoc($global_templates)): ?>
-                            <div class="mobile-template-card" data-id="<?php echo $template['id']; ?>" data-name="<?php echo htmlspecialchars($template['name']); ?>" data-category="global" style="display:none;">
-                                <div class="mobile-template-header">
-                                    <div class="mobile-template-title"><?php echo htmlspecialchars($template['name']); ?></div>
-                                    <div class="mobile-template-global-tag">global</div>
+                            <div class="mw-template-card" data-id="<?php echo $template['id']; ?>" data-name="<?php echo htmlspecialchars($template['name']); ?>" data-category="global" style="display:none;">
+                                <div class="mw-template-header">
+                                    <div class="mw-template-title"><?php echo htmlspecialchars($template['name']); ?></div>
+                                    <div class="mw-template-global-tag">global</div>
                                 </div>
-                                <div class="mobile-template-meta">
-                                    <div class="mobile-template-meta-item">
+                                <div class="mw-template-meta">
+                                    <div class="mw-template-meta-item">
                                         <i class="fas fa-dumbbell"></i>
                                         <span><?php echo $template['exercise_count']; ?> exercises</span>
                                     </div>
-                                    <div class="mobile-template-meta-item">
+                                    <div class="mw-template-meta-item">
                                         <i class="fas fa-clock"></i>
                                         <span><?php echo $template['estimated_time'] ?? '45'; ?> min</span>
                                     </div>
-                                    <div class="mobile-template-meta-item">
+                                    <div class="mw-template-meta-item">
                                         <i class="fas fa-user"></i>
                                         <span>By: <?php echo htmlspecialchars($template['creator'] ?? 'GYMVERSE'); ?></span>
                                     </div>
@@ -724,97 +215,97 @@ function formatLastUsed($lastUsedDate) {
                             </div>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <div class="no-templates-message global-message" style="display:none;">
+                        <div class="mw-no-templates-message global-message" style="display:none;">
                             <p>No global templates available at this time.</p>
                             <p>Check back later for new workouts!</p>
                         </div>
                     <?php endif; ?>
                 </div>
                 
-                <div class="begin-workout-container">
-                    <button id="begin-workout-btn" disabled>Begin Workout</button>
+                <div class="mw-begin-workout-container">
+                    <button id="mw-begin-workout-btn" disabled>Begin Workout</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="step-container" id="step2">
-        <div class="mobile-container">
-            <div class="mobile-header">
-                <button class="back-button" id="back-to-templates">
+    <div class="mw-step-container" id="mw-step2">
+        <div class="mw-container">
+            <div class="mw-header">
+                <button class="mw-back-button" id="back-to-templates">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <div class="header-title" id="workout-title">Start Workout</div>
-                <div class="header-timer">
+                <div class="mw-header-title" id="workout-title">Start Workout</div>
+                <div class="mw-header-timer">
                     <i class="fas fa-clock"></i>
                     <span id="workout-timer">00:00</span>
                 </div>
-                <div class="header-calories">
+                <div class="mw-header-calories">
                     <i class="fas fa-fire"></i>
                     <span id="calories-burned">0 kcal</span>
                 </div>
             </div>
 
-            <div class="mobile-content step2-content">
-                <div class="workout-progress">
+            <div class="mw-content step2-content">
+                <div class="mw-workout-progress">
                     <div id="workout-progress-text">0/0 Exercises</div> 
                 </div>
                 
-                <div class="exercise-card">
-                    <div class="exercise-header">
+                <div class="mw-exercise-card">
+                    <div class="mw-exercise-header">
                         <h2 id="exercise-name">Select a template to start</h2>
-                        <div id="set-counter">Set 0/0</div>
+                        <div id="mw-set-counter">Set 0/0</div>
                     </div>
                     
-                    <div class="previous-set" style="display: none;">
-                        <div class="set-label">Previous Set</div>
-                        <div class="set-info" id="previous-set-info"></div>
-                        <div class="set-completion-mark">✓</div>
+                    <div class="mw-previous-set" style="display: none;">
+                        <div class="mw-set-label">Previous Set</div>
+                        <div class="mw-set-info" id="previous-set-info"></div>
+                        <div class="mw-set-completion-mark">✓</div>
                     </div>
                     
                     <div class="weight-input">
-                        <div class="input-label">Weight (kg)</div>
-                        <div class="number-input">
+                        <div class="mw-input-label">Weight (kg)</div>
+                        <div class="mw-number-input">
                             <button class="decrease-btn">−</button>
                             <input type="number" id="weight-input" value="0">
                             <button class="increase-btn">+</button>
                         </div>
-                        <div class="input-hint" id="weight-hint"></div>
+                        <div class="mw-input-hint" id="weight-hint"></div>
                     </div>
                     
                     <div class="reps-input">
-                        <div class="input-label">Reps</div>
-                        <div class="number-input">
+                        <div class="mw-input-label">Reps</div>
+                        <div class="mw-number-input">
                             <button class="decrease-btn">−</button>
                             <input type="number" id="reps-input" value="0">
                             <button class="increase-btn">+</button>
                         </div>
-                        <div class="input-hint" id="reps-hint"></div>
+                        <div class="mw-input-hint" id="reps-hint"></div>
                     </div>
                     
-                    <button id="complete-set-btn">Complete Set</button>
+                    <button id="mw-complete-set-btn">Complete Set</button>
                     
                 </div>
                 
-                <div class="exercise-image">
+                <div class="mw-exercise-image">
                     <img id="exercise-image" src="https://cdn.pixabay.com/photo/2016/07/07/16/46/dice-1502706_640.jpg" alt="Exercise">
                 </div>
             </div>
             
-            <div class="mobile-navigation">
-                <a href="#" class="nav-item active">
+            <div class="mw-navigation">
+                <a href="#" class="mw-nav-item active">
                     <i class="fas fa-home"></i>
                     <span>Home</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="mw-nav-item">
                     <i class="fas fa-clipboard-list"></i>
                     <span>Templates</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="mw-nav-item">
                     <i class="fas fa-history"></i>
                     <span>History</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="mw-nav-item">
                     <i class="fas fa-user"></i>
                     <span>Profile</span>
                 </a>
@@ -822,66 +313,66 @@ function formatLastUsed($lastUsedDate) {
         </div>
     </div>
 
-    <div class="step-container" id="step3">
-        <div class="mobile-container">
-            <div class="mobile-header">
-                <button class="back-button" id="back-to-exercise">
+    <div class="mw-step-container" id="mw-step3">
+        <div class="mw-container">
+            <div class="mw-header">
+                <button class="mw-back-button" id="back-to-exercise">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <div class="header-title" id="rest-title">Full Body Workout</div>
-                <div class="header-timer">
+                <div class="mw-header-title" id="rest-title">Full Body Workout</div>
+                <div class="mw-header-timer">
                     <i class="fas fa-clock"></i>
                     <span id="rest-workout-timer">00:00</span>
                 </div>
-                <div class="header-calories">
+                <div class="mw-header-calories">
                     <i class="fas fa-fire"></i>
                     <span id="rest-calories-burned">0 kcal</span>
                 </div>
             </div>
 
-            <div class="mobile-content step3-content">
-                <div class="rest-message">
+            <div class="mw-content step3-content">
+                <div class="mw-rest-message">
                     <h2>How was that set?</h2>
                     
-                    <div class="rating-options">
-                        <div class="rating-option" data-rating="1">
-                            <div class="rating-icon">😣</div>
+                    <div class="mw-rating-options">
+                        <div class="mw-rating-option" data-rating="1">
+                            <div class="mw-rating-icon">😣</div>
                         </div>
-                        <div class="rating-option" data-rating="2">
-                            <div class="rating-icon">😕</div>
+                        <div class="mw-rating-option" data-rating="2">
+                            <div class="mw-rating-icon">😕</div>
                         </div>
-                        <div class="rating-option selected" data-rating="3">
-                            <div class="rating-icon">😊</div>
+                        <div class="mw-rating-option selected" data-rating="3">
+                            <div class="mw-rating-icon">😊</div>
                         </div>
-                        <div class="rating-option" data-rating="4">
-                            <div class="rating-icon">😄</div>
+                        <div class="mw-rating-option" data-rating="4">
+                            <div class="mw-rating-icon">😄</div>
                         </div>
-                        <div class="rating-option" data-rating="5">
-                            <div class="rating-icon">🤩</div>
+                        <div class="mw-rating-option" data-rating="5">
+                            <div class="mw-rating-icon">🤩</div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="rest-timer">
-                    <div class="timer-circle">
-                        <div class="timer-display" id="timer-display">00:00</div>
+                <div class="mw-rest-timer">
+                    <div class="mw-timer-circle">
+                        <div class="mw-timer-display" id="timer-display">00:00</div>
                     </div>
                     
-                    <div class="timer-controls">
-                        <button class="timer-adjust-btn" id="decrease-time">-15s</button>
-                        <button class="timer-adjust-btn" id="increase-time">+15s</button>
+                    <div class="mw-timer-controls">
+                        <button class="mw-timer-adjust-btn" id="decrease-time">-15s</button>
+                        <button class="mw-timer-adjust-btn" id="increase-time">+15s</button>
                     </div>
                 </div>
                 
-                <div class="next-exercise-preview">
-                    <div class="preview-header">Next Exercise</div>
-                    <div class="preview-exercise">
-                        <div class="preview-icon">
+                <div class="mw-next-exercise-preview">
+                    <div class="mw-preview-header">Next Exercise</div>
+                    <div class="mw-preview-exercise">
+                        <div class="mw-preview-icon">
                             <i class="fas fa-dumbbell"></i>
                         </div>
-                        <div class="preview-info">
-                            <div class="preview-name">Bench Press</div>
-                            <div class="preview-detail">3 sets × 12 reps</div>
+                        <div class="mw-preview-info">
+                            <div class="mw-preview-name">Bench Press</div>
+                            <div class="mw-preview-detail">3 sets × 12 reps</div>
                         </div>
                         <div class="preview-arrow">
                             <i class="fas fa-chevron-right"></i>
@@ -889,23 +380,23 @@ function formatLastUsed($lastUsedDate) {
                     </div>
                 </div>
                 
-                <button id="skip-rest-btn">Skip Rest</button>
+                <button id="mw-skip-rest-btn">Skip Rest</button>
             </div>
             
-            <div class="mobile-navigation">
-                <a href="#" class="nav-item active">
+            <div class="mw-navigation">
+                <a href="#" class="mw-nav-item active">
                     <i class="fas fa-home"></i>
                     <span>Home</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="mw-nav-item">
                     <i class="fas fa-clipboard-list"></i>
                     <span>Templates</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="mw-nav-item">
                     <i class="fas fa-history"></i>
                     <span>History</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="mw-nav-item">
                     <i class="fas fa-user"></i>
                     <span>Profile</span>
                 </a>
@@ -913,101 +404,99 @@ function formatLastUsed($lastUsedDate) {
         </div>
     </div>
 
-    <div class="step-container" id="step4">
-        <div class="mobile-container">
-            <div class="mobile-header">
-                <button class="back-button" id="back-to-rest">
+    <div class="mw-step-container" id="mw-step4">
+        <div class="mw-container">
+            <div class="mw-header">
+                <button class="mw-back-button" id="back-to-rest">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <div class="header-title">Workout Summary</div>
+                <div class="mw-header-title">Workout Summary</div>
             </div>
 
-            <div class="mobile-content step4-content">
-                <div style="display: flex; justify-content: center; padding: 2rem 0;">
-                    <div style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #e74c3c; display: flex; align-items: center; justify-content: center; background-color: #e74c3c;">
-                        <i class="fas fa-check" style="color: white; font-size: 2.5rem;"></i>
-                    </div>
+            <div class="mw-content step4-content">
+                <div class="mw-workout-complete-icon">
+                    <i class="fas fa-check"></i>
                 </div>
                 
-                <h2 style="text-align: center; margin-bottom: 0.5rem;">Workout Complete!</h2>
-                <p id="achievement-text" style="text-align: center; color: var(--gray-light); margin-bottom: 2rem;">Great job! You crushed it today.</p>
+                <h2 class="mw-summary-title">Workout Complete!</h2>
+                <p id="achievement-text" class="mw-achievement-text">Great job! You crushed it today.</p>
                 
-                <div style="display: flex; justify-content: space-between; margin: 0 1rem 2rem;">
-                    <div style="background: var(--dark-card); border-radius: 0.5rem; padding: 1rem; text-align: center; width: 30%;">
-                        <div style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">
+                <div class="mw-summary-stats">
+                    <div class="mw-summary-stat">
+                        <div class="mw-summary-stat-icon">
                             <i class="fas fa-clock"></i>
                         </div>
-                        <div style="color: var(--gray-light); margin-bottom: 0.5rem;">Duration</div>
-                        <div id="summary-time" style="font-size: 1.25rem; font-weight: 500;">00:00</div>
+                        <div class="mw-summary-stat-label">Duration</div>
+                        <div id="summary-time" class="mw-summary-stat-value">00:00</div>
                     </div>
                     
-                    <div style="background: var(--dark-card); border-radius: 0.5rem; padding: 1rem; text-align: center; width: 30%;">
-                        <div style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">
+                    <div class="mw-summary-stat">
+                        <div class="mw-summary-stat-icon">
                             <i class="fas fa-list-ul"></i>
                         </div>
-                        <div style="color: var(--gray-light); margin-bottom: 0.5rem;">Sets Done</div>
-                        <div id="summary-sets" style="font-size: 1.25rem; font-weight: 500;">0</div>
+                        <div class="mw-summary-stat-label">Sets Done</div>
+                        <div id="mw-summary-sets" class="mw-summary-stat-value">0</div>
                     </div>
                     
-                    <div style="background: var(--dark-card); border-radius: 0.5rem; padding: 1rem; text-align: center; width: 30%;">
-                        <div style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">
+                    <div class="mw-summary-stat">
+                        <div class="mw-summary-stat-icon">
                             <i class="fas fa-dumbbell"></i>
                         </div>
-                        <div style="color: var(--gray-light); margin-bottom: 0.5rem;">Volume</div>
-                        <div id="summary-weight" style="font-size: 1.25rem; font-weight: 500;">0 kg</div>
+                        <div class="mw-summary-stat-label">Volume</div>
+                        <div id="summary-weight" class="mw-summary-stat-value">0 kg</div>
                     </div>
                 </div>
                 
-                <div style="margin: 0 1rem 1rem;">
-                    <h3 style="margin-bottom: 0.75rem;">Workout Notes</h3>
-                    <textarea id="workout-notes" placeholder="How was your workout? Note any achievements or challenges..." style="width: 100%; background: var(--dark-card); border: none; color: white; padding: 1rem; border-radius: 0.5rem; height: 120px; resize: none;"></textarea>
+                <div class="mw-notes-section">
+                    <h3>Workout Notes</h3>
+                    <textarea id="workout-notes" class="mw-notes-textarea" placeholder="How was your workout? Note any achievements or challenges..."></textarea>
                 </div>
                 
-                <div style="margin: 0 1rem 1.5rem;">
-                    <h3 style="margin-bottom: 0.75rem;">Rate Your Workout</h3>
-                    <div class="rating-options" style="justify-content: space-between; padding: 0 0.5rem;">
-                        <div class="rating-option" data-rating="1">
-                            <div class="rating-icon">😣</div>
+                <div class="mw-rating-section">
+                    <h3>Rate Your Workout</h3>
+                    <div class="mw-rating-options">
+                        <div class="mw-rating-option" data-rating="1">
+                            <div class="mw-rating-icon">😣</div>
                         </div>
-                        <div class="rating-option" data-rating="2">
-                            <div class="rating-icon">😕</div>
+                        <div class="mw-rating-option" data-rating="2">
+                            <div class="mw-rating-icon">😕</div>
                         </div>
-                        <div class="rating-option selected" data-rating="3">
-                            <div class="rating-icon">😊</div>
+                        <div class="mw-rating-option selected" data-rating="3">
+                            <div class="mw-rating-icon">😊</div>
                         </div>
-                        <div class="rating-option" data-rating="4">
-                            <div class="rating-icon">😄</div>
+                        <div class="mw-rating-option" data-rating="4">
+                            <div class="mw-rating-icon">😄</div>
                         </div>
-                        <div class="rating-option" data-rating="5">
-                            <div class="rating-icon">🤩</div>
+                        <div class="mw-rating-option" data-rating="5">
+                            <div class="mw-rating-icon">🤩</div>
                         </div>
                     </div>
                 </div>
                 
-                <div style="margin: 1.5rem 1rem 5rem;">
-                    <button id="save-workout-btn" style="background: var(--primary); color: white; border: none; width: 100%; padding: 1rem; border-radius: 0.5rem; font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">
-                        <i class="fas fa-save" style="margin-right: 0.5rem;"></i> Save Workout
+                <div class="mw-actions">
+                    <button id="mw-save-workout-btn">
+                        <i class="fas fa-save mw-icon-margin"></i> Save Workout
                     </button>
-                    <button id="discard-workout-btn" style="background: transparent; color: white; border: none; width: 100%; padding: 1rem; border-radius: 0.5rem; font-size: 1rem; font-weight: 600;">
-                        <i class="fas fa-trash" style="margin-right: 0.5rem;"></i> Discard
+                    <button id="mw-discard-workout-btn">
+                        <i class="fas fa-trash mw-icon-margin"></i> Discard
                     </button>
                 </div>
             </div>
             
-            <div class="mobile-navigation">
-                <a href="#" class="nav-item active">
+            <div class="mw-navigation">
+                <a href="#" class="mw-nav-item active">
                     <i class="fas fa-home"></i>
                     <span>Home</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="mw-nav-item">
                     <i class="fas fa-clipboard-list"></i>
                     <span>Templates</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="mw-nav-item">
                     <i class="fas fa-history"></i>
                     <span>History</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="mw-nav-item">
                     <i class="fas fa-user"></i>
                     <span>Profile</span>
                 </a>
@@ -1020,10 +509,10 @@ function formatLastUsed($lastUsedDate) {
             console.log("Mobile workout page initialized with global templates support");
             window.autoStartInProgress = false;
             
-            const personalTemplates = document.querySelectorAll('.mobile-template-card[data-category="personal"]');
-            const globalTemplates = document.querySelectorAll('.mobile-template-card[data-category="global"]');
-            const personalNoTemplatesMsg = document.querySelector('.no-templates-message.personal-message');
-            const globalNoTemplatesMsg = document.querySelector('.no-templates-message.global-message');
+            const personalTemplates = document.querySelectorAll('.mw-template-card[data-category="personal"]');
+            const globalTemplates = document.querySelectorAll('.mw-template-card[data-category="global"]');
+            const personalNoTemplatesMsg = document.querySelector('.mw-no-templates-message.personal-message');
+            const globalNoTemplatesMsg = document.querySelector('.mw-no-templates-message.global-message');
             
             let currentStep = 1;
             let workoutData = {
@@ -1048,14 +537,14 @@ function formatLastUsed($lastUsedDate) {
             function setupTabFunctionality() {
                 console.log("Setting up tab functionality");
                 
-                document.querySelectorAll('.mobile-tab').forEach(tab => {
+                document.querySelectorAll('.mw-tab').forEach(tab => {
                     tab.removeEventListener('click', handleTabClick);
                     tab.addEventListener('click', handleTabClick);
                 });
                 
                 setupTemplateCardHandlers();
                 
-                const activeTab = document.querySelector('.mobile-tab.active');
+                const activeTab = document.querySelector('.mw-tab.active');
                 if (activeTab) {
                     console.log("Setting initial tab:", activeTab.dataset.category);
                     handleTabClick.call(activeTab);
@@ -1064,7 +553,7 @@ function formatLastUsed($lastUsedDate) {
             
             function setupTemplateCardHandlers() {
                 console.log("Setting up template card handlers");
-                document.querySelectorAll('.mobile-template-card').forEach(card => {
+                document.querySelectorAll('.mw-template-card').forEach(card => {
                     card.removeEventListener('click', handleTemplateCardClick);
                     card.addEventListener('click', handleTemplateCardClick);
                 });
@@ -1073,7 +562,7 @@ function formatLastUsed($lastUsedDate) {
             function handleTemplateCardClick() {
                 console.log("Template card clicked:", this.dataset.id, this.dataset.name, "Category:", this.dataset.category);
                 
-                document.querySelectorAll('.mobile-template-card').forEach(c => {
+                document.querySelectorAll('.mw-template-card').forEach(c => {
                     c.classList.remove('selected');
                 });
                 
@@ -1082,7 +571,7 @@ function formatLastUsed($lastUsedDate) {
                 workoutData.templateId = parseInt(this.dataset.id, 10);
                 workoutData.title = this.dataset.name;
                 
-                const beginWorkoutBtn = document.getElementById('begin-workout-btn');
+                const beginWorkoutBtn = document.getElementById('mw-begin-workout-btn');
                 beginWorkoutBtn.removeAttribute('disabled');
             }
             
@@ -1090,18 +579,18 @@ function formatLastUsed($lastUsedDate) {
                 const category = this.getAttribute('data-category');
                 console.log("Tab clicked:", category);
                 
-                document.querySelectorAll('.mobile-tab').forEach(t => {
+                document.querySelectorAll('.mw-tab').forEach(t => {
                     t.classList.remove('active');
                 });
                 this.classList.add('active');
                 
                 const visibleTemplates = [];
                 
-                document.querySelectorAll('.mobile-template-card').forEach(card => {
+                document.querySelectorAll('.mw-template-card').forEach(card => {
                     if (card.dataset.category === category) {
                         card.style.display = '';
                         visibleTemplates.push(card);
-                        console.log(`Showing template: ${card.querySelector('.mobile-template-title')?.textContent}`);
+                        console.log(`Showing template: ${card.querySelector('.mw-template-title')?.textContent}`);
                     } else {
                         card.style.display = 'none';
                     }
@@ -1110,19 +599,19 @@ function formatLastUsed($lastUsedDate) {
                 console.log(`Found ${visibleTemplates.length} ${category} templates to display`);
                 
                 if (category === 'personal') {
-                    const personalMsg = document.querySelector('.no-templates-message.personal-message');
+                    const personalMsg = document.querySelector('.mw-no-templates-message.personal-message');
                     if (personalMsg) {
                         personalMsg.style.display = visibleTemplates.length > 0 ? 'none' : 'block';
                     }
                     
-                    const globalMsg = document.querySelector('.no-templates-message.global-message');
+                    const globalMsg = document.querySelector('.mw-no-templates-message.global-message');
                     if (globalMsg) globalMsg.style.display = 'none';
                     
                 } else if (category === 'global') {
-                    const personalMsg = document.querySelector('.no-templates-message.personal-message');
+                    const personalMsg = document.querySelector('.mw-no-templates-message.personal-message');
                     if (personalMsg) personalMsg.style.display = 'none';
                     
-                    const globalMsg = document.querySelector('.no-templates-message.global-message');
+                    const globalMsg = document.querySelector('.mw-no-templates-message.global-message');
                     if (globalMsg) {
                         globalMsg.style.display = visibleTemplates.length > 0 ? 'none' : 'block';
                     }
@@ -1130,24 +619,24 @@ function formatLastUsed($lastUsedDate) {
                 
                 console.log("Templates visibility updated:", category);
                 
-                document.querySelectorAll('.mobile-template-card').forEach(c => {
+                document.querySelectorAll('.mw-template-card').forEach(c => {
                     c.classList.remove('selected');
                 });
-                document.getElementById('begin-workout-btn').setAttribute('disabled', 'disabled');
+                document.getElementById('mw-begin-workout-btn').setAttribute('disabled', 'disabled');
             }
             
             
             setupTabFunctionality();
             
             
-            const templatesContainer = document.querySelector('.mobile-templates');
+            const templatesContainer = document.querySelector('.mw-templates');
             if (templatesContainer) {
                 console.log("Setting up MutationObserver for template container");
                 const observer = new MutationObserver((mutations) => {
                     console.log("Templates container changed, updating handlers");
                     setupTemplateCardHandlers();
                     
-                    const activeTab = document.querySelector('.mobile-tab.active');
+                    const activeTab = document.querySelector('.mw-tab.active');
                     if (activeTab) {
                         console.log("Re-triggering active tab:", activeTab.dataset.category);
                         handleTabClick.call(activeTab);
@@ -1172,11 +661,11 @@ function formatLastUsed($lastUsedDate) {
             const targetStep = <?= $_SESSION['start_step'] ?>;
             console.log("Mobile - Starting at step:", targetStep);
             
-            document.getElementById('step1').classList.remove('step-active');
-            document.getElementById('step1').classList.add('step-previous');
-            const targetStepElement = document.getElementById('step' + targetStep);
-            targetStepElement.classList.remove('step-next');
-            targetStepElement.classList.add('step-active');
+            document.getElementById('mw-step1').classList.remove('mw-step-active');
+            document.getElementById('mw-step1').classList.add('mw-step-previous');
+            const targetStepElement = document.getElementById('mw-step' + targetStep);
+            targetStepElement.classList.remove('mw-step-next');
+            targetStepElement.classList.add('mw-step-active');
             
             currentStep = targetStep;
             
@@ -1240,11 +729,11 @@ function formatLastUsed($lastUsedDate) {
             if (isset($_SESSION['skip_template_selection']) && $_SESSION['skip_template_selection']): ?>
                 console.log("Mobile - Skip template selection enabled - starting workout immediately");
                 
-                document.getElementById('step1').classList.remove('step-active');
-                document.getElementById('step1').classList.add('step-previous');
-                const step2Element = document.getElementById('step2');
-                step2Element.classList.remove('step-next');
-                step2Element.classList.add('step-active');
+                document.getElementById('mw-step1').classList.remove('mw-step-active');
+                document.getElementById('mw-step1').classList.add('mw-step-previous');
+                const step2Element = document.getElementById('mw-step2');
+                step2Element.classList.remove('mw-step-next');
+                step2Element.classList.add('mw-step-active');
                 
                 currentStep = 2;
                 
@@ -1282,12 +771,12 @@ function formatLastUsed($lastUsedDate) {
                             
                             loadCurrentExercise();
                             
-                            if (!document.getElementById('step2').classList.contains('step-active')) {
+                            if (!document.getElementById('mw-step2').classList.contains('mw-step-active')) {
                                 console.log("Step 2 was reset - forcing it active again");
-                                document.getElementById('step1').classList.remove('step-active');
-                                document.getElementById('step1').classList.add('step-previous');
-                                document.getElementById('step2').classList.remove('step-next');
-                                document.getElementById('step2').classList.add('step-active');
+                                document.getElementById('mw-step1').classList.remove('mw-step-active');
+                                document.getElementById('mw-step1').classList.add('mw-step-previous');
+                                document.getElementById('mw-step2').classList.remove('mw-step-next');
+                                document.getElementById('mw-step2').classList.add('mw-step-active');
                                 currentStep = 2;
                             }
                             
@@ -1324,14 +813,14 @@ function formatLastUsed($lastUsedDate) {
             
             function resetStepStates() {
                 console.log("Resetting all steps to initial state");
-                const steps = document.querySelectorAll('.step-container');
+                const steps = document.querySelectorAll('.mw-step-container');
                 steps.forEach(step => {
-                    step.classList.remove('step-active', 'step-previous', 'step-next');
-                    const targetStep = parseInt(step.id.replace('step', ''));
+                    step.classList.remove('mw-step-active', 'mw-step-previous', 'mw-step-next');
+                    const targetStep = parseInt(step.id.replace('mw-step', ''));
                     if (targetStep === 1) {
-                        step.classList.add('step-active');
+                        step.classList.add('mw-step-active');
                     } else {
-                        step.classList.add('step-next');
+                        step.classList.add('mw-step-next');
                     }
                 });
                 currentStep = 1;
@@ -1339,18 +828,18 @@ function formatLastUsed($lastUsedDate) {
             
             function showStep(stepNumber) {
                 console.log(`Transitioning to step ${stepNumber}`);
-                const steps = document.querySelectorAll('.step-container');
+                const steps = document.querySelectorAll('.mw-step-container');
                 
                 steps.forEach(step => {
-                    const targetStep = parseInt(step.id.replace('step', ''));
-                    step.classList.remove('step-active', 'step-previous', 'step-next');
+                    const targetStep = parseInt(step.id.replace('mw-step', ''));
+                    step.classList.remove('mw-step-active', 'mw-step-previous', 'mw-step-next');
                     
                     if (targetStep === stepNumber) {
-                        step.classList.add('step-active');
+                        step.classList.add('mw-step-active');
                     } else if (targetStep < stepNumber) {
-                        step.classList.add('step-previous');
+                        step.classList.add('mw-step-previous');
                     } else {
-                        step.classList.add('step-next');
+                        step.classList.add('mw-step-next');
                     }
                 });
                 
@@ -1361,16 +850,16 @@ function formatLastUsed($lastUsedDate) {
                 }
             }
             
-            const beginWorkoutBtn = document.getElementById('begin-workout-btn');
-            const templateCards = document.querySelectorAll('.mobile-template-card');
-            const tabs = document.querySelectorAll('.mobile-tab');
+            const beginWorkoutBtn = document.getElementById('mw-begin-workout-btn');
+            const templateCards = document.querySelectorAll('.mw-template-card');
+            const tabs = document.querySelectorAll('.mw-tab');
             const backToTemplates = document.getElementById('back-to-templates');
             const workoutTitle = document.getElementById('workout-title');
             const workoutTimer = document.getElementById('workout-timer');
             const caloriesBurned = document.getElementById('calories-burned'); 
             const workoutProgressText = document.getElementById('workout-progress-text');
             const exerciseName = document.getElementById('exercise-name');
-            const setCounter = document.getElementById('set-counter');
+            const setCounter = document.getElementById('mw-set-counter');
             const previousSetInfo = document.getElementById('previous-set-info');
             const weightInput = document.getElementById('weight-input');
             const repsInput = document.getElementById('reps-input');
@@ -1390,13 +879,13 @@ function formatLastUsed($lastUsedDate) {
             const restTitle = document.getElementById('rest-title');
             const restWorkoutTimer = document.getElementById('rest-workout-timer');
             const restCaloriesBurned = document.getElementById('rest-calories-burned');
-            const ratingOptions = document.querySelectorAll('.rating-option');
+            const ratingOptions = document.querySelectorAll('.mw-rating-option');
             const timerDisplay = document.getElementById('timer-display');
             const decreaseTimeBtn = document.getElementById('decrease-time');
             const increaseTimeBtn = document.getElementById('increase-time');
-            const skipRestBtn = document.getElementById('skip-rest-btn');
-            const previewName = document.querySelector('.preview-name');
-            const previewDetail = document.querySelector('.preview-detail');
+            const skipRestBtn = document.getElementById('mw-skip-rest-btn');
+            const previewName = document.querySelector('.mw-preview-name');
+            const previewDetail = document.querySelector('.mw-preview-detail');
 
             beginWorkoutBtn.addEventListener('click', function() {
                 if (workoutData.templateId) {
@@ -1471,9 +960,9 @@ function formatLastUsed($lastUsedDate) {
                 console.log("Reps input changed to: " + this.value);
             });
             document.body.addEventListener('click', function(e) {
-    if (e.target?.matches('#complete-set-btn')) {
-        const weightInput = document.querySelector('#step2.step-active #weight-input');
-        const repsInput = document.querySelector('#step2.step-active #reps-input');
+    if (e.target?.matches('#mw-complete-set-btn')) {
+        const weightInput = document.querySelector('#mw-step2.mw-step-active #weight-input');
+        const repsInput = document.querySelector('#mw-step2.mw-step-active #reps-input');
         const currentWeight = parseFloat(weightInput.value) || 0;
         const currentReps = parseInt(repsInput.value, 10) || 0;
         const exercise = workoutData.exercises[workoutData.currentExercise];
@@ -1515,8 +1004,8 @@ document.body.addEventListener('input', function(e) {
 });
 
 document.body.addEventListener('click', function(e) {
-    if (e.target?.matches('.number-input button')) {
-        const input = e.target.closest('.number-input').querySelector('input');
+    if (e.target?.matches('.mw-number-input button')) {
+        const input = e.target.closest('.mw-number-input').querySelector('input');
         const isWeight = input.id === 'weight-input';
         const step = isWeight ? 2.5 : 1;
         
@@ -1604,7 +1093,7 @@ document.body.addEventListener('click', function(e) {
             });
  
             document.body.addEventListener('click', function(e) {
-                if (e.target && e.target.matches('#skip-rest-btn')) {
+                if (e.target && e.target.matches('#mw-skip-rest-btn')) {
                     console.log('Skip rest button clicked');
                     
                     if (timerRAF) {
@@ -1661,12 +1150,12 @@ document.body.addEventListener('click', function(e) {
                 console.log("Setting workout title:", workoutData.title);
                 workoutTitle.textContent = workoutData.title;
                 
-                if (window.autoStartInProgress && !document.getElementById('step2').classList.contains('step-active')) {
+                if (window.autoStartInProgress && !document.getElementById('mw-step2').classList.contains('mw-step-active')) {
                     console.log("Auto-start: Re-activating step 2");
-                    document.getElementById('step1').classList.remove('step-active');
-                    document.getElementById('step1').classList.add('step-previous');
-                    document.getElementById('step2').classList.remove('step-next');
-                    document.getElementById('step2').classList.add('step-active');
+                    document.getElementById('mw-step1').classList.remove('mw-step-active');
+                    document.getElementById('mw-step1').classList.add('mw-step-previous');
+                    document.getElementById('mw-step2').classList.remove('mw-step-next');
+                    document.getElementById('mw-step2').classList.add('mw-step-active');
                     currentStep = 2;
                 }
 
@@ -1859,7 +1348,7 @@ document.body.addEventListener('click', function(e) {
 
             function startRestTimer() {
                 const currentExercise = workoutData.exercises[workoutData.currentExercise];
-                let timerElement = document.querySelector('#step3.step-active #timer-display');
+                let timerElement = document.querySelector('#mw-step3.mw-step-active #timer-display');
                 
                 if (!timerElement) {
                     console.error('Timer element not found in active step!');
@@ -1992,8 +1481,8 @@ document.body.addEventListener('click', function(e) {
             function showWorkoutSummary() {
             showStep(4);
             
-            const allSummarySetsElements = document.querySelectorAll('#summary-sets');
-            console.log(`Found ${allSummarySetsElements.length} elements with ID 'summary-sets'`);
+            const allSummarySetsElements = document.querySelectorAll('#mw-summary-sets');
+            console.log(`Found ${allSummarySetsElements.length} elements with ID 'mw-summary-sets'`);
             
             const totalSets = workoutData.exercises.reduce((total, exercise) => 
                 total + exercise.currentSetData.length, 0
@@ -2015,8 +1504,8 @@ document.body.addEventListener('click', function(e) {
             workoutData.avgIntensity = totalSets > 0 ? (totalVolume / totalSets).toFixed(2) : 0;
             
             setTimeout(() => {
-                document.querySelectorAll('#summary-sets').forEach((element, index) => {
-                    console.log(`Updating summary-sets element ${index}:`, element);
+                document.querySelectorAll('#mw-summary-sets').forEach((element, index) => {
+                    console.log(`Updating mw-summary-sets element ${index}:`, element);
                     element.textContent = totalSets;
                     element.style.cssText += "; color: #ffffff !important; visibility: visible; display: block;";
                 });
@@ -2029,7 +1518,7 @@ document.body.addEventListener('click', function(e) {
                     element.textContent = `${totalVolume.toFixed(1)} kg`;
                 });
                  
-                document.querySelectorAll('#summary-sets').forEach((element, index) => {
+                document.querySelectorAll('#mw-summary-sets').forEach((element, index) => {
                     console.log(`Element ${index} after updates:`, {
                         text: element.textContent,
                         isVisible: window.getComputedStyle(element).display !== 'none' && 
@@ -2038,14 +1527,14 @@ document.body.addEventListener('click', function(e) {
                     });
                 });
                 
-                const duplicates = document.querySelectorAll('#summary-sets');
+                const duplicates = document.querySelectorAll('#mw-summary-sets');
                 for (let i = 1; i < duplicates.length; i++) {
-                    duplicates[i].id = `summary-sets-${i}`; 
+                    duplicates[i].id = `mw-summary-sets-${i}`; 
                 }
             }, 300);
 
             if (!window.summaryListenersAdded) {
-                const summaryRatingOptions = document.querySelectorAll('#step4 .rating-option');
+                const summaryRatingOptions = document.querySelectorAll('#mw-step4 .mw-rating-option');
                 
                 summaryRatingOptions.forEach(option => {
                     option.addEventListener('click', function() {
@@ -2063,11 +1552,11 @@ document.body.addEventListener('click', function(e) {
                     });
                 });
                 
-                document.getElementById('save-workout-btn').addEventListener('click', function() {
+                document.getElementById('mw-save-workout-btn').addEventListener('click', function() {
                     saveWorkoutData();
                 });
                 
-                document.getElementById('discard-workout-btn').addEventListener('click', function() {
+                document.getElementById('mw-discard-workout-btn').addEventListener('click', function() {
                     if (confirm('Are you sure you want to discard this workout?')) {
                         resetWorkout();
                         showStep(1);
@@ -2088,7 +1577,7 @@ document.body.addEventListener('click', function(e) {
 
             function saveWorkoutData() {
                 try {
-                    const notesElement = document.querySelector('#step4.step-active #workout-notes');
+                    const notesElement = document.querySelector('#mw-step4.mw-step-active #workout-notes');
                     if (!notesElement) {
                         console.error('Notes textarea element not found!');
                         return;
@@ -2185,7 +1674,7 @@ document.body.addEventListener('click', function(e) {
             }
             
             function getSelectedRating() {
-                const selectedRating = document.querySelector('#step4 .rating-option.selected');
+                const selectedRating = document.querySelector('#mw-step4 .mw-rating-option.selected');
                 return selectedRating ? parseInt(selectedRating.dataset.rating) : 3;
             }
             
@@ -2237,11 +1726,11 @@ document.body.addEventListener('click', function(e) {
                 repsHint.textContent = '';
                 
                 document.getElementById('summary-time').textContent = '00:00';
-                document.getElementById('summary-sets').textContent = '0';
+                document.getElementById('mw-summary-sets').textContent = '0';
                 document.getElementById('summary-weight').textContent = '0 kg';
                 document.getElementById('workout-notes').value = '';
                 
-                const ratingOptions = document.querySelectorAll('.rating-option');
+                const ratingOptions = document.querySelectorAll('.mw-rating-option');
                 ratingOptions.forEach(option => {
                     option.classList.remove('selected');
                     if (option.dataset.rating === '3') {

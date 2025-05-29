@@ -346,6 +346,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/variables.css" rel="stylesheet">
+    <link href="global-profile.css" rel="stylesheet">
     <script>
         function isMobile() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -360,7 +361,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     button.innerText = 'Starting...';
                     button.disabled = true;
                     
-                    button.classList.add('loading');
+                    button.classList.add('profile-loading');
                     
                     const targetPage = isMobile() ? 'mobile-workout.php' : 'workout.php';
                     const workoutUrl = `${targetPage}?template_id=${templateId}&start_workout=1&auto_start=1&start_step=2`;
@@ -377,1044 +378,12 @@ if ($today_workout && !empty($today_workout['template_id'])) {
             }
         }
     </script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: var(--dark);
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.6;
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(67, 97, 238, 0.05) 0%, transparent 200px),
-                radial-gradient(circle at 70% 80%, rgba(67, 97, 238, 0.05) 0%, transparent 200px);
-            width: 100%;
-            overflow-x: hidden;
-        }
-
-        .dashboard {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px 40px; 
-            width: calc(100% - var(--sidebar-width));
-            max-width: 100%;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
-
-        .page-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-        }
-
-        .page-actions {
-            display: flex;
-            gap: 15px;
-        }
-
-        .action-button {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 50px;
-            border: none;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .action-button.primary {
-            background: var(--gradient-blue);
-            color: white;
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
-        }
-
-        .action-button.primary:hover {
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
-            transform: translateY(-3px);
-        }
-
-        .action-button.secondary {
-            background-color: rgba(255, 255, 255, 0.08);
-            color: white;
-        }
-
-        .action-button.secondary:hover {
-            background-color: rgba(255, 255, 255, 0.12);
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 260px minmax(0, 1fr) 320px;
-            gap: 25px;
-        }
-
-        .left-column > div {
-            margin-bottom: 25px;
-        }
-
-        .panel {
-            background-color: var(--dark-card);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .panel-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .panel-action {
-            color: var(--primary-light);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: var(--transition);
-        }
-
-        .panel-action:hover {
-            text-decoration: underline;
-        }
-
-        .body-metrics-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .metric-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .metric-label {
-            color: var(--gray-light);
-        }
-
-        .metric-value {
-            font-weight: 600;
-        }
-
-        .templates-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        .template-card {
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            transition: var(--transition);
-            cursor: pointer;
-        }
-
-        .template-card:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            transform: translateY(-3px);
-        }
-
-        .template-label {
-            font-size: 0.85rem;
-            margin-top: 8px;
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .calendar-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-        }
-
-        .calendar-nav {
-            display: flex;
-            gap: 15px;
-        }
-
-        .calendar-nav-btn {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: none;
-            color: white;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .calendar-nav-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-        }
-
-        .calendar-weekday {
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--gray-light);
-            margin-bottom: 10px;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.03);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px 5px;
-            position: relative;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .calendar-day:hover {
-            background-color: rgba(255, 255, 255, 0.08);
-        }
-
-        .calendar-day-number {
-            font-weight: 600;
-            font-size: 0.9rem;
-            position: absolute;
-            top: 5px;
-            left: 8px;
-        }
-
-        .calendar-day-content {
-            height: 100%;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.65rem;
-            text-align: center;
-            color: white;
-        }
-
-        .day-has-workout {
-            color: white;
-        }
-
-        .workout-type {
-            margin-top: 5px;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 0.65rem;
-            font-weight: 600;
-        }
-
-        .push-day {
-            background-color: rgba(230, 22, 22, 0.2);
-            color: #ff5c5c;
-        }
-
-        .pull-day {
-            background-color: rgba(67, 97, 238, 0.2);
-            color: #7b8cff;
-        }
-
-        .leg-day {
-            background-color: rgba(111, 66, 193, 0.2);
-            color: #b69fff;
-        }
-
-        .rest-day {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #cccccc;
-        }
-
-        .day-icon {
-            margin-top: 5px;
-            font-size: 1rem;
-        }
-
-        .today-workout {
-            margin-bottom: 25px;
-        }
-
-        .workout-time {
-            font-size: 0.9rem;
-            color: var(--gray-light);
-            margin-bottom: 5px;
-        }
-
-        .workout-exercises {
-            list-style: none;
-            margin-top: 15px;
-            max-height: 250px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-        }
-
-        .workout-exercises::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .workout-exercises::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .workout-exercises::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-
-        .exercise-item {
-            padding: 12px 15px;
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-            margin-bottom: 10px;
-            transition: var(--transition);
-        }
-
-        .exercise-item:hover {
-            background-color: rgba(255, 255, 255, 0.08);
-        }
-
-        .start-workout-btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            margin-top: 20px;
-            background: var(--gradient-blue);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .start-workout-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1100;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: var(--dark-card);
-            border-radius: 16px;
-            width: 90%;
-            max-width: 500px;
-            padding: 25px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-            position: relative;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 1.5rem;
-            color: var(--gray-light);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .modal-close:hover {
-            color: white;
-        }
-
-        .modal-title {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .form-select, .form-input {
-            width: 100%;
-            padding: 12px 15px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.95rem;
-        }
-
-        .form-select:focus, .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .form-button {
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-        }
-
-        .form-button.primary {
-            background: var(--gradient-blue);
-            color: white;
-        }
-
-        .form-button.secondary {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        @media (max-width: 1200px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .right-column {
-                grid-column: span 2;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .main-content {
-                width: 100%;
-                padding: 20px;
-            }
-            
-            .right-column {
-                grid-column: span 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .templates-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .calendar-title {
-                font-size: 1.2rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .calendar-grid {
-                gap: 5px;
-            }
-            
-            .calendar-day {
-                padding: 5px 3px;
-            }
-            
-            .workout-type {
-                padding: 2px 4px;
-                font-size: 0.6rem;
-            }
-            
-            .calendar-day-number {
-                font-size: 0.8rem;
-            }
-        }
-
-        .calendar-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .past-day {
-            opacity: 0.5;
-            cursor: default;
-        }
-        
-        .today-marker {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            border: 2px solid var(--primary);
-            border-radius: 10px;
-            pointer-events: none;
-        }
-        
-        .rest-day-message {
-            text-align: center;
-            padding: 30px 0;
-        }
-        
-        .rest-day-message i {
-            font-size: 2.5rem;
-            color: var(--gray-light);
-            margin-bottom: 15px;
-        }
-        
-        .rest-day-message h3 {
-            margin-bottom: 10px;
-        }
-        
-        .rest-day-message p {
-            color: var(--gray-light);
-        }
-        
-        .weekly-calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-            max-width: 100%;
-            overflow-x: auto;
-        }
-        
-        .week-day {
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .week-day-header {
-            background-color: rgba(255, 255, 255, 0.05);
-            padding: 8px;
-            text-align: center;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        
-        .week-day-content {
-            padding: 10px;
-        }
-        
-        .split-modal {
-            max-width: 900px;
-            width: 90%;
-        }
-        
-        .split-actions {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .saved-splits {
-            flex: 1;
-        }
-
-        .mobile-app-view {
-                display: none;
-            }
-        
-        @media (max-width: 1200px) {
-            .weekly-calendar {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .weekly-calendar {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .split-actions {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .saved-splits {
-                width: 100%;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .weekly-calendar {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .templates-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .template-label {
-            font-size: 0.9rem;
-            padding: 15px 10px;
-            text-align: center;
-            font-weight: 500;
-        }
-        
-        .template-label.push-day {
-            color: #ff5c5c;
-        }
-        
-        .template-label.pull-day {
-            color: #7b8cff;
-        }
-        
-        .template-label.leg-day {
-            color: #b69fff;
-        }
-
-        @media (max-width: 767px) {
-            body {
-                background-color: #1c1f2a;
-                margin: 0;
-                padding: 0;
-                overflow-x: hidden;
-            }
-            
-            .sidebar {
-                display: none !important;
-            }
-            
-            .dashboard, .main-content {
-                padding: 0;
-                width: 100%;
-            }
-            
-            .page-title, .page-actions, .page-header {
-                display: none;
-            }
-            
-            .dashboard-grid {
-                display: none;
-            }
-            
-            .mobile-app-view {
-                display: block;
-            }
-            
-            .mobile-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px 15px 0 20px;
-            }
-            
-            .mobile-header-title {
-                font-size: 1.8rem;
-                font-weight: 700;
-                display: flex;
-                flex-direction: column;
-            }
-            
-            .mobile-header-date {
-                color: #e63e3e;
-                font-size: 1rem;
-                font-weight: normal;
-            }
-            
-            .mobile-card {
-                background-color: #21242e;
-                border-radius: 15px;
-                margin: 15px;
-                padding: 20px;
-            }
-            
-            .mobile-card-title {
-                margin-bottom: 15px;
-                font-size: 1.2rem;
-                font-weight: 600;
-            }
-            
-            .mobile-scheduled-workout {
-                margin-bottom: 5px;
-            }
-            
-            .mobile-workout-meta {
-                display: flex;
-                gap: 5px;
-                color: #7f8489;
-                font-size: 0.85rem;
-                margin-bottom: 10px;
-            }
-            
-            .mobile-start-btn {
-                display: block;
-                width: 100%;
-                background-color: #e63e3e;
-                color: white;
-                border: none;
-                border-radius: 10px;
-                padding: 15px;
-                font-weight: 600;
-                font-size: 1rem;
-                margin-top: 20px;
-                cursor: pointer;
-            }
-            
-            .mobile-weight-section {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            
-            .mobile-weight-value {
-                font-size: 1.6rem;
-                font-weight: 700;
-            }
-            
-            .mobile-weight-unit {
-                color: #7f8489;
-            }
-            
-            .mobile-update-btn {
-                color: #e63e3e;
-                background: none;
-                border: none;
-                font-size: 0.9rem;
-                padding: 5px;
-                cursor: pointer;
-            }
-            
-            .mobile-week-selector {
-                display: flex;
-                justify-content: space-between;
-                padding: 0 15px;
-                margin: 10px 0;
-            }
-            
-            .mobile-day-btn {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                background: none;
-                border: none;
-                color: white;
-                width: 48px;
-                padding: 10px 0;
-                border-radius: 10px;
-                cursor: pointer;
-                position: relative;
-            }
-            
-            .mobile-day-weekday {
-                text-transform: uppercase;
-                font-size: 0.8rem;
-                font-weight: 600;
-                margin-bottom: 8px;
-            }
-            
-            .mobile-day-date {
-                font-size: 1.1rem;
-                font-weight: 600;
-            }
-            
-            .mobile-day-btn.active {
-                background-color: #21242e;
-            }
-            
-            .workout-scheduled {
-                background-color: #21242e;
-            }
-
-            .mobile-day-btn.workout-scheduled::after {
-                content: '';
-                position: absolute;
-                bottom: 5px;
-                width: 6px;
-                height: 6px;
-                border-radius: 50%;
-                background-color: #e63e3e;
-            }
-            
-            .mobile-day-btn.active.workout-scheduled{
-                background-color: #e63e3e;
-            }
-
-            .mobile-workout-card {
-                display: flex;
-                background-color: #21242e;
-                border-radius: 15px;
-                margin: 15px;
-                overflow: hidden;
-            }
-            
-            .mobile-button-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 15px;
-                padding: 15px;
-            }
-            
-            .mobile-feature-btn {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                background-color: #21242e;
-                border-radius: 15px;
-                padding: 10px 15px 20px;
-                text-decoration: none;
-                color: white;
-                text-align: center;
-                transition: transform 0.2s ease, background-color 0.2s ease;
-            }
-            
-            .mobile-feature-btn:active {
-                transform: scale(0.98);
-                background-color: #2a2d38;
-            }
-            
-            .mobile-feature-icon {
-                font-size: 1.8rem;
-                margin-bottom: 12px;
-                color: #e63e3e;
-            }
-            
-            .mobile-feature-label {
-                font-weight: 600;
-                font-size: 0.9rem;
-            }
-            
-            .mobile-bottom-nav {
-                display: flex;
-                justify-content: space-around;
-                background-color: #21242e;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                padding: 15px 0;
-                box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
-            }
-            
-            .mobile-nav-item {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                color: #7f8489;
-                text-decoration: none;
-            }
-            
-            .mobile-nav-item.active {
-                color: white;
-            }
-            
-            .mobile-nav-icon {
-                font-size: 1.2rem;
-                margin-bottom: 5px;
-            }
-            
-            .mobile-nav-label {
-                font-size: 0.7rem;
-            }
-        }
-
-        @media (max-width: 767px) {
-            .main-content {
-                padding-bottom: 80px;
-            }
-        }
-
-        .loading {
-            position: relative;
-            opacity: 0.8;
-        }
-        .loading:after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            margin: -10px 0 0 -10px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .mobile-split-days {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-height: 65vh;
-            overflow-y: auto;
-            margin: 15px 0;
-            padding-right: 5px;
-        }
-        
-        .mobile-split-day {
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 15px;
-        }
-        
-        .mobile-split-day h4 {
-            margin-bottom: 10px;
-            font-size: 1rem;
-        }
-        
-        .mobile-split-template, .mobile-split-custom {
-            margin-top: 10px;
-        }
-        
-        .mobile-split-days::-webkit-scrollbar {
-            width: 5px;
-        }
-        
-        .mobile-split-days::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .mobile-split-days::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-        
-        .modal.mobile-slide-up {
-            transform: translateY(100%);
-            transition: transform 0.3s ease-out;
-        }
-        
-        .modal.mobile-slide-up.show {
-            transform: translateY(0);
-        }
-        
-        .mobile-week-selector {
-            padding: 0 5px;
-            margin: 15px 0;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        
-        .mobile-week-selector::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .mobile-week-action {
-            background-color: #e63e3e;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            z-index: 100;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-        }
-        
-        .mobile-week-action:active {
-            transform: scale(0.95);
-            background-color: #d33636;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        @media (max-width: 767px) {
-            .modal {
-                background-color: rgba(0, 0, 0, 0.9);
-            }
-            
-            .modal-content {
-                width: 92% !important;
-                max-width: 92% !important;
-                max-height: 80vh !important;
-                overflow-y: auto !important;
-            }
-        }
-    </style>
 </head>
 <body>
-    <div class="dashboard">
+    <div class="profile-dashboard">
         <?php require_once 'sidebar.php'; ?>
         
-        <main class="main-content">
+        <main class="profile-main-content">
             <?php 
             if ($today_workout && !empty($today_workout['template_id'])) {
                 echo "<!-- Template ID available: " . $today_workout['template_id'] . " -->";
@@ -1422,15 +391,15 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 echo "<!-- Template ID not available -->";
             }
             ?>
-            <div class="page-header">
-                <h1 class="page-title">Fitness Dashboard</h1>
+            <div class="profile-page-header">
+                <h1 class="profile-page-title">Fitness Dashboard</h1>
             </div>
             
-            <div class="dashboard-grid">
-                <div class="left-column">
-                    <div class="panel">
-                        <div class="panel-header">
-                            <h3 class="panel-title">Body Metrics</h3>
+            <div class="profile-dashboard-grid">
+                <div class="profile-left-column">
+                    <div class="profile-panel">
+                        <div class="profile-panel-header">
+                            <h3 class="profile-panel-title">Body Metrics</h3>
                         </div>
                         <?php if ($current_weight == 0 && $body_fat == 0): ?>
                             <div style="text-align: center; padding: 20px 0;">
@@ -1438,25 +407,25 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                 <p>You haven't set your body metrics yet</p>
                             </div>
                         <?php else: ?>
-                            <div class="body-metrics-list">
-                                <div class="metric-item">
-                                    <span class="metric-label">Weight</span>
-                                    <span class="metric-value"><?= $current_weight ?> kg</span>
+                            <div class="profile-body-metrics-list">
+                                <div class="profile-metric-item">
+                                    <span class="profile-metric-label">Weight</span>
+                                    <span class="profile-metric-value"><?= $current_weight ?> kg</span>
                                 </div>
-                                <div class="metric-item">
-                                    <span class="metric-label">Body Fat</span>
-                                    <span class="metric-value"><?= $body_fat ?>%</span>
+                                <div class="profile-metric-item">
+                                    <span class="profile-metric-label">Body Fat</span>
+                                    <span class="profile-metric-value"><?= $body_fat ?>%</span>
                                 </div>
                             </div>
                         <?php endif; ?>
-                        <a href="body-measurements.php" class="start-workout-btn">
+                        <a href="body-measurements.php" class="profile-start-workout-btn">
                             Update Metrics
                         </a>
                     </div>
                     
-                    <div class="panel">
-                        <div class="panel-header">
-                            <h3 class="panel-title">Recent templates</h3>
+                    <div class="profile-panel">
+                        <div class="profile-panel-header">
+                            <h3 class="profile-panel-title">Recent templates</h3>
                         </div>
                         <?php if (empty($recent_templates)): ?>
                             <div style="text-align: center; padding: 20px 0;">
@@ -1464,37 +433,37 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                 <p>You haven't created any templates yet</p>
                             </div>
                         <?php else: ?>
-                            <div class="templates-grid">
+                            <div class="profile-templates-grid">
                                 <?php foreach ($recent_templates as $template): ?>
-                                    <div class="template-card" data-template-id="<?= $template['id'] ?>">
+                                    <div class="profile-template-card" data-template-id="<?= $template['id'] ?>">
                                         <?php 
                                             $cssClass = '';
                                             
                                             if (strtolower($template['category']) === 'push') {
-                                                $cssClass = 'push-day';
+                                                $cssClass = 'profile-push-day';
                                             } elseif (strtolower($template['category']) === 'pull') {
-                                                $cssClass = 'pull-day';
+                                                $cssClass = 'profile-pull-day';
                                             } elseif (strtolower($template['category']) === 'leg') {
-                                                $cssClass = 'leg-day';
+                                                $cssClass = 'profile-leg-day';
                                             }
                                         ?>
-                                        <div class="template-label <?= $cssClass ?>"><?= htmlspecialchars($template['name']) ?></div>
+                                        <div class="profile-template-label <?= $cssClass ?>"><?= htmlspecialchars($template['name']) ?></div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
-                        <a href="workout-templates.php" class="start-workout-btn">
+                        <a href="workout-templates.php" class="profile-start-workout-btn">
                             Update templates
                         </a>
                     </div>
                 </div>
                 
-                <div class="middle-column">
-                    <div class="panel">
-                        <div class="calendar-header">
-                            <h2 class="calendar-title"><?= $month_name ?> <?= $selected_year ?></h2>
-                            <div class="calendar-actions">
-                                <button class="action-button secondary" id="create-split-btn">
+                <div class="profile-middle-column">
+                    <div class="profile-panel">
+                        <div class="profile-calendar-header">
+                            <h2 class="profile-calendar-title"><?= $month_name ?> <?= $selected_year ?></h2>
+                            <div class="profile-calendar-actions">
+                                <button class="profile-action-button secondary" id="create-split-btn">
                                     <i class="fas fa-calendar-week"></i> Create Split
                                 </button>
                             </div>
@@ -1514,27 +483,27 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             }
                             
                             $weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                            $calendar = "<div class='calendar-grid'>";
+                            $calendar = "<div class='profile-calendar-grid'>";
                             
                             foreach ($weekdays as $day) {
-                                $calendar .= "<div class='calendar-weekday'>{$day}</div>";
+                                $calendar .= "<div class='profile-calendar-weekday'>{$day}</div>";
                             }
                             
                             if ($dayOfWeek > 0) {
                                 for ($i = 0; $i < $dayOfWeek; $i++) {
-                                    $calendar .= "<div class='calendar-day' style='visibility: hidden'></div>";
+                                    $calendar .= "<div class='profile-calendar-day' style='visibility: hidden'></div>";
                                 }
                             }
                             
                             for ($i = 1; $i <= $numberDays; $i++) {
                                 $id = "day_" . $i;
                                 $isPastDay = $isCurrentMonth && $i < $currentDay;
-                                $dayClass = $isPastDay ? 'calendar-day past-day' : 'calendar-day';
+                                $dayClass = $isPastDay ? 'profile-calendar-day profile-past-day' : 'profile-calendar-day';
                                 $calendar .= "<div class='{$dayClass}' id='{$id}' data-day='{$i}' " . ($isPastDay ? 'data-past="true"' : '') . ">";
-                                $calendar .= "<div class='calendar-day-number'>{$i}</div>";
+                                $calendar .= "<div class='profile-calendar-day-number'>{$i}</div>";
                                 
                                 if ($isCurrentMonth && $i == $currentDay) {
-                                    $calendar .= "<div class='today-marker'></div>";
+                                    $calendar .= "<div class='profile-today-marker'></div>";
                                 }
                                 
                                 if (isset($month_workouts[$i])) {
@@ -1544,20 +513,20 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                     $typeClass = '';
                                     
                                     if ($type === 'push') {
-                                        $typeClass = 'push-day';
+                                        $typeClass = 'profile-push-day';
                                     } elseif ($type === 'pull') {
-                                        $typeClass = 'pull-day';
+                                        $typeClass = 'profile-pull-day';
                                     } elseif ($type === 'leg') {
-                                        $typeClass = 'leg-day';
+                                        $typeClass = 'profile-leg-day';
                                     } elseif ($type === 'rest') {
-                                        $typeClass = 'rest-day';
+                                        $typeClass = 'profile-rest-day';
                                     }
                                     
-                                    $calendar .= "<div class='calendar-day-content day-has-workout'>";
-                                    $calendar .= "<div class='workout-type {$typeClass}'>{$type}</div>";
+                                    $calendar .= "<div class='profile-calendar-day-content profile-day-has-workout'>";
+                                    $calendar .= "<div class='profile-workout-type {$typeClass}'>{$type}</div>";
                                     $calendar .= "</div>";
                                 } else {
-                                    $calendar .= "<div class='calendar-day-content'>";
+                                    $calendar .= "<div class='profile-calendar-day-content'>";
                                     if (!$isPastDay) {
                                         $calendar .= "<i class='fas fa-plus-circle' style='opacity: 0.5; font-size: 0.8rem;'></i>";
                                     }
@@ -1573,21 +542,21 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     </div>
                 </div>
                 
-                <div class="right-column">
-                    <div class="panel today-workout">
-                        <div class="panel-header">
-                            <h3 class="panel-title">Today's Workout</h3>
+                <div class="profile-right-column">
+                    <div class="profile-panel profile-today-workout">
+                        <div class="profile-panel-header">
+                            <h3 class="profile-panel-title">Today's Workout</h3>
                         </div>
                         
                         <?php if ($today_workout): ?>
                             <?php if ($today_workout['workout_type'] === 'rest'): ?>
-                                <div class="rest-day-message">
+                                <div class="profile-rest-day-message">
                                     <i class="fas fa-bed"></i>
                                     <h3>Rest Day</h3>
                                     <p>Take time to recover and recharge.</p>
                                 </div>
                             <?php else: ?>
-                                <div class="workout-time">
+                                <div class="profile-workout-time">
                                     <i class="far fa-clock"></i> 45 minutes • <?= count($today_exercises) ?> exercises
                                 </div>
                                 <h4><?= htmlspecialchars($today_workout['template_name']) ?></h4>
@@ -1597,15 +566,15 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                     <p style="opacity: 0.7; margin-top: 20px;">No exercises found for this workout.</p>
                                 <?php endif; ?>
                                 
-                                <button class="start-workout-btn" id="startWorkoutBtn" data-template-id="<?= htmlspecialchars($today_workout['template_id']) ?>" onclick="return startWorkout(this)">
+                                <button class="profile-start-workout-btn" id="startWorkoutBtn" data-template-id="<?= htmlspecialchars($today_workout['template_id']) ?>" onclick="return startWorkout(this)">
                                     Start Workout
                                 </button>
                             <?php endif; ?>
                         <?php else: ?>
-                            <div class="day-has-workout" style="text-align: center; padding: 30px 0;">
+                            <div class="profile-day-has-workout" style="text-align: center; padding: 30px 0;">
                                 <i class="fas fa-calendar-plus" style="font-size: 2rem; opacity: 0.5; margin-bottom: 15px;"></i>
                                 <p>No workout scheduled for today</p>
-                                <button class="start-workout-btn" style="margin-top: 20px;" id="plan-today-btn">
+                                <button class="profile-start-workout-btn" style="margin-top: 20px;" id="plan-today-btn">
                                     Plan Today's Workout
                                 </button>
                             </div>
@@ -1613,15 +582,15 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     </div>
                     
                     <?php if (!empty($today_exercises)): ?>
-                    <div class="panel">
-                        <div class="panel-header">
-                            <h3 class="panel-title"><?= htmlspecialchars($today_workout['workout_type']) ?> day</h3>
-                            <span class="workout-type <?= strtolower($today_workout['workout_type']) ?>-day"><?= count($today_exercises) ?> exercises</span>
+                    <div class="profile-panel">
+                        <div class="profile-panel-header">
+                            <h3 class="profile-panel-title"><?= htmlspecialchars($today_workout['workout_type']) ?> day</h3>
+                            <span class="profile-workout-type profile-<?= strtolower($today_workout['workout_type']) ?>-day"><?= count($today_exercises) ?> exercises</span>
                         </div>
                         
-                        <ul class="workout-exercises">
+                        <ul class="profile-workout-exercises">
                             <?php foreach ($today_exercises as $exercise): ?>
-                                <li class="exercise-item"><?= htmlspecialchars($exercise) ?></li>
+                                <li class="profile-exercise-item"><?= htmlspecialchars($exercise) ?></li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
@@ -1631,48 +600,48 @@ if ($today_workout && !empty($today_workout['template_id'])) {
         
     
     
-            <div class="mobile-app-view">
-                <div class="mobile-header">
-                    <div class="mobile-header-title">
+            <div class="profile-mobile-app-view">
+                <div class="profile-mobile-header">
+                    <div class="profile-mobile-header-title">
                         Today's Focus
-                        <span class="mobile-header-date"><?= date('F j, Y') ?></span>
+                        <span class="profile-mobile-header-date"><?= date('F j, Y') ?></span>
                     </div>
                 </div>
                 
-                <div class="mobile-card">
+                <div class="profile-mobile-card">
                     <?php if ($today_workout && $today_workout['workout_type'] !== 'rest'): ?>
-                        <h3 class="mobile-card-title">Scheduled: <?= htmlspecialchars($today_workout['template_name']) ?></h3>
-                        <div class="mobile-workout-meta">
+                        <h3 class="profile-mobile-card-title">Scheduled: <?= htmlspecialchars($today_workout['template_name']) ?></h3>
+                        <div class="profile-mobile-workout-meta">
                             <span>45 min</span> • <span><?= count($today_exercises) ?> exercises</span>
                         </div>
-                        <button class="mobile-start-btn" id="mobileStartWorkoutBtn" data-template-id="<?= htmlspecialchars($today_workout['template_id']) ?>" onclick="return startWorkout(this)">Start Workout</button>
+                        <button class="profile-mobile-start-btn" id="mobileStartWorkoutBtn" data-template-id="<?= htmlspecialchars($today_workout['template_id']) ?>" onclick="return startWorkout(this)">Start Workout</button>
                     <?php elseif ($today_workout && $today_workout['workout_type'] === 'rest'): ?>
-                        <h3 class="mobile-card-title">Scheduled: Rest Day</h3>
-                        <div class="mobile-workout-meta">
+                        <h3 class="profile-mobile-card-title">Scheduled: Rest Day</h3>
+                        <div class="profile-mobile-workout-meta">
                             <span>Take time to recover and recharge</span>
                         </div>
-                        <button class="mobile-start-btn" style="background-color: #555;">Rest Day</button>
+                        <button class="profile-mobile-start-btn" style="background-color: #555;">Rest Day</button>
                     <?php else: ?>
-                        <h3 class="mobile-card-title">No Workout Scheduled</h3>
-                        <div class="mobile-workout-meta">
+                        <h3 class="profile-mobile-card-title">No Workout Scheduled</h3>
+                        <div class="profile-mobile-workout-meta">
                             <span>Schedule a workout for today</span>
                         </div>
-                        <button class="mobile-start-btn" id="mobilePlanWorkoutBtn">Schedule Workout</button>
+                        <button class="profile-mobile-start-btn" id="mobilePlanWorkoutBtn">Schedule Workout</button>
                     <?php endif; ?>
                 </div>
                 
-                <div class="mobile-card">
-                    <h3 class="mobile-card-title">Today's Weight</h3>
-                    <div class="mobile-weight-section">
+                <div class="profile-mobile-card">
+                    <h3 class="profile-mobile-card-title">Today's Weight</h3>
+                    <div class="profile-mobile-weight-section">
                         <div>
-                            <span class="mobile-weight-value"><?= $current_weight ?></span>
-                            <span class="mobile-weight-unit">kg</span>
+                            <span class="profile-mobile-weight-value"><?= $current_weight ?></span>
+                            <span class="profile-mobile-weight-unit">kg</span>
                         </div>
-                        <button class="mobile-update-btn">Update</button>
+                        <button class="profile-mobile-update-btn">Update</button>
                     </div>
                 </div>
                 
-                <div class="mobile-week-selector">
+                <div class="profile-mobile-week-selector">
                     <?php
                         $today = new DateTime();
                         $weekday = $today->format('w');
@@ -1690,7 +659,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             $dayNum = $day->format('j');
                             $weekdayShort = $day->format('D');
                             $isToday = $day->format('Y-m-d') === $today->format('Y-m-d');
-                            $dayClass = 'mobile-day-btn';
+                            $dayClass = 'profile-mobile-day-btn';
                             if ($isToday) {
                                 $dayClass .= ' active';
                             }
@@ -1698,48 +667,48 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             $hasWorkout = false;
                             if ($isToday && $today_workout) {
                                 $hasWorkout = true;
-                                $dayClass .= ' workout-scheduled';
+                                $dayClass .= ' profile-workout-scheduled';
                             } elseif (isset($month_workouts[$dayNum]) && $day->format('m') == $selected_month) {
                                 $hasWorkout = true;
-                                $dayClass .= ' workout-scheduled';
+                                $dayClass .= ' profile-workout-scheduled';
                             }
                             
                             echo "<button class=\"{$dayClass}\" data-date=\"{$day->format('Y-m-d')}\">";
-                            echo "<span class=\"mobile-day-weekday\">{$weekdayShort}</span>";
-                            echo "<span class=\"mobile-day-date\">{$dayNum}</span>";
+                            echo "<span class=\"profile-mobile-day-weekday\">{$weekdayShort}</span>";
+                            echo "<span class=\"profile-mobile-day-date\">{$dayNum}</span>";
                             echo "</button>";
                         }
                     ?>
                 </div>
                 
-                <button type="button" class="mobile-week-action" id="mobileWeekAction" onclick="document.getElementById('mobileSplitModal').style.display='flex'">
+                <button type="button" class="profile-mobile-week-action" id="mobileWeekAction" onclick="document.getElementById('mobileSplitModal').style.display='flex'">
                     <i class="fas fa-calendar-week"></i>
                 </button>
                 
-                <div class="mobile-button-grid">
-                    <a href="workout.php" class="mobile-feature-btn">
-                        <div class="mobile-feature-icon">
+                <div class="profile-mobile-button-grid">
+                    <a href="workout.php" class="profile-mobile-feature-btn">
+                        <div class="profile-mobile-feature-icon">
                             <i class="fas fa-bolt"></i>
                         </div>
-                        <div class="mobile-feature-label">Quick Workout</div>
+                        <div class="profile-mobile-feature-label">Quick Workout</div>
                     </a>
-                    <a href="workout-history.php" class="mobile-feature-btn">
-                        <div class="mobile-feature-icon">
+                    <a href="workout-history.php" class="profile-mobile-feature-btn">
+                        <div class="profile-mobile-feature-icon">
                             <i class="fas fa-history"></i>
                         </div>
-                        <div class="mobile-feature-label">Workout History</div>
+                        <div class="profile-mobile-feature-label">Workout History</div>
                     </a>
-                    <a href="workout-templates.php" class="mobile-feature-btn">
-                        <div class="mobile-feature-icon">
+                    <a href="workout-templates.php" class="profile-mobile-feature-btn">
+                        <div class="profile-mobile-feature-icon">
                             <i class="fas fa-edit"></i>
                         </div>
-                        <div class="mobile-feature-label">Edit Templates</div>
+                        <div class="profile-mobile-feature-label">Edit Templates</div>
                     </a>
-                    <a href="workout-analytics.php" class="mobile-feature-btn">
-                        <div class="mobile-feature-icon">
+                    <a href="workout-analytics.php" class="profile-mobile-feature-btn">
+                        <div class="profile-mobile-feature-icon">
                             <i class="fas fa-chart-line"></i>
                         </div>
-                        <div class="mobile-feature-label">Progress</div>
+                        <div class="profile-mobile-feature-label">Progress</div>
                     </a>
                 </div>
                 
@@ -1752,19 +721,19 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 </form>
             </div>
             
-            <div class="modal" id="mobileDayModal">
-                <div class="modal-content">
-                    <span class="modal-close">&times;</span>
-                    <h3 class="modal-title">Edit workout for <span id="mobileSelectedDate"></span></h3>
+            <div class="profile-modal" id="mobileDayModal">
+                <div class="profile-modal-content">
+                    <span class="profile-modal-close">&times;</span>
+                    <h3 class="profile-modal-title">Edit workout for <span id="mobileSelectedDate"></span></h3>
                     
                     <form id="mobileWorkoutPlanForm">
                         <input type="hidden" id="mobileSelectedDay" name="day">
                         <input type="hidden" id="mobileSelectedMonth" name="month" value="<?= $selected_month ?>">
                         <input type="hidden" id="mobileSelectedYear" name="year" value="<?= $selected_year ?>">
                         
-                        <div class="form-group">
-                            <label class="form-label" for="mobileWorkoutType">Workout Type</label>
-                            <select class="form-select" id="mobileWorkoutType" name="workoutType">
+                        <div class="profile-form-group">
+                            <label class="profile-form-label" for="mobileWorkoutType">Workout Type</label>
+                            <select class="profile-form-select" id="mobileWorkoutType" name="workoutType">
                                 <option value="">Select workout type</option>
                                 <option value="push">Push Day</option>
                                 <option value="pull">Pull Day</option>
@@ -1774,9 +743,9 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             </select>
                         </div>
                         
-                        <div class="form-group" id="mobileTemplateSelectGroup" style="display: none;">
-                            <label class="form-label" for="mobileTemplateSelect">Select Template</label>
-                            <select class="form-select" id="mobileTemplateSelect" name="templateId">
+                        <div class="profile-form-group" id="mobileTemplateSelectGroup" style="display: none;">
+                            <label class="profile-form-label" for="mobileTemplateSelect">Select Template</label>
+                            <select class="profile-form-select" id="mobileTemplateSelect" name="templateId">
                                 <option value="">Select a template</option>
                                 <?php 
                                 try {
@@ -1795,39 +764,39 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             </select>
                         </div>
                         
-                        <div class="form-group" id="mobileCustomNameGroup" style="display: none;">
-                            <label class="form-label" for="mobileCustomName">Custom Workout Name</label>
-                            <input type="text" class="form-input" id="mobileCustomName" name="customName" placeholder="Enter workout name">
+                        <div class="profile-form-group" id="mobileCustomNameGroup" style="display: none;">
+                            <label class="profile-form-label" for="mobileCustomName">Custom Workout Name</label>
+                            <input type="text" class="profile-form-input" id="mobileCustomName" name="customName" placeholder="Enter workout name">
                         </div>
                         
-                        <div class="form-actions">
-                            <button type="button" class="form-button secondary" id="mobileEditCancel">Cancel</button>
-                            <button type="submit" class="form-button primary">Save</button>
+                        <div class="profile-form-actions">
+                            <button type="button" class="profile-form-button secondary" id="mobileEditCancel">Cancel</button>
+                            <button type="submit" class="profile-form-button primary">Save</button>
                         </div>
                     </form>
                 </div>
             </div>
             
-            <div class="modal" id="mobileSplitModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; overflow: auto;">
-                <div class="modal-content" style="background-color: #21242e; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; position: relative; max-height: 80vh; overflow-y: auto;">
-                    <span class="modal-close" onclick="document.getElementById('mobileSplitModal').style.display='none'" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
-                    <h3 class="modal-title">Weekly Split Plan</h3>
+            <div class="profile-modal" id="mobileSplitModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; overflow: auto;">
+                <div class="profile-modal-content" style="background-color: #21242e; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; position: relative; max-height: 80vh; overflow-y: auto;">
+                    <span class="profile-modal-close" onclick="document.getElementById('mobileSplitModal').style.display='none'" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
+                    <h3 class="profile-modal-title">Weekly Split Plan</h3>
                     
                     <form id="mobileSplitForm">
-                        <div class="form-group">
-                            <label class="form-label" for="mobileSplitName">Split Name</label>
-                            <input type="text" class="form-input" id="mobileSplitName" name="splitName" placeholder="e.g., Bro Split, PPL, Upper/Lower" required>
+                        <div class="profile-form-group">
+                            <label class="profile-form-label" for="mobileSplitName">Split Name</label>
+                            <input type="text" class="profile-form-input" id="mobileSplitName" name="splitName" placeholder="e.g., Bro Split, PPL, Upper/Lower" required>
                         </div>
                         
-                        <div class="mobile-split-days">
+                        <div class="profile-mobile-split-days">
                             <?php
                                 $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                                 foreach ($weekdays as $index => $day) {
-                                    echo "<div class='mobile-split-day'>";
+                                    echo "<div class='profile-mobile-split-day'>";
                                     echo "<h4>{$day}</h4>";
                                     
-                                    echo "<div class='form-group'>";
-                                    echo "<select class='form-select mobile-split-type' id='mobile_day_{$index}' name='days[{$index}][type]'>";
+                                    echo "<div class='profile-form-group'>";
+                                    echo "<select class='profile-form-select profile-mobile-split-type' id='mobile_day_{$index}' name='days[{$index}][type]'>";
                                     echo "<option value=''>Select workout</option>";
                                     echo "<option value='rest'>Rest Day</option>";
                                     
@@ -1853,11 +822,11 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             ?>
                         </div>
                         
-                        <div class="form-actions">
-                            <button type="button" class="form-button secondary" id="mobileSplitCancel">Cancel</button>
-                            <div class="form-group">
+                        <div class="profile-form-actions">
+                            <button type="button" class="profile-form-button secondary" id="mobileSplitCancel">Cancel</button>
+                            <div class="profile-form-group">
                                 <label for="mobileTargetMonth">Apply to:</label>
-                                <select id="mobileTargetMonth" name="target_month" class="form-select">
+                                <select id="mobileTargetMonth" name="target_month" class="profile-form-select">
                                     <?php
                                         for ($i = 0; $i <= 3; $i++) {
                                             $month = ($current_month + $i - 1) % 12 + 1;
@@ -1869,8 +838,8 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                     ?>
                                 </select>
                             </div>
-                            <button type="submit" class="form-button primary" id="mobileSplitSave">Save Split</button>
-                            <button type="button" class="form-button primary" id="mobileSplitApply">Apply to Calendar</button>
+                            <button type="submit" class="profile-form-button primary" id="mobileSplitSave">Save Split</button>
+                            <button type="button" class="profile-form-button primary" id="mobileSplitApply">Apply to Calendar</button>
                         </div>
                     </form>
                 </div>
@@ -1878,17 +847,17 @@ if ($today_workout && !empty($today_workout['template_id'])) {
         </main>
     </div>
 
-    <div class="modal" id="dayModal">
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h3 class="modal-title">Plan workout for <span id="selectedDate"></span></h3>
+    <div class="profile-modal" id="dayModal">
+        <div class="profile-modal-content">
+            <span class="profile-modal-close">&times;</span>
+            <h3 class="profile-modal-title">Plan workout for <span id="selectedDate"></span></h3>
             
             <form id="workoutPlanForm">
                 <input type="hidden" id="selectedDay" name="day">
                 
-                <div class="form-group">
-                    <label class="form-label" for="workoutType">Workout Type</label>
-                    <select class="form-select" id="workoutType" name="workoutType">
+                <div class="profile-form-group">
+                    <label class="profile-form-label" for="workoutType">Workout Type</label>
+                    <select class="profile-form-select" id="workoutType" name="workoutType">
                         <option value="">Select workout type</option>
                         <option value="push">Push Day</option>
                         <option value="pull">Pull Day</option>
@@ -1898,9 +867,9 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     </select>
                 </div>
                 
-                <div class="form-group" id="templateSelectGroup" style="display: none;">
-                    <label class="form-label" for="templateSelect">Select Template</label>
-                    <select class="form-select" id="templateSelect" name="templateId">
+                <div class="profile-form-group" id="templateSelectGroup" style="display: none;">
+                    <label class="profile-form-label" for="templateSelect">Select Template</label>
+                    <select class="profile-form-select" id="templateSelect" name="templateId">
                         <option value="">Select a template</option>
                         <?php 
                         try {
@@ -1919,38 +888,38 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     </select>
                 </div>
                 
-                <div class="form-group" id="customNameGroup" style="display: none;">
-                    <label class="form-label" for="customName">Custom Workout Name</label>
-                    <input type="text" class="form-input" id="customName" name="customName" placeholder="Enter workout name">
+                <div class="profile-form-group" id="customNameGroup" style="display: none;">
+                    <label class="profile-form-label" for="customName">Custom Workout Name</label>
+                    <input type="text" class="profile-form-input" id="customName" name="customName" placeholder="Enter workout name">
                 </div>
                 
-                <div class="form-actions">
-                    <button type="button" class="form-button secondary" id="cancelPlan">Cancel</button>
-                    <button type="submit" class="form-button primary">Save Plan</button>
+                <div class="profile-form-actions">
+                    <button type="button" class="profile-form-button secondary" id="cancelPlan">Cancel</button>
+                    <button type="submit" class="profile-form-button primary">Save Plan</button>
                 </div>
             </form>
         </div>
     </div>
     
-    <div class="modal" id="splitModal">
-        <div class="modal-content split-modal">
-            <span class="modal-close">&times;</span>
-            <h3 class="modal-title">Create Weekly Split</h3>
+    <div class="profile-modal" id="splitModal">
+        <div class="profile-modal-content profile-split-modal">
+            <span class="profile-modal-close">&times;</span>
+            <h3 class="profile-modal-title">Create Weekly Split</h3>
             
             <form id="splitPlanForm">
-                <div class="form-group">
-                    <label class="form-label" for="splitName">Split Name</label>
-                    <input type="text" class="form-input" id="splitName" name="splitName" placeholder="e.g., Bro Split, PPL, Upper/Lower" required>
+                <div class="profile-form-group">
+                    <label class="profile-form-label" for="splitName">Split Name</label>
+                    <input type="text" class="profile-form-input" id="splitName" name="splitName" placeholder="e.g., Bro Split, PPL, Upper/Lower" required>
                 </div>
                 
-                <div class="weekly-calendar">
+                <div class="profile-weekly-calendar">
                     <?php
                         $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                         foreach ($weekdays as $index => $day) {
-                            echo "<div class='week-day'>";
-                            echo "<div class='week-day-header'>{$day}</div>";
-                            echo "<div class='week-day-content'>";
-                            echo "<select class='form-select week-day-select' id='day_{$index}' name='days[{$index}][type]'>";
+                            echo "<div class='profile-week-day'>";
+                            echo "<div class='profile-week-day-header'>{$day}</div>";
+                            echo "<div class='profile-week-day-content'>";
+                            echo "<select class='profile-form-select profile-week-day-select' id='day_{$index}' name='days[{$index}][type]'>";
                             echo "<option value=''>Select workout</option>";
                             echo "<option value='rest'>Rest Day</option>";
                             
@@ -1974,11 +943,11 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     ?>
                 </div>
                 
-                <div class="split-actions">
-                    <div class="form-actions">
-                        <div class="form-field">
+                <div class="profile-split-actions">
+                    <div class="profile-form-actions">
+                        <div class="profile-form-field">
                             <label for="targetMonth">Apply to:</label>
-                            <select id="targetMonth" name="target_month" class="form-select">
+                            <select id="targetMonth" name="target_month" class="profile-form-select">
                                 <?php
                                     $nextFewMonths = [];
                                     for ($i = 0; $i <= 3; $i++) {
@@ -1991,7 +960,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                 ?>
                             </select>
                         </div>
-                        <button type="submit" class="form-button primary">Apply to Month</button>
+                        <button type="submit" class="profile-form-button primary">Apply to Month</button>
                     </div>
                 </div>
             </form>
@@ -2035,7 +1004,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     }
                     
                     let hasWorkout = false;
-                    const weekDaySelects = document.querySelectorAll('.week-day-select');
+                    const weekDaySelects = document.querySelectorAll('.profile-week-day-select');
                     weekDaySelects.forEach(select => {
                         if (select.value) hasWorkout = true;
                     });
@@ -2101,7 +1070,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 }
                 
                 let hasWorkout = false;
-                const mobileSplitTypeSelects = document.querySelectorAll('.mobile-split-type');
+                const mobileSplitTypeSelects = document.querySelectorAll('.profile-mobile-split-type');
                 mobileSplitTypeSelects.forEach(select => {
                     if (select.value) hasWorkout = true;
                 });
@@ -2159,10 +1128,10 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 }
             }
                         
-            const modalCloseButtons = document.querySelectorAll('.modal-close');
+            const modalCloseButtons = document.querySelectorAll('.profile-modal-close');
             modalCloseButtons.forEach(button => {
                 button.addEventListener('click', function() {
-                    const modal = this.closest('.modal');
+                    const modal = this.closest('.profile-modal');
                     if (modal) {
                         modal.style.display = 'none';
                     }

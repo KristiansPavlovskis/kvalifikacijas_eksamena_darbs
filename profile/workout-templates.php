@@ -427,872 +427,9 @@ function updateWorkoutTemplate($templateId, $data) {
     <title>Workout Templates | FitTrack</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/variables.css" rel="stylesheet">
+    <link href="global-profile.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background-color: var(--dark);
-            color: #fff;
-            min-height: 100vh;
-            line-height: 1.6;
-            display: flex;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        .main-content {
-            flex: 1;
-            padding: 20px;
-        }
-        
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        
-        h1 {
-            font-size: 28px;
-            color: #fff;
-            margin-bottom: 8px;
-        }
-        
-        .template-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-        
-        .action-btn {
-            background: var(--card-bg);
-            border: none;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .action-btn:hover {
-            background: var(--card-highlight);
-        }
-        
-        .action-btn i {
-            font-size: 1.2em;
-        }
-        
-        .templates-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .template-card {
-            background: var(--card-bg);
-            border-radius: 10px;
-            padding: 20px;
-            transition: all 0.2s;
-            position: relative;
-        }
-        
-        .template-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .template-header {
-            margin-bottom: 15px;
-        }
-        
-        .template-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .template-meta {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            color: #aaa;
-            font-size: 14px;
-        }
-        
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .difficulty-dots {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #aaa;
-        }
-        
-        .dot.active {
-            background: var(--primary);
-        }
-        
-        .template-actions-menu {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            cursor: pointer;
-            color: #aaa;
-        }
-        
-        .template-actions-menu:hover {
-            color: #fff;
-        }
-        
-        .template-actions-dropdown {
-            position: absolute;
-            top: 40px;
-            right: 15px;
-            background: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 10;
-            display: none;
-        }
-        
-        .template-actions-dropdown.active {
-            display: block;
-        }
-        
-        .template-dropdown-item {
-            padding: 12px 20px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
-        
-        .template-dropdown-item:hover {
-            background: var(--card-highlight);
-        }
-        
-        .template-dropdown-item:first-child {
-            border-radius: 8px 8px 0 0;
-        }
-        
-        .template-dropdown-item:last-child {
-            border-radius: 0 0 8px 8px;
-        }
-        
-        .template-dropdown-item.delete {
-            color: var(--danger);
-        }
-        
-        .last-used {
-            margin-top: 15px;
-            font-size: 13px;
-            color: #aaa;
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            display: none;
-        }
-        
-        .modal-content {
-            width: 90%;
-            max-width: 1100px;
-            background: var(--card-bg);
-            border-radius: 10px;
-            overflow: hidden;
-            display: block;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        
-        .modal-header {
-            padding: 10px 10px 10px 20px;
-            border-bottom: 1px solid #394150;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-header h2 {
-            color: #fff;
-            font-size: 22px;
-        }
-        
-        .modal-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .save-template-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-        
-        .save-template-btn:hover {
-            background: #2980b9;
-        }
-        
-        .save-template-btn i {
-            font-size: 14px;
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 22px;
-            cursor: pointer;
-        }
-        
-        .modal-close:hover {
-            color: #fff;
-        }
-        
-        .modal-body {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-        
-        .template-details {
-            width: 35%;
-            padding: 20px;
-            border-right: 1px solid #394150;
-            overflow-y: auto;
-        }
-        
-        .exercise-selector {
-            width: 65%;
-            display: flex;
-            flex-direction: row; 
-        }
-        
-        .categories-column {
-            width: 25%;
-            border-right: 1px solid #394150;
-            padding: 15px;
-            overflow-y: auto;
-            background-color: var(--card-bg);
-        }
-        
-        .category-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .category-item {
-            padding: 12px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-        }
-        
-        .category-item:hover {
-            background-color: var(--card-highlight);
-        }
-        
-        .category-item.active {
-            background-color: var(--primary);
-        }
-        
-        .category-item i {
-            font-size: 1.1em;
-        }
-        
-        .exercises-column {
-            width: 35%;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #394150;
-            background-color: var(--background);
-        }
-        
-        .exercise-search {
-            padding: 15px;
-            border-bottom: 1px solid #394150;
-        }
-        
-        .search-container {
-            position: relative;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 6px;
-            border: 1px solid #394150;
-            background: var(--card-bg);
-            color: #fff;
-            padding-left: 40px;
-        }
-        
-        .search-icon {
-            position: absolute;
-            top: 50%;
-            left: 15px;
-            transform: translateY(-50%);
-            color: #aaa;
-        }
-        
-        .exercises-list {
-            padding: 15px;
-            overflow-y: auto;
-            height: calc(100% - 70px);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 580px;
-        }
-        
-        .exercise-item {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-height: 65px;
-        }
-        
-        .exercise-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-        }
-        
-        .exercise-item h4 {
-            margin-bottom: 8px;
-            font-size: 16px;
-        }
-        
-        .exercise-details {
-            display: flex;
-            gap: 12px;
-            font-size: 14px;
-            color: #aaa;
-        }
-        
-        .exercise-details div {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .selected-column {
-            width: 40%;
-            padding: 15px;
-            overflow-y: auto;
-            background-color: var(--background);
-        }
-        
-        .selected-exercises-list {
-            margin-top: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow-y: auto;
-            max-height: 580px;
-        }
-
-        .selected-exercises h3{
-            padding: 15px;
-        }
-        
-        .selected-exercise {
-            background: var(--card-bg);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .exercise-header {
-            margin-bottom: 10px;
-        }
-        
-        .exercise-name {
-            font-weight: 600;
-        }
-        
-        .exercise-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-        
-        .exercise-meta {
-            color: #aaa;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        
-        .drag-handle {
-            color: #aaa;
-            cursor: move;
-        }
-        
-        .exercise-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            justify-content: flex-end;
-        }
-        
-        .exercise-controls button {
-            background: none;
-            border: none;
-            color: #aaa;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .exercise-controls button:hover {
-            color: #fff;
-        }
-        
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #aaa;
-        }
-        
-        .input-group input,
-        .input-group textarea,
-        .input-group select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #394150;
-            background: var(--background);
-            color: #fff;
-        }
-        
-        .categories {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .category {
-            background: var(--background);
-            border-radius: 20px;
-            padding: 5px 12px;
-            cursor: pointer;
-        }
-        
-        .category.active {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .difficulty-slider {
-            margin-bottom: 20px;
-        }
-        
-        .slider-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-            color: #aaa;
-            font-size: 14px;
-        }
-        
-        .modal-footer {
-            padding: 15px 20px;
-            border-top: 1px solid #394150;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border-radius: 6px;
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: #394150;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #2980b9;
-        }
-        
-        .btn-secondary:hover {
-            background: #4a546a;
-        }
-        
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 6px;
-            z-index: 1000;
-            display: none;
-        }
-        
-        .toast.success {
-            background: var(--secondary);
-        }
-        
-        .toast.error {
-            background: var(--danger);
-        }
-        
-        .view-field {
-            background: var(--background);
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 5px;
-            min-height: 20px;
-        }
-        
-        .view-exercise {
-            background: var(--background);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .view-exercise-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        .view-exercise-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            font-size: 14px;
-            color: #aaa;
-        }
-        
-        .view-exercise-detail {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .view-exercise-notes {
-            margin-top: 10px;
-            font-style: italic;
-            color: #aaa;
-        }
-        
-        .mobile-tabs {
-            display: none;
-        }
-        
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-            
-            .main-content {
-                padding: 15px;
-                width: 100%;
-            }
-            
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                margin-bottom: 15px;
-            }
-            
-            h1 {
-                font-size: 24px;
-                margin-bottom: 5px;
-            }
-            
-            .template-actions {
-                width: 100%;
-                margin-bottom: 20px;
-            }
-            
-            .action-btn {
-                width: 100%;
-                justify-content: center;
-                padding: 12px;
-            }
-            
-            .templates-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-            
-            .template-card {
-                margin-bottom: 0;
-                padding: 15px;
-                border-radius: 8px;
-            }
-            
-            .template-card:hover {
-                transform: none;
-            }
-            
-            .template-title {
-                font-size: 16px;
-            }
-            
-            .template-meta {
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-bottom: 10px;
-            }
-            
-            .modal-content {
-                width: 100%;
-                height: 100%;
-                max-width: none;
-                border-radius: 0;
-            }
-            
-            .modal-header {
-                padding: 15px;
-            }
-            
-            .modal-header h2 {
-                font-size: 18px;
-            }
-            
-            .modal-body {
-                flex-direction: column;
-                height: calc(100% - 120px);
-                overflow-y: auto;
-            }
-            
-            .template-details {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #394150;
-                padding: 15px;
-            }
-            
-            .exercise-selector {
-                width: 100%;
-                flex-direction: column;
-            }
-            
-            .categories-column {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #394150;
-                padding: 15px;
-            }
-            
-            .category-list {
-                display: flex;
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .category-item {
-                padding: 8px 12px;
-                font-size: 14px;
-            }
-            
-            .exercises-column {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #394150;
-                max-height: 100%;
-            }
-            
-            .selected-column {
-                width: 100%;
-                padding: 15px;
-            }
-
-            .exercise-item {
-                padding: 12px;
-            }
-            
-            .exercise-item h4 {
-                font-size: 15px;
-            }
-            
-            .exercise-details {
-                font-size: 13px;
-                flex-wrap: wrap;
-            }
-            
-            .toast {
-                left: 20px;
-                right: 20px;
-                width: calc(100% - 40px);
-                text-align: center;
-            }
-            
-            #viewTemplateModal .modal-body,
-            #editTemplateModal .modal-body {
-                flex-direction: column;
-            }
-            
-            #viewTemplateModal .template-details,
-            #editTemplateModal .template-details {
-                width: 100%;
-                border-right: none;
-            }
-            
-            #viewTemplateModal .exercise-selector,
-            #editTemplateModal .exercise-selector {
-                width: 100%;
-            }
-            
-            .edit-modal-content {
-                width: 90% !important;
-                max-width: none !important;
-            }
-            
-            .mobile-tabs {
-                display: none;
-            }
-            
-            @media (max-width: 768px) {
-                .mobile-tabs {
-                    display: flex;
-                    justify-content: space-around;
-                    background: var(--card-highlight);
-                    position: sticky;
-                    top: 0;
-                    z-index: 10;
-                    width: 100%;
-                    border-bottom: 1px solid #394150;
-                }
-                
-                .mobile-tab {
-                    flex: 1;
-                    text-align: center;
-                    padding: 12px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    color: #aaa;
-                }
-                
-                .mobile-tab.active {
-                    color: white;
-                    border-bottom: 2px solid var(--primary);
-                }
-                
-                .mobile-section {
-                    display: none;
-                }
-                
-                .mobile-section.active {
-                    display: block;
-                }
-            }
-        }
-        
-        .template-view-toggle {
-            display: flex;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            background: var(--card-bg);
-            width: fit-content;
-        }
-        
-        .toggle-btn {
-            background: none;
-            border: none;
-            padding: 12px 24px;
-            color: #aaa;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .toggle-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .templates-view {
-            display: none;
-        }
-        
-        .templates-view.active {
-            display: block;
-        }
-        
-        .admin-template .template-actions-dropdown {
-            width: 150px;
-        }
-        
-        #viewExercisesList {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        
-        .view-exercise {
-            background: var(--background);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            min-height: 65px;
-        }
-    </style>
 </head>
 <body>
     <?php require_once 'sidebar.php'; ?>
@@ -1304,20 +441,20 @@ function updateWorkoutTemplate($templateId, $data) {
             </div>
         </div>
         
-        <div class="template-actions">
-            <button id="createTemplate" class="action-btn">
+        <div class="wt-template-actions">
+            <button id="createTemplate" class="wt-action-btn">
                 <i class="fas fa-plus"></i> Create Template
             </button>
         </div>
         
-        <div class="template-view-toggle">
-            <button class="toggle-btn active" data-view="my-templates">My Templates</button>
-            <button class="toggle-btn" data-view="admin-templates">Global Templates</button>
+        <div class="wt-template-view-toggle">
+            <button class="wt-toggle-btn active" data-view="my-templates">My Templates</button>
+            <button class="wt-toggle-btn" data-view="admin-templates">Global Templates</button>
         </div>
         
         <div class="templates-container">
-            <div id="myTemplatesView" class="templates-view active">
-                <div class="templates-grid">
+            <div id="myTemplatesView" class="wt-templates-view active">
+                <div class="wt-templates-grid">
                     <?php if (empty($templates)): ?>
                         <div class="no-templates">
                             <p>You haven't created any workout templates yet.</p>
@@ -1325,20 +462,20 @@ function updateWorkoutTemplate($templateId, $data) {
                         </div>
                     <?php else: ?>
                         <?php foreach ($templates as $template): ?>
-                            <div class="template-card" data-id="<?php echo $template['id']; ?>">
-                                <div class="template-header">
-                                    <h3 class="template-title"><?php echo htmlspecialchars($template['name']); ?></h3>
-                                    <div class="template-meta">
-                                        <div class="meta-item">
+                            <div class="wt-template-card" data-id="<?php echo $template['id']; ?>">
+                                <div class="wt-template-header">
+                                    <h3 class="wt-template-title"><?php echo htmlspecialchars($template['name']); ?></h3>
+                                    <div class="wt-template-meta">
+                                        <div class="wt-meta-item">
                                             <i class="fas fa-dumbbell"></i>
                                             <span><?php echo $template['exercise_count']; ?> exercises</span>
                                         </div>
-                                        <div class="meta-item">
+                                        <div class="wt-meta-item">
                                             <i class="fas fa-clock"></i>
                                             <span><?php echo $template['estimated_time']; ?> mins</span>
                                         </div>
                                     </div>
-                                    <div class="difficulty-dots">
+                                    <div class="wt-difficulty-dots">
                                         <?php
                                             $difficultyLevel = 0;
                                             if ($template['difficulty'] === 'beginner') $difficultyLevel = 1;
@@ -1346,29 +483,29 @@ function updateWorkoutTemplate($templateId, $data) {
                                             if ($template['difficulty'] === 'advanced') $difficultyLevel = 3;
                                             
                                             for ($i = 1; $i <= 3; $i++) {
-                                                echo '<div class="dot ' . ($i <= $difficultyLevel ? 'active' : '') . '"></div>';
+                                                echo '<div class="wt-dot ' . ($i <= $difficultyLevel ? 'active' : '') . '"></div>';
                                             }
                                         ?>
                                     </div>
                                 </div>
                                 
-                                <div class="template-actions-menu">
+                                <div class="wt-template-actions-menu">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </div>
                                 
-                                <div class="template-actions-dropdown">
-                                    <div class="template-dropdown-item view-template">
+                                <div class="wt-template-actions-dropdown">
+                                    <div class="wt-template-dropdown-item view-template">
                                         <i class="fas fa-eye"></i> View
                                     </div>
-                                    <div class="template-dropdown-item edit-template">
+                                    <div class="wt-template-dropdown-item edit-template">
                                         <i class="fas fa-edit"></i> Edit
                                     </div>
-                                    <div class="template-dropdown-item delete template-delete">
+                                    <div class="wt-template-dropdown-item delete template-delete">
                                         <i class="fas fa-trash"></i> Delete
                                     </div>
                                 </div>
                                 
-                                <div class="last-used">
+                                <div class="wt-last-used">
                                     Last used: <?php echo date('M d', strtotime($template['updated_at'])); ?>
                                 </div>
                             </div>
@@ -1377,28 +514,28 @@ function updateWorkoutTemplate($templateId, $data) {
                 </div>
             </div>
             
-            <div id="adminTemplatesView" class="templates-view">
-                <div class="templates-grid">
+            <div id="adminTemplatesView" class="wt-templates-view">
+                <div class="wt-templates-grid">
                     <?php if (empty($adminTemplates)): ?>
                         <div class="no-templates">
                             <p>No admin templates available.</p>
                         </div>
                     <?php else: ?>
                         <?php foreach ($adminTemplates as $template): ?>
-                            <div class="template-card admin-template" data-id="<?php echo $template['id']; ?>">
-                                <div class="template-header">
-                                    <h3 class="template-title"><?php echo htmlspecialchars($template['name']); ?></h3>
-                                    <div class="template-meta">
-                                        <div class="meta-item">
+                            <div class="wt-template-card wt-admin-template" data-id="<?php echo $template['id']; ?>">
+                                <div class="wt-template-header">
+                                    <h3 class="wt-template-title"><?php echo htmlspecialchars($template['name']); ?></h3>
+                                    <div class="wt-template-meta">
+                                        <div class="wt-meta-item">
                                             <i class="fas fa-dumbbell"></i>
                                             <span><?php echo $template['exercise_count']; ?> exercises</span>
                                         </div>
-                                        <div class="meta-item">
+                                        <div class="wt-meta-item">
                                             <i class="fas fa-clock"></i>
                                             <span><?php echo $template['estimated_time']; ?> mins</span>
                                         </div>
                                     </div>
-                                    <div class="difficulty-dots">
+                                    <div class="wt-difficulty-dots">
                                         <?php
                                             $difficultyLevel = 0;
                                             if ($template['difficulty'] === 'beginner') $difficultyLevel = 1;
@@ -1406,23 +543,23 @@ function updateWorkoutTemplate($templateId, $data) {
                                             if ($template['difficulty'] === 'advanced') $difficultyLevel = 3;
                                             
                                             for ($i = 1; $i <= 3; $i++) {
-                                                echo '<div class="dot ' . ($i <= $difficultyLevel ? 'active' : '') . '"></div>';
+                                                echo '<div class="wt-dot ' . ($i <= $difficultyLevel ? 'active' : '') . '"></div>';
                                             }
                                         ?>
                                     </div>
                                 </div>
                                 
-                                <div class="template-actions-menu">
+                                <div class="wt-template-actions-menu">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </div>
                                 
-                                <div class="template-actions-dropdown">
-                                    <div class="template-dropdown-item view-template">
+                                <div class="wt-template-actions-dropdown">
+                                    <div class="wt-template-dropdown-item view-template">
                                         <i class="fas fa-eye"></i> View
                                     </div>
                                 </div>
                                 
-                                <div class="last-used">
+                                <div class="wt-last-used">
                                     Created: <?php echo date('M d', strtotime($template['created_at'])); ?>
                                 </div>
                             </div>
@@ -1433,107 +570,107 @@ function updateWorkoutTemplate($templateId, $data) {
         </div>
     </div>
     
-    <div class="modal-overlay" id="createTemplateModal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div class="wt-modal-overlay" id="createTemplateModal">
+        <div class="wt-modal-content">
+            <div class="wt-modal-header">
                 <h2>Create Template</h2>
-                <div class="modal-header-actions">
-                    <button class="save-template-btn" id="saveTemplateHeader">
+                <div class="wt-modal-header-actions">
+                    <button class="wt-save-template-btn" id="saveTemplateHeader">
                         <i class="fas fa-save"></i>
                         Save Template
                     </button>
-                    <button class="modal-close" id="closeModal">&times;</button>
+                    <button class="wt-modal-close" id="closeModal">&times;</button>
                 </div>
             </div>
             
-            <div class="mobile-tabs">
-                <div class="mobile-tab active" data-tab="details">Details</div>
-                <div class="mobile-tab" data-tab="categories">Categories</div>
-                <div class="mobile-tab" data-tab="exercises">Exercises</div>
-                <div class="mobile-tab" data-tab="selected">Selected</div>
+            <div class="wt-mobile-tabs">
+                <div class="wt-mobile-tab active" data-tab="details">Details</div>
+                <div class="wt-mobile-tab" data-tab="categories">Categories</div>
+                <div class="wt-mobile-tab" data-tab="exercises">Exercises</div>
+                <div class="wt-mobile-tab" data-tab="selected">Selected</div>
             </div>
             
-            <div class="modal-body">
-                <div class="template-details mobile-section active" data-section="details">
-                    <div class="input-group">
+            <div class="wt-modal-body">
+                <div class="wt-template-details wt-mobile-section active" data-section="details">
+                    <div class="wt-input-group">
                         <label for="workoutName">Template Name</label>
                         <input type="text" id="workoutName" placeholder="E.g., Upper Body Power, Core Blast...">
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label for="workoutDescription">Description (Optional)</label>
                         <textarea id="workoutDescription" rows="3" placeholder="Describe your workout, goals, or add any notes..."></textarea>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label>Categories</label>
-                        <div class="categories">
-                            <div class="category active" data-category="Strength Training">Strength Training</div>
-                            <div class="category" data-category="cardio">Cardio</div>
-                            <div class="category" data-category="Bodyweight">Bodyweight</div>
+                        <div class="wt-categories">
+                            <div class="wt-category active" data-category="Strength Training">Strength Training</div>
+                            <div class="wt-category" data-category="cardio">Cardio</div>
+                            <div class="wt-category" data-category="Bodyweight">Bodyweight</div>
                         </div>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label>Difficulty Level</label>
                         <input type="range" min="1" max="3" value="2" id="difficultySlider">
-                        <div class="slider-labels">
+                        <div class="wt-slider-labels">
                             <span>Beginner</span>
                             <span>Intermediate</span>
                             <span>Advanced</span>
                         </div>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label for="setsPerExercise">Sets Per Exercise</label>
                         <input type="number" id="setsPerExercise" min="1" max="10" value="3">
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label for="restTimePerExercise">Rest Time Between Exercises (minutes)</label>
                         <input type="number" id="restTimePerExercise" min="0" max="10" value="1" step="0.5">
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label for="estimatedTime">Estimated Time (minutes)</label>
                         <input type="number" id="estimatedTime" min="5" max="180" value="45" readonly>
                     </div>
                 </div>
                 
-                <div class="exercise-selector">
-                    <div class="categories-column mobile-section" data-section="categories">
+                <div class="wt-exercise-selector">
+                    <div class="wt-categories-column wt-mobile-section" data-section="categories">
                         <h3>Categories</h3>
-                        <div class="category-list">
-                            <div class="category-item active" data-category="Strength Training">
+                        <div class="wt-category-list">
+                            <div class="wt-category-item active" data-category="Strength Training">
                                 <i class="fas fa-dumbbell"></i>
                                 Strength Training
                             </div>
-                            <div class="category-item" data-category="cardio">
+                            <div class="wt-category-item" data-category="cardio">
                                 <i class="fas fa-running"></i>
                                 Cardio
                             </div>
-                            <div class="category-item" data-category="Bodyweight">
+                            <div class="wt-category-item" data-category="Bodyweight">
                                 <i class="fas fa-user"></i>
                                 Flexibility
                             </div>
                         </div>
                     </div>
                     
-                    <div class="exercises-column mobile-section" data-section="exercises">
-                        <div class="exercise-search">
-                            <div class="search-container">
-                                <i class="fas fa-search search-icon"></i>
-                                <input type="text" class="search-input" id="exerciseSearch" placeholder="Search exercises...">
+                    <div class="wt-exercises-column wt-mobile-section" data-section="exercises">
+                        <div class="wt-exercise-search">
+                            <div class="wt-search-container">
+                                <i class="fas fa-search wt-search-icon"></i>
+                                <input type="text" class="wt-search-input" id="exerciseSearch" placeholder="Search exercises...">
                             </div>
                         </div>
                         
-                        <div class="exercises-list" id="exercisesGrid">
+                        <div class="wt-exercises-list" id="exercisesGrid">
                         </div>
                     </div>
                     
-                    <div class="selected-column mobile-section" data-section="selected">
+                    <div class="wt-selected-column wt-mobile-section" data-section="selected">
                         <h3>Selected Exercises</h3>
-                        <div id="selectedExercisesList" class="selected-exercises-list">
+                        <div id="selectedExercisesList" class="wt-selected-exercises-list">
                             <div class="empty-selection" id="emptySelection">
                                 <p>No exercises selected yet</p>
                             </div>
@@ -1541,129 +678,129 @@ function updateWorkoutTemplate($templateId, $data) {
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelTemplate">Cancel</button>
+            <div class="wt-modal-footer">
+                <button class="wt-btn wt-btn-secondary" id="cancelTemplate">Cancel</button>
             </div>
         </div>
     </div>
     
-    <div class="toast" id="toast"></div>
-    <div class="modal-overlay" id="viewTemplateModal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div class="wt-toast" id="toast"></div>
+    <div class="wt-modal-overlay" id="viewTemplateModal">
+        <div class="wt-modal-content">
+            <div class="wt-modal-header">
                 <h2 id="viewTemplateTitle">View Template</h2>
-                <button class="modal-close" id="closeViewModal">&times;</button>
+                <button class="wt-modal-close" id="closeViewModal">&times;</button>
             </div>
             
-            <div class="mobile-tabs">
-                <div class="mobile-tab active" data-tab="view-details">Details</div>
-                <div class="mobile-tab" data-tab="view-exercises">Exercises</div>
+            <div class="wt-mobile-tabs">
+                <div class="wt-mobile-tab active" data-tab="view-details">Details</div>
+                <div class="wt-mobile-tab" data-tab="view-exercises">Exercises</div>
             </div>
             
-            <div class="modal-body">
-                <div class="template-details mobile-section active" data-section="view-details">
-                    <div class="input-group">
+            <div class="wt-modal-body">
+                <div class="wt-template-details wt-mobile-section active" data-section="view-details">
+                    <div class="wt-input-group">
                         <label>Template Name</label>
-                        <div class="view-field" id="viewName"></div>
+                        <div class="wt-view-field" id="viewName"></div>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label>Description</label>
-                        <div class="view-field" id="viewDescription"></div>
+                        <div class="wt-view-field" id="viewDescription"></div>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label>Category</label>
-                        <div class="view-field" id="viewCategory"></div>
+                        <div class="wt-view-field" id="viewCategory"></div>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label>Difficulty Level</label>
-                        <div class="view-field" id="viewDifficulty"></div>
+                        <div class="wt-view-field" id="viewDifficulty"></div>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label>Estimated Time</label>
-                        <div class="view-field" id="viewTime"></div>
+                        <div class="wt-view-field" id="viewTime"></div>
                     </div>
                 </div>
                 
-                <div class="exercise-selector">
-                    <div class="selected-exercises mobile-section" data-section="view-exercises">
+                <div class="wt-exercise-selector">
+                    <div class="wt-selected-exercises wt-mobile-section" data-section="view-exercises">
                         <h3>Exercises</h3>
                         <div id="viewExercisesList">
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="closeViewBtn">Close</button>
+            <div class="wt-modal-footer">
+                <button class="wt-btn wt-btn-secondary" id="closeViewBtn">Close</button>
             </div>
         </div>
     </div>
     
-    <div class="modal-overlay" id="editTemplateModal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div class="wt-modal-overlay" id="editTemplateModal">
+        <div class="wt-modal-content">
+            <div class="wt-modal-header">
                 <h2>Edit Template</h2>
-                <div class="modal-header-actions">
-                    <button class="save-template-btn" id="updateTemplateHeader">
+                <div class="wt-modal-header-actions">
+                    <button class="wt-save-template-btn" id="updateTemplateHeader">
                         <i class="fas fa-save"></i>
                         Save Changes
                     </button>
-                    <button class="modal-close" id="closeEditModal">&times;</button>
+                    <button class="wt-modal-close" id="closeEditModal">&times;</button>
                 </div>
             </div>
             
-            <div class="mobile-tabs">
-                <div class="mobile-tab active" data-tab="edit-details">Details</div>
-                <div class="mobile-tab" data-tab="edit-categories">Categories</div>
-                <div class="mobile-tab" data-tab="edit-exercises">Exercises</div>
-                <div class="mobile-tab" data-tab="edit-selected">Selected</div>
+            <div class="wt-mobile-tabs">
+                <div class="wt-mobile-tab active" data-tab="edit-details">Details</div>
+                <div class="wt-mobile-tab" data-tab="edit-categories">Categories</div>
+                <div class="wt-mobile-tab" data-tab="edit-exercises">Exercises</div>
+                <div class="wt-mobile-tab" data-tab="edit-selected">Selected</div>
             </div>
             
-            <div class="modal-body">
-                <div class="template-details mobile-section active" data-section="edit-details">
-                    <div class="input-group">
+            <div class="wt-modal-body">
+                <div class="wt-template-details wt-mobile-section active" data-section="edit-details">
+                    <div class="wt-input-group">
                         <label for="editWorkoutName">Template Name</label>
                         <input type="text" id="editWorkoutName">
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label for="editWorkoutDescription">Description (Optional)</label>
                         <textarea id="editWorkoutDescription" rows="3"></textarea>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label>Categories</label>
-                        <div class="categories">
-                            <div class="category" data-category="Strength Training">Strength Training</div>
-                            <div class="category" data-category="cardio">Cardio</div>
-                            <div class="category" data-category="Bodyweight">Bodyweight</div>
+                        <div class="wt-categories">
+                            <div class="wt-category" data-category="Strength Training">Strength Training</div>
+                            <div class="wt-category" data-category="cardio">Cardio</div>
+                            <div class="wt-category" data-category="Bodyweight">Bodyweight</div>
                         </div>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label>Difficulty Level</label>
                         <input type="range" min="1" max="3" value="2" id="editDifficultySlider">
-                        <div class="slider-labels">
+                        <div class="wt-slider-labels">
                             <span>Beginner</span>
                             <span>Intermediate</span>
                             <span>Advanced</span>
                         </div>
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label for="editSetsPerExercise">Sets Per Exercise</label>
                         <input type="number" id="editSetsPerExercise" min="1" max="10" value="3">
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label for="editRestTimePerExercise">Rest Time Between Exercises (minutes)</label>
                         <input type="number" id="editRestTimePerExercise" min="0" max="10" value="1" step="0.5">
                     </div>
                     
-                    <div class="input-group">
+                    <div class="wt-input-group">
                         <label for="editEstimatedTime">Estimated Time (minutes)</label>
                         <input type="number" id="editEstimatedTime" min="5" max="180" value="45" readonly>
                     </div>
@@ -1671,40 +808,40 @@ function updateWorkoutTemplate($templateId, $data) {
                     <input type="hidden" id="editTemplateId">
                 </div>
                 
-                <div class="exercise-selector">
-                    <div class="categories-column mobile-section" data-section="edit-categories">
+                <div class="wt-exercise-selector">
+                    <div class="wt-categories-column wt-mobile-section" data-section="edit-categories">
                         <h3>Categories</h3>
-                        <div class="category-list">
-                            <div class="edit-category-item active" data-category="Strength Training">
+                        <div class="wt-category-list">
+                            <div class="wt-category-item active" data-category="Strength Training">
                                 <i class="fas fa-dumbbell"></i>
                                 Strength Training
                             </div>
-                            <div class="edit-category-item" data-category="cardio">
+                            <div class="wt-category-item" data-category="cardio">
                                 <i class="fas fa-running"></i>
                                 Cardio
                             </div>
-                            <div class="edit-category-item" data-category="Bodyweight">
+                            <div class="wt-category-item" data-category="Bodyweight">
                                 <i class="fas fa-user"></i>
                                 Flexibility
                             </div>
                         </div>
                     </div>
                     
-                    <div class="exercises-column mobile-section" data-section="edit-exercises">
-                        <div class="exercise-search">
-                            <div class="search-container">
-                                <i class="fas fa-search search-icon"></i>
-                                <input type="text" class="search-input" id="editExerciseSearch" placeholder="Search exercises...">
+                    <div class="wt-exercises-column wt-mobile-section" data-section="edit-exercises">
+                        <div class="wt-exercise-search">
+                            <div class="wt-search-container">
+                                <i class="fas fa-search wt-search-icon"></i>
+                                <input type="text" class="wt-search-input" id="editExerciseSearch" placeholder="Search exercises...">
                             </div>
                         </div>
                         
-                        <div class="exercises-list" id="editExercisesGrid">
+                        <div class="wt-exercises-list" id="editExercisesGrid">
                         </div>
                     </div>
                     
-                    <div class="selected-column mobile-section" data-section="edit-selected">
+                    <div class="wt-selected-column wt-mobile-section" data-section="edit-selected">
                         <h3>Selected Exercises</h3>
-                        <div id="editSelectedExercisesList" class="selected-exercises-list">
+                        <div id="editSelectedExercisesList" class="wt-selected-exercises-list">
                             <div class="empty-selection" id="editEmptySelection">
                                 <p>No exercises selected yet</p>
                             </div>
@@ -1712,8 +849,8 @@ function updateWorkoutTemplate($templateId, $data) {
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelEdit">Cancel</button>
+            <div class="wt-modal-footer">
+                <button class="wt-btn wt-btn-secondary" id="cancelEdit">Cancel</button>
             </div>
         </div>
     </div>
@@ -1726,13 +863,13 @@ function updateWorkoutTemplate($templateId, $data) {
             let editCurrentCategory = 'Strength Training';
             let exerciseTime = 1;
             
-            $('.toggle-btn').on('click', function() {
+            $('.wt-toggle-btn').on('click', function() {
                 const viewType = $(this).data('view');
                 
-                $('.toggle-btn').removeClass('active');
+                $('.wt-toggle-btn').removeClass('active');
                 $(this).addClass('active');
                 
-                $('.templates-view').removeClass('active');
+                $('.wt-templates-view').removeClass('active');
                 if (viewType === 'my-templates') {
                     $('#myTemplatesView').addClass('active');
                 } else if (viewType === 'admin-templates') {
@@ -1740,19 +877,19 @@ function updateWorkoutTemplate($templateId, $data) {
                 }
             });
             
-            $('.mobile-tab').on('click', function() {
+            $('.wt-mobile-tab').on('click', function() {
                 const tabTarget = $(this).data('tab');
-                const tabContainer = $(this).closest('.modal-content');
+                const tabContainer = $(this).closest('.wt-modal-content');
                 
-                tabContainer.find('.mobile-tab').removeClass('active');
+                tabContainer.find('.wt-mobile-tab').removeClass('active');
                 $(this).addClass('active');
                 
-                tabContainer.find('.mobile-section').removeClass('active');
-                tabContainer.find(`.mobile-section[data-section="${tabTarget}"]`).addClass('active');
+                tabContainer.find('.wt-mobile-section').removeClass('active');
+                tabContainer.find(`.wt-mobile-section[data-section="${tabTarget}"]`).addClass('active');
             });
             
             $('<style>').html(`
-                .view-field {
+                .wt-view-field {
                     background: var(--background);
                     padding: 12px;
                     border-radius: 6px;
@@ -1760,20 +897,20 @@ function updateWorkoutTemplate($templateId, $data) {
                     min-height: 20px;
                 }
                 
-                .view-exercise {
+                .wt-view-exercise {
                     background: var(--background);
                     border-radius: 8px;
                     padding: 15px;
                     margin-bottom: 10px;
                 }
                 
-                .view-exercise-header {
+                .wt-view-exercise-header {
                     display: flex;
                     justify-content: space-between;
                     margin-bottom: 10px;
                 }
                 
-                .view-exercise-details {
+                .wt-view-exercise-details {
                     display: flex;
                     flex-wrap: wrap;
                     gap: 15px;
@@ -1781,13 +918,13 @@ function updateWorkoutTemplate($templateId, $data) {
                     color: #aaa;
                 }
                 
-                .view-exercise-detail {
+                .wt-view-exercise-detail {
                     display: flex;
                     align-items: center;
                     gap: 5px;
                 }
                 
-                .view-exercise-notes {
+                .wt-view-exercise-notes {
                     margin-top: 10px;
                     font-style: italic;
                     color: #aaa;
@@ -1796,29 +933,29 @@ function updateWorkoutTemplate($templateId, $data) {
             
             loadExercises();
             
-            $(document).on('click', '.template-actions-menu', function(e) {
+            $(document).on('click', '.wt-template-actions-menu', function(e) {
                 e.stopPropagation();
-                const dropdown = $(this).siblings('.template-actions-dropdown');
-                $('.template-actions-dropdown').not(dropdown).removeClass('active');
+                const dropdown = $(this).siblings('.wt-template-actions-dropdown');
+                $('.wt-template-actions-dropdown').not(dropdown).removeClass('active');
                 dropdown.toggleClass('active');
             });
             
             $(document).on('click', function() {
-                $('.template-actions-dropdown').removeClass('active');
+                $('.wt-template-actions-dropdown').removeClass('active');
             });
             
             $(document).on('click', '.view-template', function() {
-                const templateId = $(this).closest('.template-card').data('id');
+                const templateId = $(this).closest('.wt-template-card').data('id');
                 viewTemplate(templateId);
             });
             
             $(document).on('click', '.edit-template', function() {
-                const templateId = $(this).closest('.template-card').data('id');
+                const templateId = $(this).closest('.wt-template-card').data('id');
                 editTemplate(templateId);
             });
             
             $(document).on('click', '.template-delete', function() {
-                const templateId = $(this).closest('.template-card').data('id');
+                const templateId = $(this).closest('.wt-template-card').data('id');
                 deleteTemplate(templateId);
             });
             
@@ -1861,30 +998,30 @@ function updateWorkoutTemplate($templateId, $data) {
                 } else {
                     template.exercises.forEach(function(exercise) {
                         const item = $(`
-                            <div class="view-exercise">
-                                <div class="view-exercise-header">
+                            <div class="wt-view-exercise">
+                                <div class="wt-view-exercise-header">
                                     <h4>${exercise.name}</h4>
-                                    <div class="view-exercise-position">Position: ${exercise.position}</div>
+                                    <div class="wt-view-exercise-position">Position: ${exercise.position}</div>
                                 </div>
-                                <div class="view-exercise-details">
-                                    <div class="view-exercise-detail">
+                                <div class="wt-view-exercise-details">
+                                    <div class="wt-view-exercise-detail">
                                         <i class="fas fa-layer-group"></i>
                                         <span>${exercise.sets} sets</span>
                                     </div>
-                                    <div class="view-exercise-detail">
+                                    <div class="wt-view-exercise-detail">
                                         <i class="fas fa-stopwatch"></i>
                                         <span>${exercise.rest_time} sec rest</span>
                                     </div>
-                                    <div class="view-exercise-detail">
+                                    <div class="wt-view-exercise-detail">
                                         <i class="fas fa-dumbbell"></i>
                                         <span>${exercise.muscle}</span>
                                     </div>
-                                    <div class="view-exercise-detail">
+                                    <div class="wt-view-exercise-detail">
                                         <i class="fas fa-cog"></i>
                                         <span>${exercise.equipment}</span>
                                     </div>
                                 </div>
-                                ${exercise.notes ? `<div class="view-exercise-notes">Notes: ${exercise.notes}</div>` : ''}
+                                ${exercise.notes ? `<div class="wt-view-exercise-notes">Notes: ${exercise.notes}</div>` : ''}
                             </div>
                         `);
                         
@@ -1928,8 +1065,8 @@ function updateWorkoutTemplate($templateId, $data) {
                 if (template.difficulty === 'advanced') difficultyValue = 3;
                 $('#editDifficultySlider').val(difficultyValue);
                 
-                $('.category').removeClass('active');
-                $(`.category[data-category="${template.category}"]`).addClass('active');
+                $('.wt-category').removeClass('active');
+                $(`.wt-category[data-category="${template.category}"]`).addClass('active');
                 
                 if (template.exercises.length > 0) {
                     const totalSets = template.exercises.reduce((sum, ex) => sum + parseInt(ex.sets), 0);
@@ -1964,60 +1101,6 @@ function updateWorkoutTemplate($templateId, $data) {
                 $('#editTemplateModal').fadeOut(300);
             });
             
-            $('#updateTemplate').on('click', function() {
-                const templateId = $('#editTemplateId').val();
-                const name = $('#editWorkoutName').val().trim();
-                const description = $('#editWorkoutDescription').val().trim();
-                const estimatedTime = $('#editEstimatedTime').val();
-                const difficultyVal = $('#editDifficultySlider').val();
-                
-                let difficulty = 'intermediate';
-                if (difficultyVal == 1) difficulty = 'beginner';
-                if (difficultyVal == 3) difficulty = 'advanced';
-                
-                const category = $('.category.active').data('category');
-                
-                if (!name) {
-                    showToast('Please enter a template name', 'error');
-                    return;
-                }
-                
-                if (editSelectedExercises.length === 0) {
-                    showToast('Please add at least one exercise', 'error');
-                    return;
-                }
-                
-                const data = {
-                    workout_name: name,
-                    workout_description: description,
-                    difficulty: difficulty,
-                    estimated_time: estimatedTime,
-                    category: category,
-                    exercises_json: JSON.stringify(editSelectedExercises)
-                };
-                
-                $.ajax({
-                    url: '?action=update_template',
-                    method: 'POST',
-                    data: { ...data, template_id: templateId },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            showToast(response.message, 'success');
-                            $('#editTemplateModal').fadeOut(300);
-                            setTimeout(function() {
-                                window.location.reload();
-                            }, 1500);
-                        } else {
-                            showToast(response.message, 'error');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        showToast('Error updating template', 'error');
-                    }
-                });
-            });
-            
             function deleteTemplate(templateId) {
                 if (confirm('Are you sure you want to delete this template?')) {
                     $.ajax({
@@ -2028,11 +1111,11 @@ function updateWorkoutTemplate($templateId, $data) {
                         success: function(response) {
                             if (response.success) {
                                 showToast(response.message, 'success');
-                                $(`.template-card[data-id="${templateId}"]`).fadeOut(300, function() {
+                                $(`.wt-template-card[data-id="${templateId}"]`).fadeOut(300, function() {
                                     $(this).remove();
                                     
-                                    if ($('.template-card').length === 0) {
-                                        $('.templates-grid').html(`
+                                    if ($('.wt-template-card').length === 0) {
+                                        $('.wt-templates-grid').html(`
                                             <div class="no-templates">
                                                 <p>You haven't created any workout templates yet.</p>
                                                 <p>Click "Create Template" to get started!</p>
@@ -2082,9 +1165,9 @@ function updateWorkoutTemplate($templateId, $data) {
                 
                 exercises.forEach(function(exercise) {
                     const item = $(`
-                        <div class="exercise-item" data-id="${exercise.id}">
+                        <div class="wt-exercise-item" data-id="${exercise.id}">
                             <h4>${exercise.name}</h4>
-                            <div class="exercise-details">
+                            <div class="wt-exercise-details">
                                 <div><i class="fas fa-dumbbell"></i> ${exercise.primary_muscle}</div>
                                 <div><i class="fas fa-cog"></i> ${exercise.equipment || 'No equipment'}</div>
                             </div>
@@ -2141,18 +1224,18 @@ function updateWorkoutTemplate($templateId, $data) {
                 
                 editSelectedExercises.forEach(function(exercise, index) {
                     const item = $(`
-                        <div class="selected-exercise" data-index="${index}">
-                            <div class="exercise-header">
-                                <div class="exercise-info">
-                                    <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
-                                    <div class="exercise-name">${index + 1}. ${exercise.name}</div>
+                        <div class="wt-selected-exercise" data-index="${index}">
+                            <div class="wt-exercise-header">
+                                <div class="wt-exercise-info">
+                                    <div class="wt-drag-handle"><i class="fas fa-grip-vertical"></i></div>
+                                    <div class="wt-exercise-name">${index + 1}. ${exercise.name}</div>
                                 </div>
-                                <div class="exercise-meta">
+                                <div class="wt-exercise-meta">
                                     ${exercise.sets} sets × 12 reps
                                     <br>Rest: ${exercise.rest_time}s
                                 </div>
                             </div>
-                            <div class="exercise-controls">
+                            <div class="wt-exercise-controls">
                                 <button class="edit-exercise-item"><i class="fas fa-cog"></i></button>
                                 <button class="remove-exercise-item"><i class="fas fa-times"></i></button>
                             </div>
@@ -2171,7 +1254,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 });
                 
                 new Sortable(document.getElementById('editSelectedExercisesList'), {
-                    handle: '.drag-handle',
+                    handle: '.wt-drag-handle',
                     animation: 150,
                     onEnd: function(evt) {
                         const item = editSelectedExercises[evt.oldIndex];
@@ -2186,22 +1269,22 @@ function updateWorkoutTemplate($templateId, $data) {
                 const exercise = editSelectedExercises[index];
                 
                 const modal = $(`
-                    <div class="edit-modal">
-                        <div class="edit-modal-content">
+                    <div class="wt-edit-modal">
+                        <div class="wt-edit-modal-content">
                             <h3>Edit ${exercise.name}</h3>
-                            <div class="input-group">
+                            <div class="wt-input-group">
                                 <label>Sets</label>
                                 <input type="number" id="editItemSets" value="${exercise.sets}" min="1" max="10">
                             </div>
-                            <div class="input-group">
+                            <div class="wt-input-group">
                                 <label>Rest Time (seconds)</label>
                                 <input type="number" id="editItemRest" value="${exercise.rest_time}" min="0" max="300">
                             </div>
-                            <div class="input-group">
+                            <div class="wt-input-group">
                                 <label>Notes</label>
                                 <textarea id="editItemNotes">${exercise.notes}</textarea>
                             </div>
-                            <div class="modal-actions">
+                            <div class="wt-modal-actions">
                                 <button id="cancelEditItem">Cancel</button>
                                 <button id="saveEditItem">Save</button>
                             </div>
@@ -2220,14 +1303,14 @@ function updateWorkoutTemplate($templateId, $data) {
                     'align-items': 'center'
                 });
                 
-                modal.find('.edit-modal-content').css({
+                modal.find('.wt-edit-modal-content').css({
                     'background': 'var(--card-bg)',
                     'padding': '20px',
                     'border-radius': '10px',
                     'width': '400px'
                 });
                 
-                modal.find('.modal-actions').css({
+                modal.find('.wt-modal-actions').css({
                     'display': 'flex',
                     'justify-content': 'flex-end',
                     'gap': '10px',
@@ -2268,8 +1351,8 @@ function updateWorkoutTemplate($templateId, $data) {
                 updateEditEstimatedTime();
             }
             
-            $('#editTemplateModal .edit-category-item').on('click', function() {
-                $('#editTemplateModal .edit-category-item').removeClass('active');
+            $('#editTemplateModal .wt-category-item').on('click', function() {
+                $('#editTemplateModal .wt-category-item').removeClass('active');
                 $(this).addClass('active');
                 
                 editCurrentCategory = $(this).data('category');
@@ -2320,16 +1403,16 @@ function updateWorkoutTemplate($templateId, $data) {
                 $('#createTemplateModal').fadeOut(300);
             });
             
-            $('.category-item').on('click', function() {
-                $('.category-item').removeClass('active');
+            $('.wt-category-item').on('click', function() {
+                $('.wt-category-item').removeClass('active');
                 $(this).addClass('active');
                 
                 currentCategory = $(this).data('category');
                 loadExercises();
             });
             
-            $('.category').on('click', function() {
-                $('.category').removeClass('active');
+            $('.wt-category').on('click', function() {
+                $('.wt-category').removeClass('active');
                 $(this).addClass('active');
             });
             
@@ -2399,9 +1482,9 @@ function updateWorkoutTemplate($templateId, $data) {
                 
                 exercises.forEach(function(exercise) {
                     const item = $(`
-                        <div class="exercise-item" data-id="${exercise.id}">
+                        <div class="wt-exercise-item" data-id="${exercise.id}">
                             <h4>${exercise.name}</h4>
-                            <div class="exercise-details">
+                            <div class="wt-exercise-details">
                                 <div><i class="fas fa-dumbbell"></i> ${exercise.primary_muscle}</div>
                                 <div><i class="fas fa-cog"></i> ${exercise.equipment || 'No equipment'}</div>
                             </div>
@@ -2458,18 +1541,18 @@ function updateWorkoutTemplate($templateId, $data) {
                 
                 selectedExercises.forEach(function(exercise, index) {
                     const item = $(`
-                        <div class="selected-exercise" data-index="${index}">
-                            <div class="exercise-header">
-                                <div class="exercise-info">
-                                    <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
-                                    <div class="exercise-name">${index + 1}. ${exercise.name}</div>
+                        <div class="wt-selected-exercise" data-index="${index}">
+                            <div class="wt-exercise-header">
+                                <div class="wt-exercise-info">
+                                    <div class="wt-drag-handle"><i class="fas fa-grip-vertical"></i></div>
+                                    <div class="wt-exercise-name">${index + 1}. ${exercise.name}</div>
                                 </div>
-                                <div class="exercise-meta">
+                                <div class="wt-exercise-meta">
                                     ${exercise.sets} sets × 12 reps
                                     <br>Rest: ${exercise.rest_time}s
                                 </div>
                             </div>
-                            <div class="exercise-controls">
+                            <div class="wt-exercise-controls">
                                 <button class="edit-exercise"><i class="fas fa-cog"></i></button>
                                 <button class="remove-exercise"><i class="fas fa-times"></i></button>
                             </div>
@@ -2488,7 +1571,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 });
                 
                 new Sortable(document.getElementById('selectedExercisesList'), {
-                    handle: '.drag-handle',
+                    handle: '.wt-drag-handle',
                     animation: 150,
                     onEnd: function(evt) {
                         const item = selectedExercises[evt.oldIndex];
@@ -2503,22 +1586,22 @@ function updateWorkoutTemplate($templateId, $data) {
                 const exercise = selectedExercises[index];
                 
                 const modal = $(`
-                    <div class="edit-modal">
-                        <div class="edit-modal-content">
+                    <div class="wt-edit-modal">
+                        <div class="wt-edit-modal-content">
                             <h3>Edit ${exercise.name}</h3>
-                            <div class="input-group">
+                            <div class="wt-input-group">
                                 <label>Sets</label>
                                 <input type="number" id="editSets" value="${exercise.sets}" min="1" max="10">
                             </div>
-                            <div class="input-group">
+                            <div class="wt-input-group">
                                 <label>Rest Time (seconds)</label>
                                 <input type="number" id="editRest" value="${exercise.rest_time}" min="0" max="300">
                             </div>
-                            <div class="input-group">
+                            <div class="wt-input-group">
                                 <label>Notes</label>
                                 <textarea id="editNotes">${exercise.notes}</textarea>
                             </div>
-                            <div class="modal-actions">
+                            <div class="wt-modal-actions">
                                 <button id="cancelEdit">Cancel</button>
                                 <button id="saveEdit">Save</button>
                             </div>
@@ -2537,14 +1620,14 @@ function updateWorkoutTemplate($templateId, $data) {
                     'align-items': 'center'
                 });
                 
-                modal.find('.edit-modal-content').css({
+                modal.find('.wt-edit-modal-content').css({
                     'background': 'var(--card-bg)',
                     'padding': '20px',
                     'border-radius': '10px',
                     'width': '400px'
                 });
                 
-                modal.find('.modal-actions').css({
+                modal.find('.wt-modal-actions').css({
                     'display': 'flex',
                     'justify-content': 'flex-end',
                     'gap': '10px',
@@ -2599,7 +1682,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 if (difficultyVal == 1) difficulty = 'beginner';
                 if (difficultyVal == 3) difficulty = 'advanced';
                 
-                const category = $('.category.active').data('category');
+                const category = $('.wt-category.active').data('category');
                 
                 if (!name) {
                     showToast('Please enter a template name', 'error');
@@ -2654,7 +1737,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 if (difficultyVal == 1) difficulty = 'beginner';
                 if (difficultyVal == 3) difficulty = 'advanced';
                 
-                const category = $('.category.active').data('category');
+                const category = $('.wt-category.active').data('category');
                 
                 if (!name) {
                     showToast('Please enter a template name', 'error');
@@ -2720,7 +1803,7 @@ function updateWorkoutTemplate($templateId, $data) {
                     console.log("Opening edit modal for template ID:", templateId);
                     
                     setTimeout(() => {
-                        const editBtn = $(`.template-card[data-id="${templateId}"] .edit-btn, .template-list-item[data-id="${templateId}"] .edit-btn`);
+                        const editBtn = $(`.wt-template-card[data-id="${templateId}"] .edit-template, .wt-admin-template[data-id="${templateId}"] .edit-template`);
                         if (editBtn.length) {
                             editBtn.click();
                             console.log("Edit button clicked successfully");
