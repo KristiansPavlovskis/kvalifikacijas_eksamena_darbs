@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/assets/db_connection.php';
+require_once dirname(__DIR__, 2) . '/profile/languages.php';
 
 session_start();
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -24,50 +25,49 @@ if (!$is_admin) {
     exit;
 }
 
-if ($_SERVER["REQUEST_METHOD"] != "POST" || !isset($_POST['ids'])) {
+if ($_SERVER["REQUEST_METHOD"] != "POST" || !isset($_POST['selected_exercises']) || !is_array($_POST['selected_exercises']) || empty($_POST['selected_exercises'])) {
     $_SESSION['message'] = [
         'type' => 'danger',
-        'text' => 'No exercises specified for deletion.'
+        'text' => t('no_exercises_selected')
     ];
     header("Location: index.php");
     exit;
 }
 
-$ids = json_decode($_POST['ids'], true);
+$selected_exercises = array_map('intval', $_POST['selected_exercises']);
+$placeholders = implode(',', array_fill(0, count($selected_exercises), '?'));
+$types = str_repeat('i', count($selected_exercises));
 
-if (empty($ids) || !is_array($ids)) {
+$check_sql = "SELECT COUNT(*) as count FROM exercises WHERE id IN ($placeholders)";
+$check_stmt = $conn->prepare($check_sql);
+$check_stmt->bind_param($types, ...$selected_exercises);
+$check_stmt->execute();
+$check_result = $check_stmt->get_result();
+$count = $check_result->fetch_assoc()['count'];
+
+if ($count != count($selected_exercises)) {
     $_SESSION['message'] = [
         'type' => 'danger',
-        'text' => 'Invalid exercise data.'
+        'text' => t('some_exercises_not_found')
     ];
     header("Location: index.php");
     exit;
 }
 
-$success_count = 0;
-$error_count = 0;
+$delete_sql = "DELETE FROM exercises WHERE id IN ($placeholders)";
+$delete_stmt = $conn->prepare($delete_sql);
+$delete_stmt->bind_param($types, ...$selected_exercises);
 
-foreach ($ids as $id) {
-    $delete_sql = "DELETE FROM exercises WHERE id = ?";
-    $delete_stmt = $conn->prepare($delete_sql);
-    $delete_stmt->bind_param("i", $id);
-    
-    if ($delete_stmt->execute()) {
-        $success_count++;
-    } else {
-        $error_count++;
-    }
-}
-
-if ($error_count == 0) {
+if ($delete_stmt->execute()) {
+    $deleted_count = $conn->affected_rows;
     $_SESSION['message'] = [
         'type' => 'success',
-        'text' => $success_count . ' exercise(s) deleted successfully.'
+        'text' => sprintf(t('exercises_deleted_successfully'), $deleted_count)
     ];
 } else {
     $_SESSION['message'] = [
         'type' => 'danger',
-        'text' => $success_count . ' exercise(s) deleted successfully. ' . $error_count . ' failed.'
+        'text' => t('error_deleting_exercises') . ": " . $conn->error
     ];
 }
 

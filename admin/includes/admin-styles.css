@@ -727,4 +727,126 @@
         gap: 1rem;
         align-items: flex-start;
     }
+}
+
+/* Mobile Footer Navigation */
+.mobile-footer-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--dark-bg-surface);
+    border-top: 1px solid var(--border-color);
+    z-index: 1000;
+}
+
+.mobile-nav-items {
+    display: flex;
+    justify-content: space-around;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.mobile-nav-item {
+    flex: 1;
+    text-align: center;
+}
+
+.mobile-nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.75rem;
+    transition: color 0.2s ease;
+}
+
+.mobile-nav-link i {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.mobile-nav-link.active {
+    color: var(--primary-color);
+}
+
+.more-menu {
+    position: fixed;
+    bottom: 70px;
+    right: 10px;
+    background-color: var(--dark-bg-surface);
+    border-radius: 0.5rem;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+    display: none;
+    z-index: 1001;
+}
+
+.more-menu.show {
+    display: block;
+}
+
+.more-menu-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.more-menu-item {
+    margin-bottom: 0.5rem;
+}
+
+.more-menu-item:last-child {
+    margin-bottom: 0;
+}
+
+.more-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+}
+
+.more-menu-link:hover {
+    background-color: var(--dark-accent);
+}
+
+.more-menu-link i {
+    margin-right: 0.75rem;
+    width: 20px;
+    text-align: center;
+}
+
+@media (max-width: 992px) {
+    .admin-sidebar {
+        position: fixed;
+        left: -100%;
+        transition: left 0.3s ease;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .admin-sidebar.show {
+        left: 0;
+    }
+    
+    .main-content {
+        padding-left: 0;
+        padding-bottom: 70px;
+    }
+    
+    .admin-topbar {
+        padding: 1rem;
+    }
+    
+    .mobile-footer-nav {
+        display: block;
+    }
 } 

@@ -1,10 +1,14 @@
 <?php
 require_once dirname(__DIR__, 2) . '/assets/db_connection.php';
+require_once dirname(__DIR__, 2) . '/profile/languages.php';
 
- 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("Location: ../../pages/login.php");
     exit;
+}
+
+if (!isset($_SESSION['language'])) {
+    $_SESSION['language'] = 'en';
 }
 
 $user_id = $_SESSION["user_id"];
@@ -48,14 +52,17 @@ if ($exercises_result) {
     while ($exercise = $exercises_result->fetch_assoc()) {
         $exercises_data[] = $exercise;
     }
+    echo "<!-- Found " . count($exercises_data) . " exercises -->";
+} else {
+    echo "<!-- Error loading exercises: " . $conn->error . " -->";
 }
 
-$pageTitle = "Template Management";
+$pageTitle = t('template_management');
 $bodyClass = "admin-page";
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION['language'] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -949,10 +956,7 @@ $bodyClass = "admin-page";
             }
             
             .admin-topbar {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-                padding: 10px;
+                padding: 1rem;
             }
             
             .admin-topbar h1 {
@@ -1008,6 +1012,47 @@ $bodyClass = "admin-page";
                 -moz-appearance: textfield;
             }
         }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--dark-bg-surface);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .category-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        .empty-category {
+            opacity: 0.5;
+        }
+
+        .empty-category .category-count {
+            background-color: var(--border-color);
+        }
     </style>
 </head>
 <body class="<?php echo $bodyClass; ?>">
@@ -1016,41 +1061,45 @@ $bodyClass = "admin-page";
         
         <div class="main-content">
             <div class="admin-topbar">
-                <h1>Template Management</h1>
+                <h1><?php echo t('template_management'); ?></h1>
                 <div class="admin-user">
+                    <?php include dirname(__DIR__, 2) . '/includes/language-selector.php'; ?>
                     <div class="admin-avatar"><?php echo substr($_SESSION["username"], 0, 1); ?></div>
-                    <span>Admin</span>
+                    <span><?php echo t('administration'); ?></span>
                 </div>
             </div>
             
             <div class="templates-container">
                 <div class="templates-header">
-                    <h2>All Templates</h2>
+                    <h2><?php echo t('all_templates'); ?></h2>
                     <button class="create-btn" id="openCreateModal">
                         <i class="fas fa-plus"></i>
-                        Create Template
+                        <?php echo t('create_template'); ?>
                     </button>
                 </div>
                 
                 <div class="filters">
                     <select class="filter-dropdown" id="categoryFilter">
-                        <option value="all">All Categories</option>
-                        <option value="fitness">Fitness</option>
-                        <option value="cardio">Cardio</option>
-                        <option value="strength">Strength</option>
+                        <option value="all"><?php echo t('all_categories'); ?></option>
+                        <option value="Strength Training"><?php echo t('strength_training'); ?></option>
+                        <option value="Cardio"><?php echo t('cardio'); ?></option>
+                        <option value="Flexibility"><?php echo t('flexibility'); ?></option>
+                        <option value="Balance"><?php echo t('balance'); ?></option>
+                        <option value="Plyometric"><?php echo t('plyometric'); ?></option>
+                        <option value="Functional"><?php echo t('functional'); ?></option>
                     </select>
                     
                     <select class="filter-dropdown" id="difficultyFilter">
-                        <option value="all">All Difficulties</option>
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
+                        <option value="all"><?php echo t('all_levels'); ?></option>
+                        <option value="beginner"><?php echo t('beginner'); ?></option>
+                        <option value="intermediate"><?php echo t('intermediate'); ?></option>
+                        <option value="advanced"><?php echo t('advanced'); ?></option>
                     </select>
                     
                     <select class="filter-dropdown" id="sortFilter">
-                        <option value="popular">Most Popular</option>
-                        <option value="newest">Newest</option>
-                        <option value="oldest">Oldest</option>
+                        <option value="popular"><?php echo t('most_popular'); ?></option>
+                        <option value="newest"><?php echo t('newest'); ?></option>
+                        <option value="oldest"><?php echo t('oldest'); ?></option>
                     </select>
                 </div>
                 
@@ -1061,7 +1110,7 @@ $bodyClass = "admin-page";
                             $status_class = 'active';
                             $status_text = 'Active';
                             $user_count = number_format($template['user_count']);
-                            $created_date = date('M j, Y', strtotime($template['created_at']));
+                            $created_date = !empty($template['created_at']) ? date('M j, Y', strtotime($template['created_at'])) : 'N/A';
                             
                             $category = !empty($template['category']) ? $template['category'] : 'Not specified';
                             $difficulty = !empty($template['difficulty']) ? $template['difficulty'] : 'Not specified';
@@ -1071,31 +1120,31 @@ $bodyClass = "admin-page";
                         
                         <div class="template-info">
                             <div class="template-info-item">
-                                <span class="label">Category:</span>
+                                <span class="label"><?php echo t('category'); ?>:</span>
                                 <span><?php echo htmlspecialchars($category); ?></span>
                             </div>
                             
                             <div class="template-info-item">
-                                <span class="label">Exercises:</span>
+                                <span class="label"><?php echo t('exercises'); ?>:</span>
                                 <span><?php echo $template['exercise_count']; ?></span>
                             </div>
                             
                             <div class="template-info-item">
-                                <span class="label">Difficulty:</span>
+                                <span class="label"><?php echo t('difficulty'); ?>:</span>
                                 <span><?php echo htmlspecialchars($difficulty); ?></span>
                             </div>
                             
                             <div class="template-info-item">
-                                <span class="label">Created:</span>
+                                <span class="label"><?php echo t('created'); ?>:</span>
                                 <span><?php echo $created_date; ?></span>
                             </div>
                         </div>
                         
                         <div class="template-actions">
-                            <div class="action-btn edit-btn" data-action="edit" data-id="<?php echo $template['id']; ?>">
+                            <div class="action-btn edit-btn" data-action="edit" data-id="<?php echo $template['id']; ?>" title="<?php echo t('edit'); ?>">
                                 <i class="fas fa-edit"></i>
                             </div>
-                            <div class="action-btn delete-btn" data-action="delete" data-id="<?php echo $template['id']; ?>">
+                            <div class="action-btn delete-btn" data-action="delete" data-id="<?php echo $template['id']; ?>" title="<?php echo t('delete'); ?>">
                                 <i class="fas fa-trash"></i>
                             </div>
                         </div>
@@ -1105,7 +1154,7 @@ $bodyClass = "admin-page";
                     } else {
                     ?>
                     <div class="empty-state">
-                        <p>No templates found. Create a new template to get started.</p>
+                        <p><?php echo t('no_templates_found'); ?>. <?php echo t('click_create_template'); ?></p>
                     </div>
                     <?php } ?>
                 </div>
@@ -1116,19 +1165,19 @@ $bodyClass = "admin-page";
     <div class="modal-overlay" id="createTemplateModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Create Template</h2>
+                <h2><?php echo t('create_template'); ?></h2>
                 <div class="modal-header-actions">
                     <button class="save-template-btn" id="saveTemplateHeader">
                         <i class="fas fa-save"></i>
-                        <span class="btn-text">Save</span>
+                        <span class="btn-text"><?php echo t('save'); ?></span>
                     </button>
                     <button class="modal-close" id="closeModal">&times;</button>
                 </div>
             </div>
             
             <div class="mobile-tabs">
-                <div class="mobile-tab active" data-tab="details">Details</div>
-                <div class="mobile-tab" data-tab="exercises">Exercises</div>
+                <div class="mobile-tab active" data-tab="details"><?php echo t('details'); ?></div>
+                <div class="mobile-tab" data-tab="exercises"><?php echo t('exercises'); ?></div>
             </div>
             
             <div class="modal-body">
@@ -1137,36 +1186,36 @@ $bodyClass = "admin-page";
                         <div class="form-columns">
                             <div class="column-left">
                                 <div class="input-group">
-                                    <label for="workoutName">Template Name</label>
-                                    <input type="text" id="workoutName" placeholder="E.g., Upper Body Power, Core Blast...">
+                                    <label for="workoutName"><?php echo t('template_name'); ?></label>
+                                    <input type="text" id="workoutName" placeholder="<?php echo t('template_name_placeholder'); ?>">
                                 </div>
                                 
                                 <div class="input-group">
-                                    <label for="workoutDescription">Description (Optional)</label>
-                                    <textarea id="workoutDescription" rows="3" placeholder="Describe your workout, goals, or add any notes..."></textarea>
+                                    <label for="workoutDescription"><?php echo t('description_optional'); ?></label>
+                                    <textarea id="workoutDescription" rows="3" placeholder="<?php echo t('description_placeholder'); ?>"></textarea>
                                 </div>
                                 
                                 <div class="input-group">
-                                    <label>Category</label>
+                                    <label><?php echo t('category'); ?></label>
                                     <div class="categories">
-                                        <div class="category active" data-category="Strength Training">Strength Training</div>
-                                        <div class="category" data-category="cardio">Cardio</div>
-                                        <div class="category" data-category="Bodyweight">Bodyweight</div>
+                                        <div class="category active" data-category="Strength Training"><?php echo t('strength_training'); ?></div>
+                                        <div class="category" data-category="Cardio"><?php echo t('cardio'); ?></div>
+                                        <div class="category" data-category="Flexibility"><?php echo t('flexibility'); ?></div>
+                                        <div class="category" data-category="Balance"><?php echo t('balance'); ?></div>
+                                        <div class="category" data-category="Plyometric"><?php echo t('plyometric'); ?></div>
+                                        <div class="category" data-category="Functional"><?php echo t('functional'); ?></div>
                                     </div>
                                 </div>
                                 
                                 <div class="input-group">
-                                    <label>Difficulty Level</label>
+                                    <label><?php echo t('difficulty_level'); ?></label>
                                     <div class="difficulty-slider-container">
-                                        <input type="range" min="0" max="5" value="2" id="difficultySlider" step="1">
+                                        <input type="range" min="0" max="2" value="1" id="difficultySlider" step="1">
                                         <div class="difficulty-value"></div>
                                         <div class="slider-labels">
-                                            <span>Beginner</span>
-                                            <span>Easy</span>
-                                            <span>Medium</span>
-                                            <span>Intermediate</span>
-                                            <span>Hard</span>
-                                            <span>Expert</span>
+                                            <span><?php echo t('beginner'); ?></span>
+                                            <span><?php echo t('intermediate'); ?></span>
+                                            <span><?php echo t('advanced'); ?></span>
                                         </div>
                                     </div>
                                 </div>
@@ -1174,17 +1223,17 @@ $bodyClass = "admin-page";
                             
                             <div class="column-right">
                                 <div class="input-group">
-                                    <label for="setsPerExercise">Sets Per Exercise</label>
+                                    <label for="setsPerExercise"><?php echo t('sets_per_exercise'); ?></label>
                                     <input type="number" id="setsPerExercise" min="1" max="10" value="3">
                                 </div>
                                 
                                 <div class="input-group">
-                                    <label for="restTimePerExercise">Rest Time Between Exercises (minutes)</label>
+                                    <label for="restTimePerExercise"><?php echo t('rest_time_between_exercises'); ?></label>
                                     <input type="number" id="restTimePerExercise" min="0" max="10" value="1" step="0.5">
                                 </div>
                                 
                                 <div class="input-group">
-                                    <label for="estimatedTime">Estimated Time (minutes)</label>
+                                    <label for="estimatedTime"><?php echo t('estimated_time'); ?></label>
                                     <input type="number" id="estimatedTime" min="5" max="180" value="45" readonly>
                                 </div>
                             </div>
@@ -1192,22 +1241,34 @@ $bodyClass = "admin-page";
                     </div>
                     
                     <div class="mobile-section" data-section="exercises">
-                        <h3 class="exercise-section-title">Select Exercises</h3>
+                        <h3 class="exercise-section-title"><?php echo t('select_exercises'); ?></h3>
                         <div class="exercise-workflow">
                             <div class="exercise-categories">
-                                <h4>Categories</h4>
+                                <h4><?php echo t('categories'); ?></h4>
                                 <div class="category-list">
                                     <div class="category-item active" data-category="Strength Training">
                                         <i class="fas fa-dumbbell"></i>
-                                        Strength Training
+                                        <?php echo t('strength_training'); ?>
                                     </div>
-                                    <div class="category-item" data-category="cardio">
+                                    <div class="category-item" data-category="Cardio">
                                         <i class="fas fa-running"></i>
-                                        Cardio
+                                        <?php echo t('cardio'); ?>
                                     </div>
-                                    <div class="category-item" data-category="Bodyweight">
-                                        <i class="fas fa-user"></i>
-                                        Bodyweight
+                                    <div class="category-item" data-category="Flexibility">
+                                        <i class="fas fa-child"></i>
+                                        <?php echo t('flexibility'); ?>
+                                    </div>
+                                    <div class="category-item" data-category="Balance">
+                                        <i class="fas fa-balance-scale"></i>
+                                        <?php echo t('balance'); ?>
+                                    </div>
+                                    <div class="category-item" data-category="Plyometric">
+                                        <i class="fas fa-running"></i>
+                                        <?php echo t('plyometric'); ?>
+                                    </div>
+                                    <div class="category-item" data-category="Functional">
+                                        <i class="fas fa-heartbeat"></i>
+                                        <?php echo t('functional'); ?>
                                     </div>
                                 </div>
                             </div>
@@ -1215,19 +1276,25 @@ $bodyClass = "admin-page";
                             <div class="exercise-browser">
                                 <div class="search-container">
                                     <i class="fas fa-search search-icon"></i>
-                                    <input type="text" id="exerciseSearch" placeholder="Search exercises..." class="search-input">
+                                    <input type="text" class="search-input" id="exerciseSearch" placeholder="<?php echo t('search_exercises'); ?>">
                                 </div>
-                                <div id="exercisesGrid" class="exercises-grid">
-                                    <div class="loading">Loading exercises...</div>
+                                
+                                <div class="exercises-grid" id="exercisesGrid">
+                                    <?php foreach ($exercises_data as $exercise): ?>
+                                    <div class="exercise-item" data-id="<?php echo $exercise['id']; ?>" data-category="<?php echo htmlspecialchars($exercise['category']); ?>">
+                                        <div class="exercise-image">
+                                            <i class="fas fa-dumbbell"></i>
+                                        </div>
+                                        <div class="exercise-name"><?php echo htmlspecialchars($exercise['name']); ?></div>
+                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
                             
                             <div class="selected-exercises">
-                                <h4>Selected Exercises</h4>
-                                <div id="selectedExercisesList" class="selected-exercises-list">
-                                    <div class="empty-selection" id="emptySelection">
-                                        <p>No exercises selected yet</p>
-                                    </div>
+                                <h4><?php echo t('selected_exercises'); ?></h4>
+                                <div class="selected-exercises-list" id="selectedExercisesList">
+                                    <div class="no-exercises-message"><?php echo t('no_exercises_selected'); ?></div>
                                 </div>
                             </div>
                         </div>
@@ -1278,23 +1345,23 @@ $bodyClass = "admin-page";
                                     <label>Category</label>
                                     <div class="categories">
                                         <div class="category" data-category="Strength Training">Strength Training</div>
-                                        <div class="category" data-category="cardio">Cardio</div>
-                                        <div class="category" data-category="Bodyweight">Bodyweight</div>
+                                        <div class="category" data-category="Cardio">Cardio</div>
+                                        <div class="category" data-category="Flexibility">Flexibility</div>
+                                        <div class="category" data-category="Balance">Balance</div>
+                                        <div class="category" data-category="Plyometric">Plyometric</div>
+                                        <div class="category" data-category="Functional">Functional</div>
                                     </div>
                                 </div>
                                 
                                 <div class="input-group">
                                     <label>Difficulty Level</label>
                                     <div class="difficulty-slider-container">
-                                        <input type="range" min="0" max="5" value="2" id="editDifficultySlider" step="1">
+                                        <input type="range" min="0" max="2" value="1" id="editDifficultySlider" step="1">
                                         <div class="difficulty-value"></div>
                                         <div class="slider-labels">
                                             <span>Beginner</span>
-                                            <span>Easy</span>
-                                            <span>Medium</span>
                                             <span>Intermediate</span>
-                                            <span>Hard</span>
-                                            <span>Expert</span>
+                                            <span>Advanced</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1302,17 +1369,17 @@ $bodyClass = "admin-page";
                             
                             <div class="column-right">
                                 <div class="input-group">
-                                    <label for="editSetsPerExercise">Sets Per Exercise</label>
+                                    <label for="editSetsPerExercise"><?php echo t('sets_per_exercise'); ?></label>
                                     <input type="number" id="editSetsPerExercise" min="1" max="10" value="3">
                                 </div>
                                 
                                 <div class="input-group">
-                                    <label for="editRestTimePerExercise">Rest Time Between Exercises (minutes)</label>
+                                    <label for="editRestTimePerExercise"><?php echo t('rest_time_between_exercises'); ?></label>
                                     <input type="number" id="editRestTimePerExercise" min="0" max="10" value="1" step="0.5">
                                 </div>
                                 
                                 <div class="input-group">
-                                    <label for="editEstimatedTime">Estimated Time (minutes)</label>
+                                    <label for="editEstimatedTime"><?php echo t('estimated_time'); ?></label>
                                     <input type="number" id="editEstimatedTime" min="5" max="180" value="45" readonly>
                                 </div>
                             </div>
@@ -1331,13 +1398,25 @@ $bodyClass = "admin-page";
                                         <i class="fas fa-dumbbell"></i>
                                         Strength Training
                                     </div>
-                                    <div class="edit-category-item" data-category="cardio">
+                                    <div class="edit-category-item" data-category="Cardio">
                                         <i class="fas fa-running"></i>
                                         Cardio
                                     </div>
-                                    <div class="edit-category-item" data-category="Bodyweight">
+                                    <div class="edit-category-item" data-category="Flexibility">
+                                        <i class="fas fa-child"></i>
+                                        Flexibility
+                                    </div>
+                                    <div class="edit-category-item" data-category="Balance">
+                                        <i class="fas fa-balance-scale"></i>
+                                        Balance
+                                    </div>
+                                    <div class="edit-category-item" data-category="Plyometric">
+                                        <i class="fas fa-running"></i>
+                                        Plyometric
+                                    </div>
+                                    <div class="edit-category-item" data-category="Functional">
                                         <i class="fas fa-user"></i>
-                                        Bodyweight
+                                        Functional
                                     </div>
                                 </div>
                             </div>
@@ -1377,6 +1456,8 @@ $bodyClass = "admin-page";
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const allExercises = <?php echo json_encode($exercises_data); ?>;
+            
+            updateCategoryCountsUI();
             
             let selectedExercises = [];
             let editSelectedExercises = [];
@@ -1590,26 +1671,70 @@ $bodyClass = "admin-page";
                 const exercisesGrid = document.getElementById('exercisesGrid');
                 exercisesGrid.innerHTML = '<div class="loading">Loading exercises...</div>';
                 
-                const exercises = getExercisesByCategory(category);
-                renderExerciseGrid(exercises, exercisesGrid, false);
+                
+                if (allExercises.length === 0) {
+                    exercisesGrid.innerHTML = '<div class="empty-state">No exercises found in the database. Please add exercises first.</div>';
+                    return;
+                }
+                
+                const filteredExercises = getExercisesByCategory(category);
+                
+                if (filteredExercises.length === 0) {
+                    exercisesGrid.innerHTML = `<div class="empty-state">No exercises found for the "${category}" category.</div>`;
+                } else {
+                    renderExerciseGrid(filteredExercises, exercisesGrid, false);
+                }
             }
             
             function loadEditExercises(category) {
                 const exercisesGrid = document.getElementById('editExercisesGrid');
                 exercisesGrid.innerHTML = '<div class="loading">Loading exercises...</div>';
                 
-                const exercises = getExercisesByCategory(category);
-                renderExerciseGrid(exercises, exercisesGrid, true);
+                
+                if (allExercises.length === 0) {
+                    exercisesGrid.innerHTML = '<div class="empty-state">No exercises found in the database. Please add exercises first.</div>';
+                    return;
+                }
+                
+                const filteredExercises = getExercisesByCategory(category);
+                console.log("Filtered exercises for edit:", filteredExercises.length);
+                
+                if (filteredExercises.length === 0) {
+                    exercisesGrid.innerHTML = `<div class="empty-state">No exercises found for the "${category}" category.</div>`;
+                } else {
+                    renderExerciseGrid(filteredExercises, exercisesGrid, true);
+                }
             }
             
             function getExercisesByCategory(category) {
-                return allExercises;
+                console.log("Getting exercises for category:", category);
+                
+                if (allExercises.length > 0) {
+                    console.log("Sample exercise:", allExercises[0]);
+                }
+                
+                if (category === 'all') {
+                    return allExercises;
+                }
+                
+                const filtered = allExercises.filter(exercise => {
+                    const exerciseType = (exercise.exercise_type || '').toLowerCase();
+                    const searchCategory = category.toLowerCase();
+                    
+                    return exerciseType === searchCategory;
+                });
+                
+                console.log(`Found ${filtered.length} exercises with category ${category}`);
+                
+                return filtered;
             }
             
             function renderExerciseGrid(exercises, container, isEdit) {
                 container.innerHTML = '';
                 
-                if (exercises.length === 0) {
+                console.log("Rendering exercise grid with", exercises.length, "exercises");
+                
+                if (!exercises || exercises.length === 0) {
                     container.innerHTML = '<div class="empty-state">No exercises found for this category</div>';
                     return;
                 }
@@ -1619,6 +1744,8 @@ $bodyClass = "admin-page";
                     exerciseItem.className = 'exercise-item';
                     exerciseItem.setAttribute('data-id', exercise.id);
                     exerciseItem.setAttribute('data-name', exercise.name);
+                    exerciseItem.setAttribute('data-type', exercise.exercise_type || '');
+                    exerciseItem.setAttribute('data-muscle', exercise.primary_muscle || '');
                     
                     exerciseItem.innerHTML = `
                         <div class="exercise-image">
@@ -1657,24 +1784,38 @@ $bodyClass = "admin-page";
             
             function addToSelected(exercise) {
                 if (selectedExercises.some(ex => ex.id === exercise.id)) {
-                    alert('Exercise already added');
+                    showToast('Exercise already added');
                     return;
                 }
                 
-                selectedExercises.push(exercise);
+                const exerciseToAdd = {
+                    ...exercise,
+                    sets: parseInt(document.getElementById('setsPerExercise').value) || 3
+                };
+                
+                selectedExercises.push(exerciseToAdd);
                 renderSelectedExercises();
                 updateEstimatedTime();
+                
+                showToast(`Added ${exercise.name} to workout`);
             }
             
             function addToEditSelected(exercise) {
                 if (editSelectedExercises.some(ex => ex.id === exercise.id)) {
-                    alert('Exercise already added');
+                    showToast('Exercise already added');
                     return;
                 }
                 
-                editSelectedExercises.push(exercise);
+                const exerciseToAdd = {
+                    ...exercise,
+                    sets: parseInt(document.getElementById('editSetsPerExercise').value) || 3
+                };
+                
+                editSelectedExercises.push(exerciseToAdd);
                 renderEditSelectedExercises();
                 updateEditEstimatedTime();
+                
+                showToast(`Added ${exercise.name} to workout`);
             }
             
             function renderSelectedExercises() {
@@ -1899,28 +2040,74 @@ $bodyClass = "admin-page";
             
             function filterExercises(query) {
                 const exerciseItems = document.querySelectorAll('#exercisesGrid .exercise-item');
+                let matchCount = 0;
                 
                 exerciseItems.forEach(item => {
                     const name = item.getAttribute('data-name').toLowerCase();
-                    if (name.includes(query)) {
+                    const id = item.getAttribute('data-id');
+                    
+                    if (!query) {
                         item.style.display = 'block';
+                        matchCount++;
+                        return;
+                    }
+                    
+                    if (name.includes(query) || id === query) {
+                        item.style.display = 'block';
+                        matchCount++;
                     } else {
                         item.style.display = 'none';
                     }
                 });
+                
+                const noResults = document.getElementById('noExerciseResults');
+                if (matchCount === 0 && query) {
+                    if (!noResults) {
+                        const noResultsEl = document.createElement('div');
+                        noResultsEl.id = 'noExerciseResults';
+                        noResultsEl.className = 'empty-state';
+                        noResultsEl.innerHTML = `<p>No exercises found matching "${query}"</p>`;
+                        document.getElementById('exercisesGrid').appendChild(noResultsEl);
+                    }
+                } else if (noResults) {
+                    noResults.remove();
+                }
             }
             
             function filterEditExercises(query) {
                 const exerciseItems = document.querySelectorAll('#editExercisesGrid .exercise-item');
+                let matchCount = 0;
                 
                 exerciseItems.forEach(item => {
                     const name = item.getAttribute('data-name').toLowerCase();
-                    if (name.includes(query)) {
+                    const id = item.getAttribute('data-id');
+                    
+                    if (!query) {
                         item.style.display = 'block';
+                        matchCount++;
+                        return;
+                    }
+                    
+                    if (name.includes(query) || id === query) {
+                        item.style.display = 'block';
+                        matchCount++;
                     } else {
                         item.style.display = 'none';
                     }
                 });
+                
+                const noResults = document.getElementById('noEditExerciseResults');
+                if (matchCount === 0 && query) {
+                    if (!noResults) {
+                        const noResultsEl = document.createElement('div');
+                        noResultsEl.id = 'noEditExerciseResults';
+                        noResultsEl.className = 'empty-state';
+                        noResultsEl.innerHTML = `<p>No exercises found matching "${query}"</p>`;
+                        document.getElementById('editExercisesGrid').appendChild(noResultsEl);
+                    }
+                } else if (noResults) {
+                    noResults.remove();
+                }
             }
             
             function updateEstimatedTime() {
@@ -1931,7 +2118,7 @@ $bodyClass = "admin-page";
                 
                 let timePerExercise = 1; 
                 
-                const difficultyMultipliers = [0.7, 0.8, 0.9, 1.0, 1.2, 1.4];
+                const difficultyMultipliers = [0.8, 1.0, 1.2];
                 timePerExercise *= difficultyMultipliers[difficultyLevel];
                 
                 const totalTime = Math.round(exerciseCount * (sets * timePerExercise + (sets - 1) * restTime));
@@ -1946,7 +2133,7 @@ $bodyClass = "admin-page";
                 
                 let timePerExercise = 1; 
                 
-                const difficultyMultipliers = [0.7, 0.8, 0.9, 1.0, 1.2, 1.4];
+                const difficultyMultipliers = [0.8, 1.0, 1.2];
                 timePerExercise *= difficultyMultipliers[difficultyLevel];
                 
                 const totalTime = Math.round(exerciseCount * (sets * timePerExercise + (sets - 1) * restTime));
@@ -1975,11 +2162,8 @@ $bodyClass = "admin-page";
                 
                 const difficultyMap = {
                     0: 'beginner',
-                    1: 'easy',
-                    2: 'medium',
-                    3: 'intermediate',
-                    4: 'hard',
-                    5: 'expert'
+                    1: 'intermediate',
+                    2: 'advanced'
                 };
                 
                 const templateData = {
@@ -1988,13 +2172,12 @@ $bodyClass = "admin-page";
                     category: category,
                     difficulty: difficultyMap[difficultyLevel],
                     estimated_time: estimatedTime,
-                    sets_per_exercise: sets,
                     rest_time: restTime,
                     user_id: <?php echo $user_id; ?>,
                     exercises: selectedExercises.map((ex, index) => ({
                         exercise_id: ex.id,
                         position: index + 1,
-                        sets: sets,
+                        sets: ex.sets || sets,
                         rest_time: restTime
                     }))
                 };
@@ -2073,9 +2256,9 @@ $bodyClass = "admin-page";
                     document.getElementById('editWorkoutName').value = data.name;
                     document.getElementById('editWorkoutDescription').value = data.description || '';
                     
-                    let difficultyValue = 2;
-                    if (data.difficulty === 'beginner') difficultyValue = 1;
-                    if (data.difficulty === 'advanced') difficultyValue = 3;
+                    let difficultyValue = 1;
+                    if (data.difficulty === 'beginner') difficultyValue = 0;
+                    if (data.difficulty === 'advanced') difficultyValue = 2;
                     document.getElementById('editDifficultySlider').value = difficultyValue;
                     
                     document.getElementById('editSetsPerExercise').value = data.sets_per_exercise || 3;
@@ -2134,11 +2317,8 @@ $bodyClass = "admin-page";
                 
                 const difficultyMap = {
                     0: 'beginner',
-                    1: 'easy',
-                    2: 'medium',
-                    3: 'intermediate',
-                    4: 'hard',
-                    5: 'expert'
+                    1: 'intermediate',
+                    2: 'advanced'
                 };
                 
                 const templateData = {
@@ -2148,12 +2328,11 @@ $bodyClass = "admin-page";
                     category: category,
                     difficulty: difficultyMap[difficultyLevel],
                     estimated_time: estimatedTime,
-                    sets_per_exercise: sets,
                     rest_time: restTime,
                     exercises: editSelectedExercises.map((ex, index) => ({
                         exercise_id: ex.id,
                         position: index + 1,
-                        sets: sets,
+                        sets: ex.sets || sets,
                         rest_time: restTime
                     }))
                 };
@@ -2200,8 +2379,6 @@ $bodyClass = "admin-page";
             }
             
             function deleteTemplate(templateId) {
-                console.log('Deleting template with ID:', templateId);
-                
                 fetch(`/admin/api/delete_template.php?id=${templateId}`, {
                     method: 'DELETE'
                 })
@@ -2221,7 +2398,6 @@ $bodyClass = "admin-page";
                     }
                 })
                 .then(data => {
-                    console.log('Template deleted successfully', data);
                     const templateCard = document.querySelector(`.template-card[data-id="${templateId}"]`);
                     if (templateCard) {
                         templateCard.remove();
@@ -2243,11 +2419,13 @@ $bodyClass = "admin-page";
                 const valueDisplay = container.querySelector('.difficulty-value');
                 const labels = container.querySelectorAll('.slider-labels span');
                 
-                const difficultyLabels = ['Beginner', 'Easy', 'Medium', 'Intermediate', 'Hard', 'Expert'];
+                const difficultyLabels = ['Beginner', 'Intermediate', 'Advanced'];
+                
+                slider.setAttribute('max', '2');
                 
                 function updateSlider() {
                     const value = parseInt(slider.value);
-                    const percent = (value / 5) * 100;
+                    const percent = (value / 2) * 100;
                     
                     slider.style.setProperty('--progress', `${percent}%`);
                     
@@ -2263,16 +2441,93 @@ $bodyClass = "admin-page";
                 }
                 
                 labels.forEach((label, index) => {
-                    label.addEventListener('click', () => {
-                        slider.value = index;
-                        updateSlider();
-                        slider.dispatchEvent(new Event('input'));
-                    });
+                    if (index < 3) {
+                        label.addEventListener('click', () => {
+                            slider.value = index;
+                            updateSlider();
+                            slider.dispatchEvent(new Event('input'));
+                        });
+                        label.style.display = 'block';
+                    } else {
+                        label.style.display = 'none';
+                    }
                 });
                 
                 slider.addEventListener('input', updateSlider);
                 
                 updateSlider();
+            }
+
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            function updateCategoryCountsUI() {
+                const categoryCounts = {};
+                
+                const categories = ['Strength Training', 'Cardio', 'Flexibility', 'Balance', 'Plyometric', 'Functional'];
+                categories.forEach(cat => categoryCounts[cat] = 0);
+                
+                allExercises.forEach(exercise => {
+                    const category = exercise.exercise_type;
+                    if (category && categories.includes(category)) {
+                        categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+                    }
+                });
+                
+                document.querySelectorAll('.category-item').forEach(item => {
+                    const category = item.getAttribute('data-category');
+                    if (category && categoryCounts[category] !== undefined) {
+                        const badge = document.createElement('span');
+                        badge.className = 'category-count';
+                        badge.textContent = categoryCounts[category];
+                        
+                        const existingBadge = item.querySelector('.category-count');
+                        if (existingBadge) {
+                            existingBadge.textContent = categoryCounts[category];
+                        } else {
+                            item.appendChild(badge);
+                        }
+                        
+                        if (categoryCounts[category] === 0) {
+                            item.classList.add('empty-category');
+                        } else {
+                            item.classList.remove('empty-category');
+                        }
+                    }
+                });
+                
+                document.querySelectorAll('.edit-category-item').forEach(item => {
+                    const category = item.getAttribute('data-category');
+                    if (category && categoryCounts[category] !== undefined) {
+                        const badge = document.createElement('span');
+                        badge.className = 'category-count';
+                        badge.textContent = categoryCounts[category];
+                        
+                        const existingBadge = item.querySelector('.category-count');
+                        if (existingBadge) {
+                            existingBadge.textContent = categoryCounts[category];
+                        } else {
+                            item.appendChild(badge);
+                        }
+                        
+                        if (categoryCounts[category] === 0) {
+                            item.classList.add('empty-category');
+                        } else {
+                            item.classList.remove('empty-category');
+                        }
+                    }
+                });
+            }
+            
+            function getCategoryValue(uiCategory) {
+                return uiCategory;
             }
         });
     </script>

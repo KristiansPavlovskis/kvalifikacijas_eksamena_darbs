@@ -9,8 +9,7 @@ try {
 
     session_start();
     if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-        http_response_code(401);
-        echo json_encode(["success" => false, "message" => "Unauthorized"]);
+        echo json_encode(['success' => false, 'message' => 'Not authorized']);
         exit;
     }
 
@@ -31,33 +30,24 @@ try {
     }
 
     if (!$is_superadmin) {
-        http_response_code(403);
-        echo json_encode(["success" => false, "message" => "Access denied"]);
+        echo json_encode(['success' => false, 'message' => 'Access denied']);
         exit;
     }
 
-    $json_data = file_get_contents('php://input');
-    if (!$json_data) {
-        throw new Exception("No data received");
-    }
-    
-    $data = json_decode($json_data, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception("Invalid JSON: " . json_last_error_msg());
-    }
+    $input = json_decode(file_get_contents('php://input'), true);
 
-    if (empty($data['id'])) {
-        echo json_encode(["success" => false, "message" => "Template ID is required"]);
+    if (!$input) {
+        echo json_encode(['success' => false, 'message' => 'Invalid data format']);
         exit;
     }
 
-    if (empty($data['name'])) {
-        echo json_encode(["success" => false, "message" => "Template name is required"]);
+    if (empty($input['id'])) {
+        echo json_encode(['success' => false, 'message' => 'Template ID is required']);
         exit;
     }
 
-    if (empty($data['exercises']) || !is_array($data['exercises']) || count($data['exercises']) === 0) {
-        echo json_encode(["success" => false, "message" => "At least one exercise is required"]);
+    if (empty($input['name'])) {
+        echo json_encode(['success' => false, 'message' => 'Template name is required']);
         exit;
     }
 
@@ -74,7 +64,7 @@ try {
             throw new Exception("Database error: " . $conn->error);
         }
         
-        $stmt->bind_param("i", $data['id']);
+        $stmt->bind_param("i", $input['id']);
         $stmt->execute();
         $result = $stmt->get_result();
         
@@ -82,68 +72,64 @@ try {
             throw new Exception("Template not found or you don't have permission to edit it");
         }
 
-        $template_sql = "UPDATE workout_templates 
-                        SET name = ?, description = ?, category = ?, 
-                            difficulty = ?, estimated_time = ?, 
-                            rest_time = ?, 
-                            updated_at = NOW() 
-                        WHERE id = ?";
-        $stmt = $conn->prepare($template_sql);
+        $template_query = "UPDATE workout_templates SET 
+                          name = ?, 
+                          description = ?, 
+                          category = ?, 
+                          difficulty = ?, 
+                          estimated_time = ?, 
+                          rest_time = ? 
+                          WHERE id = ?";
+        
+        $stmt = $conn->prepare($template_query);
         if (!$stmt) {
             throw new Exception("Database error: " . $conn->error);
         }
         
-        $description = !empty($data['description']) ? $data['description'] : '';
-        $category = !empty($data['category']) ? $data['category'] : 'Strength Training';
-        $difficulty = !empty($data['difficulty']) ? $data['difficulty'] : 'intermediate';
-        $estimated_time = !empty($data['estimated_time']) ? $data['estimated_time'] : 45;
-        $rest_time = !empty($data['rest_time']) ? $data['rest_time'] : 1;
-        
-        $stmt->bind_param("ssssidi", 
-            $data['name'], 
-            $description,
-            $category,
-            $difficulty,
-            $estimated_time,
-            $rest_time,
-            $data['id']
+        $stmt->bind_param(
+            "ssssidi", 
+            $input['name'], 
+            $input['description'], 
+            $input['category'], 
+            $input['difficulty'], 
+            $input['estimated_time'],
+            $input['rest_time'], 
+            $input['id']
         );
         
         $stmt->execute();
         
-        $delete_exercises_sql = "DELETE FROM workout_template_exercises WHERE workout_template_id = ?";
-        $stmt = $conn->prepare($delete_exercises_sql);
+        $delete_query = "DELETE FROM workout_template_exercises WHERE workout_template_id = ?";
+        $stmt = $conn->prepare($delete_query);
         if (!$stmt) {
             throw new Exception("Database error: " . $conn->error);
         }
         
-        $stmt->bind_param("i", $data['id']);
+        $stmt->bind_param("i", $input['id']);
         $stmt->execute();
         
-        $exercise_sql = "INSERT INTO workout_template_exercises (workout_template_id, exercise_id, position, sets, rest_time) 
-                        VALUES (?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($exercise_sql);
-        if (!$stmt) {
-            throw new Exception("Database error: " . $conn->error);
-        }
-        
-        foreach ($data['exercises'] as $exercise) {
-            $stmt->bind_param("iiidi", 
-                $data['id'], 
-                $exercise['exercise_id'],
-                $exercise['position'],
-                $exercise['sets'],
-                $exercise['rest_time']
-            );
-            $stmt->execute();
+        if (!empty($input['exercises'])) {
+            $exercise_query = "INSERT INTO workout_template_exercises (workout_template_id, exercise_id, position, sets, rest_time) 
+                               VALUES (?, ?, ?, ?, ?)";
+            
+            $stmt = $conn->prepare($exercise_query);
+            
+            foreach ($input['exercises'] as $exercise) {
+                $stmt->bind_param(
+                    "iiidi", 
+                    $input['id'], 
+                    $exercise['exercise_id'], 
+                    $exercise['position'], 
+                    $exercise['sets'], 
+                    $exercise['rest_time']
+                );
+                $stmt->execute();
+            }
         }
         
         $conn->commit();
         
-        echo json_encode([
-            "success" => true, 
-            "message" => "Template updated successfully"
-        ]);
+        echo json_encode(['success' => true, 'template_id' => $input['id']]);
         
     } catch (Exception $e) {
         $conn->rollback();

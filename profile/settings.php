@@ -1,6 +1,6 @@
 <?php
 require_once 'profile_access_control.php';
-
+require_once 'languages.php';
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php?redirect=profile/settings.php");
@@ -19,6 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST["update_profile"])) {
         $new_username = trim($_POST["username"]);
         $email = trim($_POST["email"]);
+        $language = trim($_POST["language"]);
         
         if ($new_username !== $username) {
             $check_query = "SELECT id FROM users WHERE username = ? AND id != ?";
@@ -28,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result = mysqli_stmt_get_result($check_stmt);
             
             if (mysqli_num_rows($result) > 0) {
-                $message = "Username already exists! Please choose a different one.";
+                $message = t("username_exists");
                 $message_type = "error";
             } else {
                 $_SESSION["username"] = $new_username;
@@ -37,15 +38,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         if (empty($message)) {
-            $query = "UPDATE users SET username = ?, email = ? WHERE id = ?";
+            $query = "UPDATE users SET username = ?, email = ?, language = ? WHERE id = ?";
             $stmt = mysqli_prepare($conn, $query);
-            mysqli_stmt_bind_param($stmt, "ssi", $new_username, $email, $user_id);
+            mysqli_stmt_bind_param($stmt, "sssi", $new_username, $email, $language, $user_id);
             
             if (mysqli_stmt_execute($stmt)) {
-                $message = "Profile updated successfully!";
+                $_SESSION["language"] = $language;
+                $message = t("profile_updated");
                 $message_type = "success";
             } else {
-                $message = "Error updating profile: " . mysqli_error($conn);
+                $message = t("error_updating_profile") . " " . mysqli_error($conn);
                 $message_type = "error";
             }
         }
@@ -72,33 +74,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 mysqli_stmt_bind_param($stmt, "si", $hashed_password, $user_id);
                 
                 if (mysqli_stmt_execute($stmt)) {
-                    $message = "Password changed successfully!";
+                    $message = t("password_changed");
                     $message_type = "success";
                 } else {
-                    $message = "Error changing password: " . mysqli_error($conn);
+                    $message = t("error_changing_password") . " " . mysqli_error($conn);
                     $message_type = "error";
                 }
             } else {
-                $message = "New passwords do not match!";
+                $message = t("passwords_dont_match");
                 $message_type = "error";
             }
         } else {
-            $message = "Current password is incorrect!";
+            $message = t("current_password_incorrect");
             $message_type = "error";
         }
     }
     
     if (isset($_POST["delete_account"])) {
+        $delete_measurements = "DELETE FROM body_measurements WHERE user_id = ?";
+        $stmt_measurements = mysqli_prepare($conn, $delete_measurements);
+        mysqli_stmt_bind_param($stmt_measurements, "i", $user_id);
+        mysqli_stmt_execute($stmt_measurements);
+
         $query = "DELETE FROM users WHERE id = ?";
         $stmt = mysqli_prepare($conn, $query);
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         
         if (mysqli_stmt_execute($stmt)) {
             session_destroy();
-            header("location: ../login.php?message=Account deleted successfully");
+            header("location: ../login.php");
             exit;
         } else {
-            $message = "Error deleting account: " . mysqli_error($conn);
+            $message = t("error_deleting_account") . " " . mysqli_error($conn);
             $message_type = "error";
         }
     }
@@ -110,14 +117,17 @@ mysqli_stmt_bind_param($stmt, "i", $user_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($result);
+
+$current_language = $user['language'] ?? 'en';
+$_SESSION["language"] = $current_language;
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $current_language; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYMVERSE - Settings</title>
+    <title>GYMVERSE - <?php echo t('settings'); ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -130,7 +140,7 @@ $user = mysqli_fetch_assoc($result);
         
         <div class="settings-main-content">
             <div class="settings-page-header">
-                <h1 class="settings-page-title">Settings</h1>
+                <h1 class="settings-page-title"><?php echo t('settings'); ?></h1>
             </div>
             
             <?php if (!empty($message) && $message_type === "success") { ?>
@@ -139,7 +149,7 @@ $user = mysqli_fetch_assoc($result);
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="settings-alert-content">
-                        <strong>Success!</strong> <?php echo $message; ?>
+                        <strong><?php echo t('success'); ?>!</strong> <?php echo $message; ?>
                     </div>
                 </div>
             <?php } ?>
@@ -150,20 +160,20 @@ $user = mysqli_fetch_assoc($result);
                         <i class="fas fa-exclamation-circle"></i>
                     </div>
                     <div class="settings-alert-content">
-                        <strong>Error!</strong> <?php echo $message; ?>
+                        <strong><?php echo t('error'); ?>!</strong> <?php echo $message; ?>
                     </div>
                 </div>
             <?php } ?>
             
             <div class="settings-tabs" id="settings-tabs">
                 <div class="settings-tab active" data-tab="profile">
-                    <i class="fas fa-user"></i> Profile
+                    <i class="fas fa-user"></i> <?php echo t('profile'); ?>
                 </div>
                 <div class="settings-tab" data-tab="security">
-                    <i class="fas fa-lock"></i> Security
+                    <i class="fas fa-lock"></i> <?php echo t('security'); ?>
                 </div>
                 <div class="settings-tab" data-tab="account">
-                    <i class="fas fa-user-cog"></i> Account
+                    <i class="fas fa-user-cog"></i> <?php echo t('account'); ?>
                 </div>
             </div>
             
@@ -172,23 +182,31 @@ $user = mysqli_fetch_assoc($result);
                     <div class="settings-card">
                         <div class="settings-card-header">
                             <h2 class="settings-card-title">
-                                <i class="fas fa-user-circle"></i> Profile Information
+                                <i class="fas fa-user-circle"></i> <?php echo t('profile_information'); ?>
                             </h2>
                         </div>
                         <div class="settings-card-body">
                             <div class="settings-form-group">
-                                <label for="username">Username</label>
-                                <input type="text" id="username" name="username" class="settings-form-control" value="<?php echo htmlspecialchars($user['username'] ?? ''); ?>" placeholder="Enter your username">
+                                <label for="username"><?php echo t('username'); ?></label>
+                                <input type="text" id="username" name="username" class="settings-form-control" value="<?php echo htmlspecialchars($user['username'] ?? ''); ?>" placeholder="<?php echo t('enter_username'); ?>">
                             </div>
                             
                             <div class="settings-form-group">
-                                <label for="email">Email Address</label>
-                                <input type="email" id="email" name="email" class="settings-form-control" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" placeholder="Enter your email">
+                                <label for="email"><?php echo t('email_address'); ?></label>
+                                <input type="email" id="email" name="email" class="settings-form-control" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" placeholder="<?php echo t('enter_email'); ?>">
+                            </div>
+                            
+                            <div class="settings-form-group">
+                                <label for="language"><?php echo t('language'); ?></label>
+                                <select id="language" name="language" class="settings-form-control">
+                                    <option value="en" <?php echo ($current_language == 'en') ? 'selected' : ''; ?>><?php echo t('english'); ?></option>
+                                    <option value="lv" <?php echo ($current_language == 'lv') ? 'selected' : ''; ?>><?php echo t('latvian'); ?></option>
+                                </select>
                             </div>
                             
                             <div class="settings-form-actions">
                                 <button type="submit" name="update_profile" class="settings-btn settings-btn-primary">
-                                    <i class="fas fa-save"></i> Save Changes
+                                    <i class="fas fa-save"></i> <?php echo t('save_changes'); ?>
                                 </button>
                             </div>
                         </div>
@@ -201,28 +219,28 @@ $user = mysqli_fetch_assoc($result);
                     <div class="settings-card">
                         <div class="settings-card-header">
                             <h2 class="settings-card-title">
-                                <i class="fas fa-lock"></i> Change Password
+                                <i class="fas fa-lock"></i> <?php echo t('change_password'); ?>
                             </h2>
                         </div>
                         <div class="settings-card-body">
                             <div class="settings-form-group">
-                                <label for="current_password">Current Password</label>
-                                <input type="password" id="current_password" name="current_password" class="settings-form-control" placeholder="Enter your current password" required>
+                                <label for="current_password"><?php echo t('current_password'); ?></label>
+                                <input type="password" id="current_password" name="current_password" class="settings-form-control" placeholder="<?php echo t('enter_current_password'); ?>" required>
                             </div>
                             
                             <div class="settings-form-group">
-                                <label for="new_password">New Password</label>
-                                <input type="password" id="new_password" name="new_password" class="settings-form-control" placeholder="Enter your new password" required>
+                                <label for="new_password"><?php echo t('new_password'); ?></label>
+                                <input type="password" id="new_password" name="new_password" class="settings-form-control" placeholder="<?php echo t('enter_new_password'); ?>" required>
                             </div>
                             
                             <div class="settings-form-group">
-                                <label for="confirm_password">Confirm New Password</label>
-                                <input type="password" id="confirm_password" name="confirm_password" class="settings-form-control" placeholder="Confirm your new password" required>
+                                <label for="confirm_password"><?php echo t('confirm_new_password'); ?></label>
+                                <input type="password" id="confirm_password" name="confirm_password" class="settings-form-control" placeholder="<?php echo t('confirm_new_password_placeholder'); ?>" required>
                             </div>
                             
                             <div class="settings-form-actions">
                                 <button type="submit" name="change_password" class="settings-btn settings-btn-primary">
-                                    <i class="fas fa-key"></i> Update Password
+                                    <i class="fas fa-key"></i> <?php echo t('update_password'); ?>
                                 </button>
                             </div>
                         </div>
@@ -234,15 +252,15 @@ $user = mysqli_fetch_assoc($result);
                 <div class="settings-card">
                     <div class="settings-card-header">
                         <h2 class="settings-card-title">
-                            <i class="fas fa-user-cog"></i> Account Management
+                            <i class="fas fa-user-cog"></i> <?php echo t('account_management'); ?>
                         </h2>
                     </div>
                     <div class="settings-card-body">
                         <div class="settings-form-group">
-                            <label>Delete Account</label>
-                            <p style="color: var(--text-muted); margin-bottom: 15px;">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                            <label><?php echo t('delete_account'); ?></label>
+                            <p style="color: var(--text-muted); margin-bottom: 15px;"><?php echo t('delete_account_description'); ?></p>
                             <button class="settings-btn settings-btn-danger" id="deleteAccountBtn">
-                                <i class="fas fa-trash-alt"></i> Delete Account
+                                <i class="fas fa-trash-alt"></i> <?php echo t('delete_account'); ?>
                             </button>
                         </div>
                     </div>
@@ -255,7 +273,7 @@ $user = mysqli_fetch_assoc($result);
         <div class="settings-modal-content">
             <div class="settings-modal-header">
                 <h2 class="settings-modal-title" style="color: var(--danger);">
-                    <i class="fas fa-exclamation-triangle"></i> Delete Account
+                    <i class="fas fa-exclamation-triangle"></i> <?php echo t('delete_account'); ?>
                 </h2>
             </div>
             <div class="settings-modal-body">
@@ -264,18 +282,18 @@ $user = mysqli_fetch_assoc($result);
                         <i class="fas fa-exclamation-circle"></i>
                     </div>
                     <div class="settings-alert-content">
-                        <strong>Warning!</strong> This action cannot be undone.
+                        <strong><?php echo t('warning'); ?>!</strong> <?php echo t('action_cannot_be_undone'); ?>
                     </div>
                 </div>
-                <p>Are you sure you want to delete your account? This will permanently remove all your data including workout history, goals, and personal information.</p>
+                <p><?php echo t('confirm_delete_account_message'); ?></p>
             </div>
             <div class="settings-modal-footer">
                 <button class="settings-btn settings-btn-secondary" id="cancelDeleteBtn">
-                    <i class="fas fa-times"></i> Cancel
+                    <i class="fas fa-times"></i> <?php echo t('cancel'); ?>
                 </button>
                 <form method="POST" action="">
                     <button type="submit" name="delete_account" class="settings-btn settings-btn-danger">
-                        <i class="fas fa-trash-alt"></i> Delete Account
+                        <i class="fas fa-trash-alt"></i> <?php echo t('delete_account'); ?>
                     </button>
                 </form>
             </div>

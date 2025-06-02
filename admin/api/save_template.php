@@ -9,8 +9,7 @@ try {
 
     session_start();
     if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-        http_response_code(401);
-        echo json_encode(["success" => false, "message" => "Unauthorized"]);
+        echo json_encode(['success' => false, 'message' => 'Not authorized']);
         exit;
     }
 
@@ -31,27 +30,23 @@ try {
     }
 
     if (!$is_superadmin) {
-        http_response_code(403);
-        echo json_encode(["success" => false, "message" => "Access denied"]);
+        echo json_encode(['success' => false, 'message' => 'Access denied']);
         exit;
     }
 
-    $json_data = file_get_contents('php://input');
-    if (!$json_data) {
-        throw new Exception("No data received");
-    }
-    
-    $data = json_decode($json_data, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception("Invalid JSON: " . json_last_error_msg());
-    }
+    $input = json_decode(file_get_contents('php://input'), true);
 
-    if (empty($data['name'])) {
-        echo json_encode(["success" => false, "message" => "Template name is required"]);
+    if (!$input) {
+        echo json_encode(['success' => false, 'message' => 'Invalid data format']);
         exit;
     }
 
-    if (empty($data['exercises']) || !is_array($data['exercises']) || count($data['exercises']) === 0) {
+    if (empty($input['name'])) {
+        echo json_encode(['success' => false, 'message' => 'Template name is required']);
+        exit;
+    }
+
+    if (empty($input['exercises']) || !is_array($input['exercises']) || count($input['exercises']) === 0) {
         echo json_encode(["success" => false, "message" => "At least one exercise is required"]);
         exit;
     }
@@ -59,45 +54,36 @@ try {
     $conn->begin_transaction();
 
     try {
-        $template_sql = "INSERT INTO workout_templates (name, description, category, difficulty, user_id, created_at, estimated_time, rest_time) 
-                        VALUES (?, ?, ?, ?, ?, NOW(), ?, ?)";
-        $stmt = $conn->prepare($template_sql);
-        if (!$stmt) {
-            throw new Exception("Database error: " . $conn->error);
-        }
+        $template_query = "INSERT INTO workout_templates (name, description, category, difficulty, estimated_time, rest_time, user_id) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?)";
         
-        $description = !empty($data['description']) ? $data['description'] : '';
-        $category = !empty($data['category']) ? $data['category'] : 'Strength Training';
-        $difficulty = !empty($data['difficulty']) ? $data['difficulty'] : 'intermediate';
-        $estimated_time = !empty($data['estimated_time']) ? $data['estimated_time'] : 45;
-        $rest_time = !empty($data['rest_time']) ? $data['rest_time'] : 1;
-        
-        $stmt->bind_param("ssssidi", 
-            $data['name'], 
-            $description,
-            $category,
-            $difficulty,
-            $user_id,
-            $estimated_time,
-            $rest_time
+        $stmt = $conn->prepare($template_query);
+        $stmt->bind_param(
+            "ssssddi", 
+            $input['name'], 
+            $input['description'], 
+            $input['category'], 
+            $input['difficulty'], 
+            $input['estimated_time'],
+            $input['rest_time'], 
+            $user_id
         );
         
         $stmt->execute();
         $template_id = $conn->insert_id;
         
-        $exercise_sql = "INSERT INTO workout_template_exercises (workout_template_id, exercise_id, position, sets, rest_time) 
-                        VALUES (?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($exercise_sql);
-        if (!$stmt) {
-            throw new Exception("Database error: " . $conn->error);
-        }
+        $exercise_query = "INSERT INTO workout_template_exercises (workout_template_id, exercise_id, position, sets, rest_time) 
+                           VALUES (?, ?, ?, ?, ?)";
         
-        foreach ($data['exercises'] as $exercise) {
-            $stmt->bind_param("iiidi", 
+        $stmt = $conn->prepare($exercise_query);
+        
+        foreach ($input['exercises'] as $exercise) {
+            $stmt->bind_param(
+                "iiidi", 
                 $template_id, 
-                $exercise['exercise_id'],
-                $exercise['position'],
-                $exercise['sets'],
+                $exercise['exercise_id'], 
+                $exercise['position'], 
+                $exercise['sets'], 
                 $exercise['rest_time']
             );
             $stmt->execute();
@@ -105,18 +91,16 @@ try {
         
         $conn->commit();
         
-        echo json_encode([
-            "success" => true, 
-            "message" => "Template created successfully", 
-            "template_id" => $template_id
-        ]);
+        echo json_encode(['success' => true, 'template_id' => $template_id]);
         
     } catch (Exception $e) {
         $conn->rollback();
-        throw $e;
+        error_log("API Error in save_template.php: " . $e->getMessage());
+        
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
     }
 } catch (Exception $e) {
-        error_log("API Error in save_template.php: " . $e->getMessage());
+    error_log("API Error in save_template.php: " . $e->getMessage());
     
     echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
 } 

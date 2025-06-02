@@ -9,8 +9,7 @@ try {
 
     session_start();
     if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-        http_response_code(401);
-        echo json_encode(["success" => false, "message" => "Unauthorized"]);
+        echo json_encode(['error' => 'Not authorized']);
         exit;
     }
 
@@ -31,16 +30,16 @@ try {
     }
 
     if (!$is_superadmin) {
-        http_response_code(403);
         echo json_encode(["success" => false, "message" => "Access denied"]);
         exit;
     }
 
-    $template_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-    if ($template_id === 0) {
-        echo json_encode(["success" => false, "message" => "Template ID is required"]);
+    if (!isset($_GET['id']) || empty($_GET['id'])) {
+        echo json_encode(['error' => 'Template ID is required']);
         exit;
     }
+
+    $template_id = intval($_GET['id']);
 
     $template_query = "SELECT * FROM workout_templates WHERE id = ?";
     $stmt = $conn->prepare($template_query);
@@ -53,11 +52,11 @@ try {
     $template_result = $stmt->get_result();
 
     if ($template_result->num_rows === 0) {
-        echo json_encode(["success" => false, "message" => "Template not found"]);
+        echo json_encode(['error' => 'Template not found']);
         exit;
     }
 
-    $template_data = $template_result->fetch_assoc();
+    $template = $template_result->fetch_assoc();
 
     $exercises_query = "
         SELECT wte.*, e.* 
@@ -80,15 +79,15 @@ try {
         $exercises[] = [
             'id' => $exercise['exercise_id'],
             'name' => $exercise['name'],
-            'position' => $exercise['position'],
             'sets' => $exercise['sets'],
-            'rest_time' => $exercise['rest_time']
+            'rest_time' => $exercise['rest_time'],
+            'position' => $exercise['position']
         ];
     }
 
-    $template_data['exercises'] = $exercises;
+    $template['exercises'] = $exercises;
 
-    echo json_encode($template_data);
+    echo json_encode($template);
     
 } catch (Exception $e) {
     error_log("API Error in get_template.php: " . $e->getMessage());

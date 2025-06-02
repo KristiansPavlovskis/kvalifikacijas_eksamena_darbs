@@ -1,6 +1,7 @@
 <?php
 
 require_once 'profile_access_control.php';
+require_once 'languages.php';
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php?redirect=profile/start-workout.php");
@@ -420,11 +421,11 @@ function updateWorkoutTemplate($templateId, $data) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION["language"] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout Templates | FitTrack</title>
+    <title><?php echo t('workout_templates'); ?> | FitTrack</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/variables.css" rel="stylesheet">
     <link href="global-profile.css" rel="stylesheet">
@@ -437,19 +438,19 @@ function updateWorkoutTemplate($templateId, $data) {
     <div class="main-content">
         <div class="page-header">
             <div>
-                <h1>Workout Templates</h1>
+                <h1><?php echo t('workout_templates'); ?></h1>
             </div>
         </div>
         
         <div class="wt-template-actions">
             <button id="createTemplate" class="wt-action-btn">
-                <i class="fas fa-plus"></i> Create Template
+                <i class="fas fa-plus"></i> <?php echo t('create_template'); ?>
             </button>
         </div>
         
         <div class="wt-template-view-toggle">
-            <button class="wt-toggle-btn active" data-view="my-templates">My Templates</button>
-            <button class="wt-toggle-btn" data-view="admin-templates">Global Templates</button>
+            <button class="wt-toggle-btn active" data-view="my-templates"><?php echo t('my_templates'); ?></button>
+            <button class="wt-toggle-btn" data-view="admin-templates"><?php echo t('global_templates'); ?></button>
         </div>
         
         <div class="templates-container">
@@ -457,8 +458,8 @@ function updateWorkoutTemplate($templateId, $data) {
                 <div class="wt-templates-grid">
                     <?php if (empty($templates)): ?>
                         <div class="no-templates">
-                            <p>You haven't created any workout templates yet.</p>
-                            <p>Click "Create Template" to get started!</p>
+                            <p><?php echo t('no_personal_templates'); ?></p>
+                            <p><?php echo t('click_create_template'); ?></p>
                         </div>
                     <?php else: ?>
                         <?php foreach ($templates as $template): ?>
@@ -468,11 +469,11 @@ function updateWorkoutTemplate($templateId, $data) {
                                     <div class="wt-template-meta">
                                         <div class="wt-meta-item">
                                             <i class="fas fa-dumbbell"></i>
-                                            <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                            <span><?php echo $template['exercise_count']; ?> <?php echo t('exercises'); ?></span>
                                         </div>
                                         <div class="wt-meta-item">
                                             <i class="fas fa-clock"></i>
-                                            <span><?php echo $template['estimated_time']; ?> mins</span>
+                                            <span><?php echo $template['estimated_time']; ?> <?php echo t('minutes'); ?></span>
                                         </div>
                                     </div>
                                     <div class="wt-difficulty-dots">
@@ -495,18 +496,18 @@ function updateWorkoutTemplate($templateId, $data) {
                                 
                                 <div class="wt-template-actions-dropdown">
                                     <div class="wt-template-dropdown-item view-template">
-                                        <i class="fas fa-eye"></i> View
+                                        <i class="fas fa-eye"></i> <?php echo t('view'); ?>
                                     </div>
                                     <div class="wt-template-dropdown-item edit-template">
-                                        <i class="fas fa-edit"></i> Edit
+                                        <i class="fas fa-edit"></i> <?php echo t('edit'); ?>
                                     </div>
                                     <div class="wt-template-dropdown-item delete template-delete">
-                                        <i class="fas fa-trash"></i> Delete
+                                        <i class="fas fa-trash"></i> <?php echo t('delete'); ?>
                                     </div>
                                 </div>
                                 
                                 <div class="wt-last-used">
-                                    Last used: <?php echo date('M d', strtotime($template['updated_at'])); ?>
+                                    <?php echo t('last_used'); ?>: <?php echo !empty($template['updated_at']) ? date('M d', strtotime($template['updated_at'])) : t('na'); ?>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -518,7 +519,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 <div class="wt-templates-grid">
                     <?php if (empty($adminTemplates)): ?>
                         <div class="no-templates">
-                            <p>No admin templates available.</p>
+                            <p><?php echo t('no_global_templates'); ?></p>
                         </div>
                     <?php else: ?>
                         <?php foreach ($adminTemplates as $template): ?>
@@ -528,11 +529,11 @@ function updateWorkoutTemplate($templateId, $data) {
                                     <div class="wt-template-meta">
                                         <div class="wt-meta-item">
                                             <i class="fas fa-dumbbell"></i>
-                                            <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                            <span><?php echo $template['exercise_count']; ?> <?php echo t('exercises'); ?></span>
                                         </div>
                                         <div class="wt-meta-item">
                                             <i class="fas fa-clock"></i>
-                                            <span><?php echo $template['estimated_time']; ?> mins</span>
+                                            <span><?php echo $template['estimated_time']; ?> <?php echo t('minutes'); ?></span>
                                         </div>
                                     </div>
                                     <div class="wt-difficulty-dots">
@@ -555,12 +556,12 @@ function updateWorkoutTemplate($templateId, $data) {
                                 
                                 <div class="wt-template-actions-dropdown">
                                     <div class="wt-template-dropdown-item view-template">
-                                        <i class="fas fa-eye"></i> View
+                                        <i class="fas fa-eye"></i> <?php echo t('view'); ?>
                                     </div>
                                 </div>
                                 
                                 <div class="wt-last-used">
-                                    Created: <?php echo date('M d', strtotime($template['created_at'])); ?>
+                                    <?php echo t('created'); ?>: <?php echo !empty($template['created_at']) ? date('M d', strtotime($template['created_at'])) : t('na'); ?>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -573,85 +574,85 @@ function updateWorkoutTemplate($templateId, $data) {
     <div class="wt-modal-overlay" id="createTemplateModal">
         <div class="wt-modal-content">
             <div class="wt-modal-header">
-                <h2>Create Template</h2>
+                <h2><?php echo t('create_template'); ?></h2>
                 <div class="wt-modal-header-actions">
                     <button class="wt-save-template-btn" id="saveTemplateHeader">
                         <i class="fas fa-save"></i>
-                        Save Template
+                        <?php echo t('save_template'); ?>
                     </button>
                     <button class="wt-modal-close" id="closeModal">&times;</button>
                 </div>
             </div>
             
             <div class="wt-mobile-tabs">
-                <div class="wt-mobile-tab active" data-tab="details">Details</div>
-                <div class="wt-mobile-tab" data-tab="categories">Categories</div>
-                <div class="wt-mobile-tab" data-tab="exercises">Exercises</div>
-                <div class="wt-mobile-tab" data-tab="selected">Selected</div>
+                <div class="wt-mobile-tab active" data-tab="details"><?php echo t('details'); ?></div>
+                <div class="wt-mobile-tab" data-tab="categories"><?php echo t('categories'); ?></div>
+                <div class="wt-mobile-tab" data-tab="exercises"><?php echo t('exercises'); ?></div>
+                <div class="wt-mobile-tab" data-tab="selected"><?php echo t('selected'); ?></div>
             </div>
             
             <div class="wt-modal-body">
                 <div class="wt-template-details wt-mobile-section active" data-section="details">
                     <div class="wt-input-group">
-                        <label for="workoutName">Template Name</label>
-                        <input type="text" id="workoutName" placeholder="E.g., Upper Body Power, Core Blast...">
+                        <label for="workoutName"><?php echo t('template_name'); ?></label>
+                        <input type="text" id="workoutName" placeholder="<?php echo t('template_name_placeholder'); ?>">
                     </div>
                     
                     <div class="wt-input-group">
-                        <label for="workoutDescription">Description (Optional)</label>
-                        <textarea id="workoutDescription" rows="3" placeholder="Describe your workout, goals, or add any notes..."></textarea>
+                        <label for="workoutDescription"><?php echo t('description_optional'); ?></label>
+                        <textarea id="workoutDescription" rows="3" placeholder="<?php echo t('description_placeholder'); ?>"></textarea>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label>Categories</label>
+                        <label><?php echo t('categories'); ?></label>
                         <div class="wt-categories">
-                            <div class="wt-category active" data-category="Strength Training">Strength Training</div>
-                            <div class="wt-category" data-category="cardio">Cardio</div>
-                            <div class="wt-category" data-category="Bodyweight">Bodyweight</div>
+                            <div class="wt-category active" data-category="Strength Training"><?php echo t('strength_training'); ?></div>
+                            <div class="wt-category" data-category="cardio"><?php echo t('cardio'); ?></div>
+                            <div class="wt-category" data-category="Bodyweight"><?php echo t('bodyweight'); ?></div>
                         </div>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label>Difficulty Level</label>
+                        <label><?php echo t('difficulty_level'); ?></label>
                         <input type="range" min="1" max="3" value="2" id="difficultySlider">
                         <div class="wt-slider-labels">
-                            <span>Beginner</span>
-                            <span>Intermediate</span>
-                            <span>Advanced</span>
+                            <span><?php echo t('beginner'); ?></span>
+                            <span><?php echo t('intermediate'); ?></span>
+                            <span><?php echo t('advanced'); ?></span>
                         </div>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label for="setsPerExercise">Sets Per Exercise</label>
+                        <label for="setsPerExercise"><?php echo t('sets_per_exercise'); ?></label>
                         <input type="number" id="setsPerExercise" min="1" max="10" value="3">
                     </div>
                     
                     <div class="wt-input-group">
-                        <label for="restTimePerExercise">Rest Time Between Exercises (minutes)</label>
+                        <label for="restTimePerExercise"><?php echo t('rest_time_between_exercises'); ?></label>
                         <input type="number" id="restTimePerExercise" min="0" max="10" value="1" step="0.5">
                     </div>
                     
                     <div class="wt-input-group">
-                        <label for="estimatedTime">Estimated Time (minutes)</label>
+                        <label for="estimatedTime"><?php echo t('estimated_time'); ?></label>
                         <input type="number" id="estimatedTime" min="5" max="180" value="45" readonly>
                     </div>
                 </div>
                 
                 <div class="wt-exercise-selector">
                     <div class="wt-categories-column wt-mobile-section" data-section="categories">
-                        <h3>Categories</h3>
+                        <h3><?php echo t('categories'); ?></h3>
                         <div class="wt-category-list">
                             <div class="wt-category-item active" data-category="Strength Training">
                                 <i class="fas fa-dumbbell"></i>
-                                Strength Training
+                                <?php echo t('strength_training'); ?>
                             </div>
                             <div class="wt-category-item" data-category="cardio">
                                 <i class="fas fa-running"></i>
-                                Cardio
+                                <?php echo t('cardio'); ?>
                             </div>
                             <div class="wt-category-item" data-category="Bodyweight">
                                 <i class="fas fa-user"></i>
-                                Flexibility
+                                <?php echo t('bodyweight'); ?>
                             </div>
                         </div>
                     </div>
@@ -660,7 +661,7 @@ function updateWorkoutTemplate($templateId, $data) {
                         <div class="wt-exercise-search">
                             <div class="wt-search-container">
                                 <i class="fas fa-search wt-search-icon"></i>
-                                <input type="text" class="wt-search-input" id="exerciseSearch" placeholder="Search exercises...">
+                                <input type="text" class="wt-search-input" id="exerciseSearch" placeholder="<?php echo t('search_exercises'); ?>">
                             </div>
                         </div>
                         
@@ -669,17 +670,17 @@ function updateWorkoutTemplate($templateId, $data) {
                     </div>
                     
                     <div class="wt-selected-column wt-mobile-section" data-section="selected">
-                        <h3>Selected Exercises</h3>
+                        <h3><?php echo t('selected_exercises'); ?></h3>
                         <div id="selectedExercisesList" class="wt-selected-exercises-list">
                             <div class="empty-selection" id="emptySelection">
-                                <p>No exercises selected yet</p>
+                                <p><?php echo t('no_exercises_selected'); ?></p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="wt-modal-footer">
-                <button class="wt-btn wt-btn-secondary" id="cancelTemplate">Cancel</button>
+                <button class="wt-btn wt-btn-secondary" id="cancelTemplate"><?php echo t('cancel'); ?></button>
             </div>
         </div>
     </div>
@@ -688,53 +689,53 @@ function updateWorkoutTemplate($templateId, $data) {
     <div class="wt-modal-overlay" id="viewTemplateModal">
         <div class="wt-modal-content">
             <div class="wt-modal-header">
-                <h2 id="viewTemplateTitle">View Template</h2>
+                <h2 id="viewTemplateTitle"><?php echo t('view_template'); ?></h2>
                 <button class="wt-modal-close" id="closeViewModal">&times;</button>
             </div>
             
             <div class="wt-mobile-tabs">
-                <div class="wt-mobile-tab active" data-tab="view-details">Details</div>
-                <div class="wt-mobile-tab" data-tab="view-exercises">Exercises</div>
+                <div class="wt-mobile-tab active" data-tab="view-details"><?php echo t('details'); ?></div>
+                <div class="wt-mobile-tab" data-tab="view-exercises"><?php echo t('exercises'); ?></div>
             </div>
             
             <div class="wt-modal-body">
                 <div class="wt-template-details wt-mobile-section active" data-section="view-details">
                     <div class="wt-input-group">
-                        <label>Template Name</label>
+                        <label><?php echo t('template_name'); ?></label>
                         <div class="wt-view-field" id="viewName"></div>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label>Description</label>
+                        <label><?php echo t('description'); ?></label>
                         <div class="wt-view-field" id="viewDescription"></div>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label>Category</label>
+                        <label><?php echo t('category'); ?></label>
                         <div class="wt-view-field" id="viewCategory"></div>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label>Difficulty Level</label>
+                        <label><?php echo t('difficulty_level'); ?></label>
                         <div class="wt-view-field" id="viewDifficulty"></div>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label>Estimated Time</label>
+                        <label><?php echo t('estimated_time'); ?></label>
                         <div class="wt-view-field" id="viewTime"></div>
                     </div>
                 </div>
                 
                 <div class="wt-exercise-selector">
                     <div class="wt-selected-exercises wt-mobile-section" data-section="view-exercises">
-                        <h3>Exercises</h3>
+                        <h3><?php echo t('exercises'); ?></h3>
                         <div id="viewExercisesList">
                         </div>
                     </div>
                 </div>
             </div>
             <div class="wt-modal-footer">
-                <button class="wt-btn wt-btn-secondary" id="closeViewBtn">Close</button>
+                <button class="wt-btn wt-btn-secondary" id="closeViewBtn"><?php echo t('close'); ?></button>
             </div>
         </div>
     </div>
@@ -742,66 +743,66 @@ function updateWorkoutTemplate($templateId, $data) {
     <div class="wt-modal-overlay" id="editTemplateModal">
         <div class="wt-modal-content">
             <div class="wt-modal-header">
-                <h2>Edit Template</h2>
+                <h2><?php echo t('edit_template'); ?></h2>
                 <div class="wt-modal-header-actions">
                     <button class="wt-save-template-btn" id="updateTemplateHeader">
                         <i class="fas fa-save"></i>
-                        Save Changes
+                        <?php echo t('save_changes'); ?>
                     </button>
                     <button class="wt-modal-close" id="closeEditModal">&times;</button>
                 </div>
             </div>
             
             <div class="wt-mobile-tabs">
-                <div class="wt-mobile-tab active" data-tab="edit-details">Details</div>
-                <div class="wt-mobile-tab" data-tab="edit-categories">Categories</div>
-                <div class="wt-mobile-tab" data-tab="edit-exercises">Exercises</div>
-                <div class="wt-mobile-tab" data-tab="edit-selected">Selected</div>
+                <div class="wt-mobile-tab active" data-tab="edit-details"><?php echo t('details'); ?></div>
+                <div class="wt-mobile-tab" data-tab="edit-categories"><?php echo t('categories'); ?></div>
+                <div class="wt-mobile-tab" data-tab="edit-exercises"><?php echo t('exercises'); ?></div>
+                <div class="wt-mobile-tab" data-tab="edit-selected"><?php echo t('selected'); ?></div>
             </div>
             
             <div class="wt-modal-body">
                 <div class="wt-template-details wt-mobile-section active" data-section="edit-details">
                     <div class="wt-input-group">
-                        <label for="editWorkoutName">Template Name</label>
+                        <label for="editWorkoutName"><?php echo t('template_name'); ?></label>
                         <input type="text" id="editWorkoutName">
                     </div>
                     
                     <div class="wt-input-group">
-                        <label for="editWorkoutDescription">Description (Optional)</label>
+                        <label for="editWorkoutDescription"><?php echo t('description_optional'); ?></label>
                         <textarea id="editWorkoutDescription" rows="3"></textarea>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label>Categories</label>
+                        <label><?php echo t('categories'); ?></label>
                         <div class="wt-categories">
-                            <div class="wt-category" data-category="Strength Training">Strength Training</div>
-                            <div class="wt-category" data-category="cardio">Cardio</div>
-                            <div class="wt-category" data-category="Bodyweight">Bodyweight</div>
+                            <div class="wt-category" data-category="Strength Training"><?php echo t('strength_training'); ?></div>
+                            <div class="wt-category" data-category="cardio"><?php echo t('cardio'); ?></div>
+                            <div class="wt-category" data-category="Bodyweight"><?php echo t('bodyweight'); ?></div>
                         </div>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label>Difficulty Level</label>
+                        <label><?php echo t('difficulty_level'); ?></label>
                         <input type="range" min="1" max="3" value="2" id="editDifficultySlider">
                         <div class="wt-slider-labels">
-                            <span>Beginner</span>
-                            <span>Intermediate</span>
-                            <span>Advanced</span>
+                            <span><?php echo t('beginner'); ?></span>
+                            <span><?php echo t('intermediate'); ?></span>
+                            <span><?php echo t('advanced'); ?></span>
                         </div>
                     </div>
                     
                     <div class="wt-input-group">
-                        <label for="editSetsPerExercise">Sets Per Exercise</label>
+                        <label for="editSetsPerExercise"><?php echo t('sets_per_exercise'); ?></label>
                         <input type="number" id="editSetsPerExercise" min="1" max="10" value="3">
                     </div>
                     
                     <div class="wt-input-group">
-                        <label for="editRestTimePerExercise">Rest Time Between Exercises (minutes)</label>
+                        <label for="editRestTimePerExercise"><?php echo t('rest_time_between_exercises'); ?></label>
                         <input type="number" id="editRestTimePerExercise" min="0" max="10" value="1" step="0.5">
                     </div>
                     
                     <div class="wt-input-group">
-                        <label for="editEstimatedTime">Estimated Time (minutes)</label>
+                        <label for="editEstimatedTime"><?php echo t('estimated_time'); ?></label>
                         <input type="number" id="editEstimatedTime" min="5" max="180" value="45" readonly>
                     </div>
                     
@@ -810,19 +811,19 @@ function updateWorkoutTemplate($templateId, $data) {
                 
                 <div class="wt-exercise-selector">
                     <div class="wt-categories-column wt-mobile-section" data-section="edit-categories">
-                        <h3>Categories</h3>
+                        <h3><?php echo t('categories'); ?></h3>
                         <div class="wt-category-list">
                             <div class="wt-category-item active" data-category="Strength Training">
                                 <i class="fas fa-dumbbell"></i>
-                                Strength Training
+                                <?php echo t('strength_training'); ?>
                             </div>
                             <div class="wt-category-item" data-category="cardio">
                                 <i class="fas fa-running"></i>
-                                Cardio
+                                <?php echo t('cardio'); ?>
                             </div>
                             <div class="wt-category-item" data-category="Bodyweight">
                                 <i class="fas fa-user"></i>
-                                Flexibility
+                                <?php echo t('bodyweight'); ?>
                             </div>
                         </div>
                     </div>
@@ -831,7 +832,7 @@ function updateWorkoutTemplate($templateId, $data) {
                         <div class="wt-exercise-search">
                             <div class="wt-search-container">
                                 <i class="fas fa-search wt-search-icon"></i>
-                                <input type="text" class="wt-search-input" id="editExerciseSearch" placeholder="Search exercises...">
+                                <input type="text" class="wt-search-input" id="editExerciseSearch" placeholder="<?php echo t('search_exercises'); ?>">
                             </div>
                         </div>
                         
@@ -840,17 +841,17 @@ function updateWorkoutTemplate($templateId, $data) {
                     </div>
                     
                     <div class="wt-selected-column wt-mobile-section" data-section="edit-selected">
-                        <h3>Selected Exercises</h3>
+                        <h3><?php echo t('selected_exercises'); ?></h3>
                         <div id="editSelectedExercisesList" class="wt-selected-exercises-list">
                             <div class="empty-selection" id="editEmptySelection">
-                                <p>No exercises selected yet</p>
+                                <p><?php echo t('no_exercises_selected'); ?></p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="wt-modal-footer">
-                <button class="wt-btn wt-btn-secondary" id="cancelEdit">Cancel</button>
+                <button class="wt-btn wt-btn-secondary" id="cancelEdit"><?php echo t('cancel'); ?></button>
             </div>
         </div>
     </div>
@@ -862,6 +863,32 @@ function updateWorkoutTemplate($templateId, $data) {
             let currentCategory = 'Strength Training';
             let editCurrentCategory = 'Strength Training';
             let exerciseTime = 1;
+            
+            const translations = {
+                beginner: '<?php echo t('beginner'); ?>',
+                intermediate: '<?php echo t('intermediate'); ?>',
+                advanced: '<?php echo t('advanced'); ?>',
+                minutes: '<?php echo t('minutes'); ?>',
+                sets: '<?php echo t('sets'); ?>',
+                reps: '<?php echo t('reps'); ?>',
+                rest: '<?php echo t('rest'); ?>',
+                position: '<?php echo t('position'); ?>',
+                sec_rest: '<?php echo t('sec_rest'); ?>',
+                notes: '<?php echo t('notes'); ?>',
+                edit: '<?php echo t('edit'); ?>',
+                loading: '<?php echo t('loading'); ?>',
+                no_exercises_found: '<?php echo t('no_exercises_found'); ?>',
+                error_loading_exercises: '<?php echo t('error_loading_exercises'); ?>',
+                no_equipment: '<?php echo t('no_equipment'); ?>',
+                none: '<?php echo t('none'); ?>',
+                added: '<?php echo t('added'); ?>',
+                to_your_template: '<?php echo t('to_your_template'); ?>',
+                no_personal_templates: '<?php echo t('no_personal_templates'); ?>',
+                click_create_template: '<?php echo t('click_create_template'); ?>',
+                no_description: '<?php echo t('no_description'); ?>',
+                cancel: '<?php echo t('cancel'); ?>',
+                save: '<?php echo t('save'); ?>'
+            };
             
             $('.wt-toggle-btn').on('click', function() {
                 const viewType = $(this).data('view');
@@ -956,7 +983,9 @@ function updateWorkoutTemplate($templateId, $data) {
             
             $(document).on('click', '.template-delete', function() {
                 const templateId = $(this).closest('.wt-template-card').data('id');
-                deleteTemplate(templateId);
+                if (confirm('<?php echo t('confirm_delete_template'); ?>')) {
+                    deleteTemplate(templateId);
+                }
             });
             
             function viewTemplate(templateId) {
@@ -973,44 +1002,44 @@ function updateWorkoutTemplate($templateId, $data) {
                         }
                     },
                     error: function(xhr, status, error) {
-                        showToast('Error loading template', 'error');
+                        showToast('<?php echo t('error_loading_template'); ?>', 'error');
                     }
                 });
             }
             
             function showViewTemplateModal(template) {
                 $('#viewName').text(template.name);
-                $('#viewDescription').text(template.description || 'No description');
+                $('#viewDescription').text(template.description || translations.no_description);
                 $('#viewCategory').text(template.category);
                 
-                let difficulty = 'Intermediate';
-                if (template.difficulty === 'beginner') difficulty = 'Beginner';
-                if (template.difficulty === 'advanced') difficulty = 'Advanced';
+                let difficulty = translations.intermediate;
+                if (template.difficulty === 'beginner') difficulty = translations.beginner;
+                if (template.difficulty === 'advanced') difficulty = translations.advanced;
                 
                 $('#viewDifficulty').text(difficulty);
-                $('#viewTime').text(template.estimated_time + ' minutes');
+                $('#viewTime').text(template.estimated_time + ' ' + translations.minutes);
                 
                 const list = $('#viewExercisesList');
                 list.empty();
                 
                 if (template.exercises.length === 0) {
-                    list.html('<div class="empty-selection"><p>No exercises in this template</p></div>');
+                    list.html(`<div class="empty-selection"><p><?php echo t('no_exercises_in_template'); ?></p></div>`);
                 } else {
                     template.exercises.forEach(function(exercise) {
                         const item = $(`
                             <div class="wt-view-exercise">
                                 <div class="wt-view-exercise-header">
                                     <h4>${exercise.name}</h4>
-                                    <div class="wt-view-exercise-position">Position: ${exercise.position}</div>
+                                    <div class="wt-view-exercise-position">${translations.position}: ${exercise.position}</div>
                                 </div>
                                 <div class="wt-view-exercise-details">
                                     <div class="wt-view-exercise-detail">
                                         <i class="fas fa-layer-group"></i>
-                                        <span>${exercise.sets} sets</span>
+                                        <span>${exercise.sets} ${translations.sets}</span>
                                     </div>
                                     <div class="wt-view-exercise-detail">
                                         <i class="fas fa-stopwatch"></i>
-                                        <span>${exercise.rest_time} sec rest</span>
+                                        <span>${exercise.rest_time} ${translations.sec_rest}</span>
                                     </div>
                                     <div class="wt-view-exercise-detail">
                                         <i class="fas fa-dumbbell"></i>
@@ -1021,7 +1050,7 @@ function updateWorkoutTemplate($templateId, $data) {
                                         <span>${exercise.equipment}</span>
                                     </div>
                                 </div>
-                                ${exercise.notes ? `<div class="wt-view-exercise-notes">Notes: ${exercise.notes}</div>` : ''}
+                                ${exercise.notes ? `<div class="wt-view-exercise-notes">${translations.notes}: ${exercise.notes}</div>` : ''}
                             </div>
                         `);
                         
@@ -1050,7 +1079,7 @@ function updateWorkoutTemplate($templateId, $data) {
                         }
                     },
                     error: function(xhr, status, error) {
-                        showToast('Error loading template', 'error');
+                        showToast('<?php echo t('error_loading_template'); ?>', 'error');
                     }
                 });
             }
@@ -1102,7 +1131,7 @@ function updateWorkoutTemplate($templateId, $data) {
             });
             
             function deleteTemplate(templateId) {
-                if (confirm('Are you sure you want to delete this template?')) {
+                if (confirm('<?php echo t('confirm_delete_template'); ?>')) {
                     $.ajax({
                         url: '?action=delete_template',
                         method: 'POST',
@@ -1117,8 +1146,8 @@ function updateWorkoutTemplate($templateId, $data) {
                                     if ($('.wt-template-card').length === 0) {
                                         $('.wt-templates-grid').html(`
                                             <div class="no-templates">
-                                                <p>You haven't created any workout templates yet.</p>
-                                                <p>Click "Create Template" to get started!</p>
+                                                <p>${translations.no_personal_templates}</p>
+                                                <p>${translations.click_create_template}</p>
                                             </div>
                                         `);
                                     }
@@ -1128,14 +1157,14 @@ function updateWorkoutTemplate($templateId, $data) {
                             }
                         },
                         error: function(xhr, status, error) {
-                            showToast('Error deleting template', 'error');
+                            showToast('<?php echo t('error_deleting_template'); ?>', 'error');
                         }
                     });
                 }
             }
             
             function loadEditExercises(query = '') {
-                $('#editExercisesGrid').html('<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
+                $('#editExercisesGrid').html(`<div class="loading"><i class="fas fa-spinner fa-spin"></i> ${translations.loading}...</div>`);
                 
                 $.ajax({
                     url: '?action=search_exercises',
@@ -1149,7 +1178,7 @@ function updateWorkoutTemplate($templateId, $data) {
                         renderEditExercises(data);
                     },
                     error: function(xhr, status, error) {
-                        $('#editExercisesGrid').html('<div class="error">Error loading exercises</div>');
+                        $('#editExercisesGrid').html('<div class="error"><?php echo t('error_loading_exercises'); ?></div>');
                     }
                 });
             }
@@ -1159,7 +1188,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 grid.empty();
                 
                 if (exercises.length === 0) {
-                    grid.html('<div class="no-results">No exercises found</div>');
+                    grid.html(`<div class="no-results">${translations.no_exercises_found}</div>`);
                     return;
                 }
                 
@@ -1169,7 +1198,7 @@ function updateWorkoutTemplate($templateId, $data) {
                             <h4>${exercise.name}</h4>
                             <div class="wt-exercise-details">
                                 <div><i class="fas fa-dumbbell"></i> ${exercise.primary_muscle}</div>
-                                <div><i class="fas fa-cog"></i> ${exercise.equipment || 'No equipment'}</div>
+                                <div><i class="fas fa-cog"></i> ${exercise.equipment || translations.no_equipment}</div>
                             </div>
                         </div>
                     `);
@@ -1186,7 +1215,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 const exists = editSelectedExercises.some(ex => ex.exercise_id === exercise.id);
                 
                 if (exists) {
-                    showToast('This exercise is already in your template', 'error');
+                    showToast('<?php echo t('this_exercise_is_already_in_your_template'); ?>', 'error');
                     return;
                 }
                 
@@ -1200,14 +1229,14 @@ function updateWorkoutTemplate($templateId, $data) {
                     rest_time: restTimePerExercise,
                     notes: '',
                     muscle: exercise.primary_muscle,
-                    equipment: exercise.equipment || 'None'
+                    equipment: exercise.equipment || translations.none
                 };
                 
                 editSelectedExercises.push(exerciseObj);
                 renderEditSelectedExercises();
                 updateEditEstimatedTime();
                 
-                showToast(`Added ${exercise.name} to your template`, 'success');
+                showToast(`${translations.added} ${exercise.name} ${translations.to_your_template}`, 'success');
             }
             
             function renderEditSelectedExercises() {
@@ -1231,8 +1260,8 @@ function updateWorkoutTemplate($templateId, $data) {
                                     <div class="wt-exercise-name">${index + 1}. ${exercise.name}</div>
                                 </div>
                                 <div class="wt-exercise-meta">
-                                    ${exercise.sets} sets × 12 reps
-                                    <br>Rest: ${exercise.rest_time}s
+                                    ${exercise.sets} ${translations.sets} × 12 ${translations.reps}
+                                    <br>${translations.rest}: ${exercise.rest_time}s
                                 </div>
                             </div>
                             <div class="wt-exercise-controls">
@@ -1271,22 +1300,22 @@ function updateWorkoutTemplate($templateId, $data) {
                 const modal = $(`
                     <div class="wt-edit-modal">
                         <div class="wt-edit-modal-content">
-                            <h3>Edit ${exercise.name}</h3>
+                            <h3>${translations.edit} ${exercise.name}</h3>
                             <div class="wt-input-group">
-                                <label>Sets</label>
+                                <label>${translations.sets}</label>
                                 <input type="number" id="editItemSets" value="${exercise.sets}" min="1" max="10">
                             </div>
                             <div class="wt-input-group">
-                                <label>Rest Time (seconds)</label>
+                                <label>${translations.rest_time}</label>
                                 <input type="number" id="editItemRest" value="${exercise.rest_time}" min="0" max="300">
                             </div>
                             <div class="wt-input-group">
-                                <label>Notes</label>
+                                <label>${translations.notes}</label>
                                 <textarea id="editItemNotes">${exercise.notes}</textarea>
                             </div>
                             <div class="wt-modal-actions">
-                                <button id="cancelEditItem">Cancel</button>
-                                <button id="saveEditItem">Save</button>
+                                <button id="cancelEditItem">${translations.cancel}</button>
+                                <button id="saveEditItem">${translations.save}</button>
                             </div>
                         </div>
                     </div>
@@ -1451,7 +1480,7 @@ function updateWorkoutTemplate($templateId, $data) {
             });
             
             function loadExercises(query = '') {
-                $('#exercisesGrid').html('<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
+                $('#exercisesGrid').html('<div class="loading"><i class="fas fa-spinner fa-spin"></i> <?php echo t('loading'); ?>...</div>');
                 
                 $.ajax({
                     url: '?action=search_exercises',
@@ -1465,7 +1494,7 @@ function updateWorkoutTemplate($templateId, $data) {
                         renderExercises(data);
                     },
                     error: function(xhr, status, error) {
-                        $('#exercisesGrid').html('<div class="error">Error loading exercises</div>');
+                        $('#exercisesGrid').html('<div class="error"><?php echo t('error_loading_exercises'); ?></div>');
                         console.error('Error:', error);
                     }
                 });
@@ -1476,7 +1505,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 grid.empty();
                 
                 if (exercises.length === 0) {
-                    grid.html('<div class="no-results">No exercises found</div>');
+                    grid.html('<div class="no-results"><?php echo t('no_exercises_found'); ?></div>');
                     return;
                 }
                 
@@ -1486,7 +1515,7 @@ function updateWorkoutTemplate($templateId, $data) {
                             <h4>${exercise.name}</h4>
                             <div class="wt-exercise-details">
                                 <div><i class="fas fa-dumbbell"></i> ${exercise.primary_muscle}</div>
-                                <div><i class="fas fa-cog"></i> ${exercise.equipment || 'No equipment'}</div>
+                                <div><i class="fas fa-cog"></i> ${exercise.equipment || '<?php echo t('no_equipment'); ?>'}</div>
                             </div>
                         </div>
                     `);
@@ -1503,7 +1532,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 const exists = selectedExercises.some(ex => ex.exercise_id === exercise.id);
                 
                 if (exists) {
-                    showToast('This exercise is already in your template', 'error');
+                    showToast('<?php echo t('this_exercise_is_already_in_your_template'); ?>', 'error');
                     return;
                 }
                 
@@ -1517,14 +1546,14 @@ function updateWorkoutTemplate($templateId, $data) {
                     rest_time: restTimePerExercise,
                     notes: '',
                     muscle: exercise.primary_muscle,
-                    equipment: exercise.equipment || 'None'
+                    equipment: exercise.equipment || '<?php echo t('none'); ?>'
                 };
                 
                 selectedExercises.push(exerciseObj);
                 renderSelectedExercises();
                 updateEstimatedTime();
                 
-                showToast(`Added ${exercise.name} to your template`, 'success');
+                showToast(`<?php echo t('added'); ?> ${exercise.name} <?php echo t('to_your_template'); ?>`, 'success');
             }
             
             function renderSelectedExercises() {
@@ -1548,8 +1577,8 @@ function updateWorkoutTemplate($templateId, $data) {
                                     <div class="wt-exercise-name">${index + 1}. ${exercise.name}</div>
                                 </div>
                                 <div class="wt-exercise-meta">
-                                    ${exercise.sets} sets × 12 reps
-                                    <br>Rest: ${exercise.rest_time}s
+                                    ${exercise.sets} <?php echo t('sets'); ?> × 12 <?php echo t('reps'); ?>
+                                    <br><?php echo t('rest'); ?>: ${exercise.rest_time}s
                                 </div>
                             </div>
                             <div class="wt-exercise-controls">
@@ -1588,22 +1617,22 @@ function updateWorkoutTemplate($templateId, $data) {
                 const modal = $(`
                     <div class="wt-edit-modal">
                         <div class="wt-edit-modal-content">
-                            <h3>Edit ${exercise.name}</h3>
+                            <h3><?php echo t('edit'); ?> ${exercise.name}</h3>
                             <div class="wt-input-group">
-                                <label>Sets</label>
+                                <label><?php echo t('sets'); ?></label>
                                 <input type="number" id="editSets" value="${exercise.sets}" min="1" max="10">
                             </div>
                             <div class="wt-input-group">
-                                <label>Rest Time (seconds)</label>
+                                <label><?php echo t('rest_time'); ?></label>
                                 <input type="number" id="editRest" value="${exercise.rest_time}" min="0" max="300">
                             </div>
                             <div class="wt-input-group">
-                                <label>Notes</label>
+                                <label><?php echo t('notes'); ?></label>
                                 <textarea id="editNotes">${exercise.notes}</textarea>
                             </div>
                             <div class="wt-modal-actions">
-                                <button id="cancelEdit">Cancel</button>
-                                <button id="saveEdit">Save</button>
+                                <button id="cancelEdit"><?php echo t('cancel'); ?></button>
+                                <button id="saveEdit"><?php echo t('save'); ?></button>
                             </div>
                         </div>
                     </div>
@@ -1669,7 +1698,7 @@ function updateWorkoutTemplate($templateId, $data) {
             }
             
             $('#schedule').on('click', function() {
-                alert('Calendar functionality would be implemented here');
+                alert('<?php echo t('calendar_functionality_would_be_implemented_here'); ?>');
             });
             
             $('#saveTemplateHeader').on('click', function() {
@@ -1678,19 +1707,19 @@ function updateWorkoutTemplate($templateId, $data) {
                 const estimatedTime = $('#estimatedTime').val();
                 const difficultyVal = $('#difficultySlider').val();
                 
-                let difficulty = 'intermediate';
-                if (difficultyVal == 1) difficulty = 'beginner';
-                if (difficultyVal == 3) difficulty = 'advanced';
+                let difficulty = '<?php echo t('intermediate'); ?>';
+                if (difficultyVal == 1) difficulty = '<?php echo t('beginner'); ?>';
+                if (difficultyVal == 3) difficulty = '<?php echo t('advanced'); ?>';
                 
                 const category = $('.wt-category.active').data('category');
                 
                 if (!name) {
-                    showToast('Please enter a template name', 'error');
+                    showToast('<?php echo t('please_enter_a_template_name'); ?>', 'error');
                     return;
                 }
                 
                 if (selectedExercises.length === 0) {
-                    showToast('Please add at least one exercise', 'error');
+                    showToast('<?php echo t('please_add_at_least_one_exercise'); ?>', 'error');
                     return;
                 }
                 
@@ -1720,7 +1749,7 @@ function updateWorkoutTemplate($templateId, $data) {
                         }
                     },
                     error: function(xhr, status, error) {
-                        showToast('Error saving template', 'error');
+                        showToast('<?php echo t('error_saving_template'); ?>', 'error');
                         console.error('Error:', error);
                     }
                 });
@@ -1733,19 +1762,19 @@ function updateWorkoutTemplate($templateId, $data) {
                 const estimatedTime = $('#editEstimatedTime').val();
                 const difficultyVal = $('#editDifficultySlider').val();
                 
-                let difficulty = 'intermediate';
-                if (difficultyVal == 1) difficulty = 'beginner';
-                if (difficultyVal == 3) difficulty = 'advanced';
+                let difficulty = '<?php echo t('intermediate'); ?>';
+                if (difficultyVal == 1) difficulty = '<?php echo t('beginner'); ?>';
+                if (difficultyVal == 3) difficulty = '<?php echo t('advanced'); ?>';
                 
                 const category = $('.wt-category.active').data('category');
                 
                 if (!name) {
-                    showToast('Please enter a template name', 'error');
+                    showToast('<?php echo t('please_enter_a_template_name'); ?>', 'error');
                     return;
                 }
                 
                 if (editSelectedExercises.length === 0) {
-                    showToast('Please add at least one exercise', 'error');
+                    showToast('<?php echo t('please_add_at_least_one_exercise'); ?>', 'error');
                     return;
                 }
                 
@@ -1775,7 +1804,7 @@ function updateWorkoutTemplate($templateId, $data) {
                         }
                     },
                     error: function(xhr, status, error) {
-                        showToast('Error updating template', 'error');
+                        showToast('<?php echo t('error_updating_template'); ?>', 'error');
                     }
                 });
             });

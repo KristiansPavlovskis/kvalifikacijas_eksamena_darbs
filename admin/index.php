@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/assets/db_connection.php';
+require_once dirname(__DIR__) . '/profile/languages.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("Location: ../pages/login.php");
@@ -35,12 +36,12 @@ $exercises_query = "SELECT COUNT(*) as count FROM exercises";
 $exercises_result = $conn->query($exercises_query);
 $available_exercises = $exercises_result->fetch_assoc()['count'];
 
-$pageTitle = "Admin Dashboard";
+$pageTitle = t('admin_dashboard');
 $bodyClass = "admin-page";
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION['language'] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -59,10 +60,10 @@ $bodyClass = "admin-page";
         
         <div class="main-content">
             <div class="admin-topbar">
-                <h1>Admin Dashboard</h1>
+                <h1><?php echo t('admin_dashboard'); ?></h1>
                 <div class="admin-user">
                     <div class="admin-avatar"><?php echo substr($_SESSION["username"], 0, 1); ?></div>
-                    <span>Admin</span>
+                    <span><?php echo t('administration'); ?></span>
                 </div>
             </div>
             
@@ -74,7 +75,7 @@ $bodyClass = "admin-page";
                         </div>
                         <div class="stat-info">
                             <h2><?php echo $active_users; ?></h2>
-                            <p>Active Users</p>
+                            <p><?php echo t('active_users'); ?></p>
                         </div>
                     </div>
                     
@@ -84,7 +85,7 @@ $bodyClass = "admin-page";
                         </div>
                         <div class="stat-info">
                             <h2><?php echo $total_templates; ?></h2>
-                            <p>Total Templates</p>
+                            <p><?php echo t('total_templates'); ?></p>
                         </div>
                     </div>
                     
@@ -94,36 +95,36 @@ $bodyClass = "admin-page";
                         </div>
                         <div class="stat-info">
                             <h2><?php echo $available_exercises; ?></h2>
-                            <p>Available Exercises</p>
+                            <p><?php echo t('available_exercises'); ?></p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="quick-actions">
-                    <h2>Quick Actions</h2>
+                    <h2><?php echo t('quick_actions'); ?></h2>
                     <div class="action-cards">
                         <a href="users/index.php" class="action-card">
                             <div class="action-icon user-icon">
                                 <i class="fas fa-user-plus"></i>
                             </div>
-                            <h3>Add User</h3>
-                            <p>Create new user account</p>
+                            <h3><?php echo t('add_user'); ?></h3>
+                            <p><?php echo t('create_new_user_account'); ?></p>
                         </a>
                         
                         <a href="templates/index.php" class="action-card">
                             <div class="action-icon template-icon">
                                 <i class="fas fa-file-medical"></i>
                             </div>
-                            <h3>Create Template</h3>
-                            <p>Create new workout template</p>
+                            <h3><?php echo t('create_template'); ?></h3>
+                            <p><?php echo t('create_new_workout_template'); ?></p>
                         </a>
                         
                         <a href="exercises/index.php" class="action-card">
                             <div class="action-icon exercise-icon">
                                 <i class="fas fa-plus"></i>
                             </div>
-                            <h3>Add Exercise</h3>
-                            <p>Add new exercise to database</p>
+                            <h3><?php echo t('add_exercise'); ?></h3>
+                            <p><?php echo t('add_new_exercise_to_database'); ?></p>
                         </a>
                     </div>
                 </div>

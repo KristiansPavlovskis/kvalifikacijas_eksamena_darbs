@@ -50,7 +50,6 @@
     padding: 8px 12px;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
 
 .pdw-timer-adjust-btn:hover {

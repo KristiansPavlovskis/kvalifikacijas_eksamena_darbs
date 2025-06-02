@@ -116,4 +116,3 @@ if (!$has_access) {
     header("location: ../pages/access_denied.php");
     exit;
 }
-?> 

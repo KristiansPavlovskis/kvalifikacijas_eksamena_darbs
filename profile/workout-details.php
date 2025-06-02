@@ -1,6 +1,6 @@
 <?php
-session_start();
 
+require_once 'profile_access_control.php';
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php?redirect=profile/workout-details.php");
     exit;
@@ -8,6 +8,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 require_once '../assets/db_connection.php';
 require_once 'workout_functions.php';
+require_once 'languages.php';
 
 $user_id = $_SESSION["user_id"];
 $workout_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -20,37 +21,14 @@ if (!$workout_id) {
 
 ensureTablesExist($conn);
 
-$debug_check_sets = "SELECT COUNT(*) as count FROM exercise_sets es 
-                     INNER JOIN workout_exercises we ON es.exercise_id = we.id 
+$debug_check_sets = "SELECT COUNT(*) as count FROM workout_sets ws 
+                     INNER JOIN workout_exercises we ON ws.workout_exercise_id = we.id 
                      WHERE we.workout_id = ? AND we.user_id = ?";
 $stmt = mysqli_prepare($conn, $debug_check_sets);
 mysqli_stmt_bind_param($stmt, "ii", $workout_id, $user_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $sets_count = mysqli_fetch_assoc($result)['count'];
-
-if ($sets_count == 0) {
-    $get_exercises = "SELECT id FROM workout_exercises WHERE workout_id = ? AND user_id = ?";
-    $stmt = mysqli_prepare($conn, $get_exercises);
-    mysqli_stmt_bind_param($stmt, "ii", $workout_id, $user_id);
-    mysqli_stmt_execute($stmt);
-    $exercises_result = mysqli_stmt_get_result($stmt);
-    
-    while ($exercise = mysqli_fetch_assoc($exercises_result)) {
-        for ($i = 1; $i <= 3; $i++) {
-            $weight = rand(60, 120);
-            $reps = rand(8, 12);
-            $rpe = rand(6, 9);
-            $is_warmup = ($i == 1) ? 1 : 0;
-            
-            $add_set = "INSERT INTO exercise_sets (exercise_id, user_id, set_number, weight, reps, rpe, is_warmup, created_at) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
-            $stmt2 = mysqli_prepare($conn, $add_set);
-            mysqli_stmt_bind_param($stmt2, "iiidiii", $exercise['id'], $user_id, $i, $weight, $reps, $rpe, $is_warmup);
-            mysqli_stmt_execute($stmt2);
-        }
-    }
-}
 
 $workout_query = "
     SELECT 
@@ -78,9 +56,9 @@ $exercises_query = "
         we.id as exercise_id,
         we.exercise_name,
         we.exercise_order,
-        COUNT(es.id) as sets_count
+        COUNT(ws.id) as sets_count
     FROM workout_exercises we
-    LEFT JOIN exercise_sets es ON we.id = es.exercise_id 
+    LEFT JOIN workout_sets ws ON we.id = ws.workout_exercise_id 
     WHERE we.workout_id = ? AND we.user_id = ?
     GROUP BY we.id
     ORDER BY we.exercise_order ASC";
@@ -98,20 +76,40 @@ while ($row = mysqli_fetch_assoc($exercises_result)) {
 foreach ($exercises as &$exercise) {
     $sets_query = "
         SELECT 
-            id, set_number, weight, reps, rpe, is_warmup
-        FROM exercise_sets 
-        WHERE exercise_id = ? AND user_id = ?
+            id, set_number, weight, reps, rpe
+        FROM workout_sets 
+        WHERE workout_exercise_id = ?
         ORDER BY set_number ASC";
     
     $stmt = mysqli_prepare($conn, $sets_query);
-    mysqli_stmt_bind_param($stmt, "ii", $exercise['exercise_id'], $user_id);
+    mysqli_stmt_bind_param($stmt, "i", $exercise['exercise_id']);
     mysqli_stmt_execute($stmt);
     $sets_result = mysqli_stmt_get_result($stmt);
     
     $exercise['sets'] = [];
+    $sets_array = [];
+    
     while ($set = mysqli_fetch_assoc($sets_result)) {
-        $exercise['sets'][] = $set;
+        $sets_array[] = $set;
     }
+    
+    if (count($sets_array) > 1) {
+        $first_set_weight = floatval($sets_array[0]['weight']);
+        $second_set_weight = floatval($sets_array[1]['weight']);
+        
+        $is_warmup_set = ($first_set_weight < $second_set_weight * 0.8);
+        
+        foreach ($sets_array as $index => $set) {
+            $set['is_warmup'] = ($index === 0 && $is_warmup_set) ? 1 : 0;
+            $exercise['sets'][] = $set;
+        }
+    } else {
+        foreach ($sets_array as $set) {
+            $set['is_warmup'] = 0;
+            $exercise['sets'][] = $set;
+        }
+    }
+    
 }
 
 $prev_workout_query = "
@@ -163,11 +161,11 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $_SESSION["language"] ?? 'en' ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout Details - GYMVERSE</title>
+    <title><?= t('workout_details') ?> - GYMVERSE</title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -180,10 +178,10 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
 
         <div class="wd-main-content">
             <div class="wd-page-header">
-                <h1 class="wd-page-title">Workout Details</h1>
+                <h1 class="wd-page-title"><?= t('workout_details') ?></h1>
                 <div class="wd-header-actions">
                     <a href="workout-history.php" class="wd-btn">
-                        <i class="fas fa-arrow-left"></i> Back
+                        <i class="fas fa-arrow-left"></i> <?= t('back') ?>
                     </a>
                 </div>
             </div>
@@ -201,20 +199,20 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                         
                         <div class="wd-workout-stats">
                             <div class="wd-stat-card">
-                                <div class="wd-stat-value"><?= $workout['duration_minutes'] ?> min</div>
-                                <div class="wd-stat-label">Duration</div>
+                                <div class="wd-stat-value"><?= $workout['duration_minutes'] ?> <?= t('min') ?></div>
+                                <div class="wd-stat-label"><?= t('duration') ?></div>
                             </div>
                             <div class="wd-stat-card">
-                                <div class="wd-stat-value"><?= number_format($workout['total_volume']) ?> kg</div>
-                                <div class="wd-stat-label">Volume</div>
+                                <div class="wd-stat-value"><?= number_format($workout['total_volume']) ?> <?= t('kg') ?></div>
+                                <div class="wd-stat-label"><?= t('volume') ?></div>
                             </div>
                             <div class="wd-stat-card">
                                 <div class="wd-stat-value"><?= $workout['calories_burned'] ?> kcal</div>
-                                <div class="wd-stat-label">Calories</div>
+                                <div class="wd-stat-label"><?= t('calories') ?></div>
                             </div>
                             <div class="wd-stat-card">
                                 <div class="wd-stat-value"><?= count($exercises) > 0 ? array_sum(array_column($exercises, 'sets_count')) : 0 ?></div>
-                                <div class="wd-stat-label">Sets</div>
+                                <div class="wd-stat-label"><?= t('sets') ?></div>
                             </div>
                         </div>
                         
@@ -224,7 +222,7 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                         
                         <?php if (!empty($workout['notes'])): ?>
                         <div class="wd-workout-notes">
-                            <div class="wd-notes-label">Notes</div>
+                            <div class="wd-notes-label"><?= t('notes') ?></div>
                             <p><?= nl2br(htmlspecialchars($workout['notes'])) ?></p>
                         </div>
                         <?php endif; ?>
@@ -242,9 +240,9 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                                 <table class="wd-sets-table">
                                     <thead>
                                         <tr>
-                                            <th>Set</th>
-                                            <th>Weight</th>
-                                            <th>Reps</th>
+                                            <th><?= t('set') ?></th>
+                                            <th><?= t('weight') ?></th>
+                                            <th><?= t('reps') ?></th>
                                             <th>RPE</th>
                                         </tr>
                                     </thead>
@@ -252,7 +250,7 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                                         <?php foreach ($exercise['sets'] as $set): ?>
                                         <tr <?= $set['is_warmup'] ? 'class="wd-warmup-set"' : '' ?>>
                                             <td><?= $set['set_number'] ?></td>
-                                            <td><?= $set['weight'] ?> kg</td>
+                                            <td><?= $set['weight'] ?> <?= t('kg') ?></td>
                                             <td><?= $set['reps'] ?></td>
                                             <td><?= $set['rpe'] ?></td>
                                         </tr>
@@ -260,7 +258,7 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                                     </tbody>
                                 </table>
                                 <?php else: ?>
-                                <p>No sets recorded for this exercise.</p>
+                                <p><?= t('no_sets_recorded') ?></p>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -269,7 +267,7 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                         <?php if (empty($exercises)): ?>
                         <div class="wd-exercise-card">
                             <div class="wd-exercise-body" style="text-align: center; padding: 24px;">
-                                <p>No exercises recorded for this workout.</p>
+                                <p><?= t('no_exercises_recorded') ?></p>
                             </div>
                         </div>
                         <?php endif; ?>
@@ -278,18 +276,18 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                 
                 <div class="wd-workout-sidebar">
                     <div class="wd-sidebar-section">
-                        <h3 class="wd-section-title">Previous Performance</h3>
+                        <h3 class="wd-section-title"><?= t('previous_performance') ?></h3>
                         
                         <div class="wd-volume-comparison">
                             <div class="wd-volume-box">
-                                <div class="wd-volume-label">Total Volume</div>
-                                <div class="wd-volume-value"><?= number_format($workout['total_volume']) ?> kg</div>
+                                <div class="wd-volume-label"><?= t('total_volume') ?></div>
+                                <div class="wd-volume-value"><?= number_format($workout['total_volume']) ?> <?= t('kg') ?></div>
                             </div>
                             
                             <?php if ($prev_workout): ?>
                             <div class="wd-volume-box">
-                                <div class="wd-volume-label">Previous</div>
-                                <div class="wd-volume-value"><?= number_format($prev_workout['total_volume']) ?> kg</div>
+                                <div class="wd-volume-label"><?= t('previous') ?></div>
+                                <div class="wd-volume-value"><?= number_format($prev_workout['total_volume']) ?> <?= t('kg') ?></div>
                             </div>
                             <?php endif; ?>
                         </div>
@@ -297,12 +295,12 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                         <?php if ($prev_workout): ?>
                         <div class="wd-volume-difference <?= $volume_difference >= 0 ? 'positive' : 'negative' ?>">
                             <i class="fas fa-<?= $volume_difference >= 0 ? 'arrow-up' : 'arrow-down' ?>"></i>
-                            <?= number_format(abs($volume_difference)) ?> kg (<?= $volume_percentage ?>%)
+                            <?= number_format(abs($volume_difference)) ?> <?= t('kg') ?> (<?= $volume_percentage ?>%)
                         </div>
                         <?php endif; ?>
                         
                         <?php if (!empty($similar_workouts)): ?>
-                        <h4 style="margin-top: 20px; margin-bottom: 12px;">Similar Workouts</h4>
+                        <h4 style="margin-top: 20px; margin-bottom: 12px;"><?= t('similar_workouts') ?></h4>
                         <ul class="wd-similar-list">
                             <?php foreach ($similar_workouts as $similar): ?>
                             <li class="wd-similar-item" onclick="window.location.href='workout-details.php?id=<?= $similar['id'] ?>'">
@@ -315,7 +313,7 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                     </div>
                     
                     <div class="wd-sidebar-section">
-                        <h3 class="wd-section-title">Export</h3>
+                        <h3 class="wd-section-title"><?= t('export_data') ?></h3>
                         <button class="wd-btn wd-pdf-btn" onclick="exportToPDF()">
                             <i class="fas fa-file-pdf"></i> PDF
                         </button>
@@ -371,24 +369,24 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                 y += 20;
                 
                 doc.setFontSize(16);
-                doc.text('Workout Statistics', 20, y);
+                doc.text('<?= addslashes(t('workout_stats')) ?>', 20, y);
                 y += 10;
                 
                 doc.setFontSize(12);
-                doc.text('Duration: <?= $workout['duration_minutes'] ?> min', 20, y);
+                doc.text('<?= addslashes(t('duration')) ?>: <?= $workout['duration_minutes'] ?> <?= addslashes(t('min')) ?>', 20, y);
                 y += 8;
                 
-                doc.text('Total Volume: <?= number_format($workout['total_volume']) ?> kg', 20, y);
+                doc.text('<?= addslashes(t('total_volume')) ?>: <?= number_format($workout['total_volume']) ?> <?= addslashes(t('kg')) ?>', 20, y);
                 y += 8;
                 
-                doc.text('Calories Burned: <?= $workout['calories_burned'] ?> kcal', 20, y);
+                doc.text('<?= addslashes(t('calories_burned')) ?>: <?= $workout['calories_burned'] ?> kcal', 20, y);
                 y += 8;
                 
-                doc.text('Rating: <?= str_repeat('★', $workout['rating']) . str_repeat('☆', 5 - $workout['rating']) ?>', 20, y);
+                doc.text('<?= addslashes(t('rating')) ?>: <?= str_repeat('★', $workout['rating']) . str_repeat('☆', 5 - $workout['rating']) ?>', 20, y);
                 y += 20;
                 
                 doc.setFontSize(16);
-                doc.text('Exercises', 20, y);
+                doc.text('<?= addslashes(t('exercises')) ?>', 20, y);
                 y += 10;
                 
                 <?php foreach ($exercises as $index => $exercise): ?>
@@ -404,7 +402,7 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                 <?php if (!empty($exercise['sets'])): ?>
                 <?php foreach ($exercise['sets'] as $set): ?>
                 doc.setFontSize(10);
-                doc.text('Set <?= $set['set_number'] ?><?= $set['is_warmup'] ? ' (Warmup)' : '' ?>: <?= $set['weight'] ?> kg × <?= $set['reps'] ?> reps (RPE: <?= $set['rpe'] ?>)', 30, y);
+                doc.text('<?= addslashes(t('set')) ?> <?= $set['set_number'] ?><?= $set['is_warmup'] ? ' (' . addslashes(t('warmup')) . ')' : '' ?>: <?= $set['weight'] ?> <?= addslashes(t('kg')) ?> × <?= $set['reps'] ?> <?= addslashes(t('reps')) ?> (RPE: <?= $set['rpe'] ?>)', 30, y);
                 y += 6;
                 
                 if (y > 270) {
@@ -414,7 +412,7 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                 <?php endforeach; ?>
                 <?php else: ?>
                 doc.setFontSize(10);
-                doc.text('No sets recorded for this exercise', 30, y);
+                doc.text('<?= addslashes(t('no_sets_recorded')) ?>', 30, y);
                 y += 8;
                 <?php endif; ?>
                 
@@ -424,7 +422,7 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                 doc.save('workout_<?= $workout_id ?>.pdf');
             } catch (error) {
                 console.error('Error generating PDF:', error);
-                alert('Error generating PDF. Please try again later.');
+                alert('<?= addslashes(t('error_generating_pdf')) ?>');
             }
         }
         

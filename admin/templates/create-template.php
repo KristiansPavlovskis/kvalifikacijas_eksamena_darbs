@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/assets/db_connection.php';
+require_once dirname(__DIR__, 2) . '/profile/languages.php';
 
 session_start();
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -24,12 +25,12 @@ if (!$is_superadmin) {
     exit;
 }
 
-$pageTitle = "Create Template";
+$pageTitle = t('create_template');
 $bodyClass = "admin-page";
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION['language'] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,18 +49,19 @@ $bodyClass = "admin-page";
         
         <div class="main-content">
             <div class="admin-topbar">
-                <h1>Create Template</h1>
+                <h1><?php echo t('create_template'); ?></h1>
                 <div class="admin-user">
+                    <?php include dirname(__DIR__, 2) . '/includes/language-selector.php'; ?>
                     <div class="admin-avatar"><?php echo substr($_SESSION["username"], 0, 1); ?></div>
-                    <span>Admin</span>
+                    <span><?php echo t('administration'); ?></span>
                 </div>
             </div>
             
             <div class="dashboard-container">
                 <div class="admin-content-box">
-                    <h2>Create New Workout Template</h2>
-                    <p>This page will contain a form to create a new workout template.</p>
-                    <a href="/admin/index.php" class="admin-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                    <h2><?php echo t('create_new_workout_template'); ?></h2>
+                    <p><?php echo t('create_template_page_description'); ?></p>
+                    <a href="/admin/index.php" class="admin-btn"><i class="fas fa-arrow-left"></i> <?php echo t('back_to_dashboard'); ?></a>
                 </div>
             </div>
         </div>

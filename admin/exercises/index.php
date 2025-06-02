@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/assets/db_connection.php';
+require_once dirname(__DIR__, 2) . '/profile/languages.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("Location: ../../pages/login.php");
@@ -75,12 +76,12 @@ if ($row = $stats_result->fetch_assoc()) {
 
 $added_this_week = 0;
 
-$pageTitle = "Exercise Library";
+$pageTitle = t('exercise_library');
 $bodyClass = "admin-page";
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION['language'] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -343,10 +344,10 @@ $bodyClass = "admin-page";
         
         <div class="main-content">
             <div class="admin-topbar">
-                <h1>Exercise Library</h1>
+                <h1><?php echo t('exercise_library'); ?></h1>
                 <div class="admin-user">
                     <div class="admin-avatar"><?php echo substr($_SESSION["username"], 0, 1); ?></div>
-                    <span>Admin</span>
+                    <span><?php echo t('admin'); ?></span>
                 </div>
             </div>
             
@@ -366,30 +367,30 @@ $bodyClass = "admin-page";
                 <div class="stats-container">
                     <div class="stat-card">
                         <div class="stat-value"><?php echo $total_exercises_count; ?></div>
-                        <div class="stat-label">Total Exercises</div>
+                        <div class="stat-label"><?php echo t('total_exercises'); ?></div>
                     </div>
                 </div>
                 
                 <div class="actions-bar">
                     <a href="add-exercise.php" class="add-btn">
-                        <i class="fas fa-plus"></i> Add New Exercise
+                        <i class="fas fa-plus"></i> <?php echo t('add_exercise'); ?>
                     </a>
                     
                     <div>
                         <button class="reset-btn" id="bulkDeleteBtn" style="display: none;">
-                            <i class="fas fa-trash"></i> Delete Selected
+                            <i class="fas fa-trash"></i> <?php echo t('delete_selected'); ?>
                         </button>
                     </div>
                 </div>
                 
                 <form action="" method="GET" id="filterForm">
                     <div class="search-container">
-                        <input type="text" name="search" class="search-input" placeholder="Search exercises..." value="<?php echo htmlspecialchars($search); ?>">
+                        <input type="text" name="search" class="search-input" placeholder="<?php echo t('search_exercises_placeholder'); ?>" value="<?php echo htmlspecialchars($search); ?>">
                         <button type="submit" class="search-btn">
                             <i class="fas fa-search"></i>
                         </button>
                         <button type="button" class="reset-btn" onclick="resetFilters()">
-                            <i class="fas fa-redo"></i> Reset
+                            <i class="fas fa-redo"></i> <?php echo t('reset'); ?>
                         </button>
                     </div>
                 </form>
@@ -424,7 +425,7 @@ $bodyClass = "admin-page";
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="3" style="text-align: center; padding: 20px;">No exercises found</td>
+                                <td colspan="3" style="text-align: center; padding: 20px;"><?php echo t('no_exercises_found'); ?></td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -432,7 +433,11 @@ $bodyClass = "admin-page";
                 
                 <div class="pagination">
                     <div class="page-info">
-                        Showing <?php echo min(($page - 1) * $limit + 1, $total_exercises); ?> to <?php echo min($page * $limit, $total_exercises); ?> of <?php echo $total_exercises; ?> exercises
+                        <?php 
+                        $start = min($offset + 1, $total_exercises);
+                        $end = min($offset + $limit, $total_exercises);
+                        echo t('showing') . " $start " . t('to') . " $end " . t('of') . " $total_exercises " . t('exercises');
+                        ?>
                     </div>
                     <div class="page-buttons">
                         <button 
@@ -440,14 +445,14 @@ $bodyClass = "admin-page";
                             class="page-btn" 
                             <?php echo ($page <= 1) ? 'disabled' : ''; ?>
                         >
-                            Previous
+                            <?php echo t('previous'); ?>
                         </button>
                         <button 
                             onclick="window.location.href='?page=<?php echo min($total_pages, $page + 1); ?>&search=<?php echo urlencode($search); ?>'" 
                             class="page-btn" 
                             <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>
                         >
-                            Next
+                            <?php echo t('next'); ?>
                         </button>
                     </div>
                 </div>
@@ -478,7 +483,7 @@ $bodyClass = "admin-page";
             }
         
             bulkDeleteBtn.addEventListener('click', function() {
-                if (confirm('Are you sure you want to delete the selected exercises?')) {
+                if (confirm('<?php echo t('confirm_delete_selected_exercises'); ?>')) {
                     const selectedIds = [];
                     document.querySelectorAll('.exercise-checkbox:checked').forEach(checkbox => {
                         selectedIds.push(checkbox.value);
@@ -503,7 +508,7 @@ $bodyClass = "admin-page";
         });
         
         function confirmDelete(id) {
-            if (confirm('Are you sure you want to delete this exercise?')) {
+            if (confirm('<?php echo t('confirm_delete_exercise'); ?>')) {
                 window.location.href = 'delete-exercise.php?id=' + id;
             }
         }

@@ -84,34 +84,21 @@ try {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="global-profile.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-light: #4cc9f0;
-            --primary-dark: #3a56d4;
-            --secondary: #f72585;
-            --secondary-light: #ff5c8a;
-            --success: #06d6a0;
-            --warning: #ffd166;
-            --danger: #ef476f;
-            --dark: #0f0f1a;
-            --dark-card: #1a1a2e;
-            --gray-dark: #2b2b3d;
-            --gray-light: rgba(255, 255, 255, 0.7);
-            --sidebar-width: 260px;
-        }
-
         body {
             background-color: var(--dark);
             color: white;
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
+            overflow: hidden;
+            height: 100vh;
         }
 
         .app-container {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
             width: 100%;
+            overflow: hidden;
         }
 
         .main-content {
@@ -154,7 +141,7 @@ try {
 <div class="app-container">
     <?php require_once 'sidebar.php'; ?>
     
-    <div class="main-content">
+    <div class="main-content" style="padding:0 !important;">
         <div id="desktopView">
             <?php include 'desktop-workout.php'; ?>
         </div>

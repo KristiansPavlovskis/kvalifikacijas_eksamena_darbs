@@ -105,10 +105,12 @@ function saveWorkoutToDatabase($conn, $userId, $workoutData) {
             }
         }
         
-        $avg_intensity = $total_rpe_sets > 0 ? round($total_rpe / $total_rpe_sets, 1) : 0;
+        $avg_intensity = isset($workoutData['avg_intensity']) && $workoutData['avg_intensity'] > 0 
+            ? floatval($workoutData['avg_intensity']) 
+            : ($total_rpe_sets > 0 ? round($total_rpe / $total_rpe_sets, 1) : 3);
 
-        $duration_minutes = round(floatval($workoutData['duration'] ?? 0) / 60, 2);
-        $calories_burned = calculateCaloriesBurned($duration_minutes, $avg_intensity);
+        $duration_minutes = round(floatval($workoutData['duration_minutes'] ?? 0), 2);
+        $calories_burned = isset($workoutData['calories_burned']) ? intval($workoutData['calories_burned']) : calculateCaloriesBurned($duration_minutes, $avg_intensity);
 
         $rating = isset($workoutData['rating']) ? intval($workoutData['rating']) : null;
         
@@ -126,17 +128,16 @@ function saveWorkoutToDatabase($conn, $userId, $workoutData) {
             total_volume,
             avg_intensity,
             created_at
-        ) VALUES (?, ?, 'quick_workout', ?, ?, ?, ?, ?, ?, ?, NOW())";
+        ) VALUES (?, ?, 'strength', ?, ?, ?, ?, ?, ?, ?, NOW())";
         
         $stmt = mysqli_prepare($conn, $workout_query);
         if (!$stmt) {
             throw new Exception("Failed to prepare workout query: " . mysqli_error($conn));
         }
 
-        $workout_name = $workoutData['name'] ?? 'Quick Workout';
+        $workout_name = $workoutData['title'] ?? 'Quick Workout';
         $notes = $workoutData['notes'] ?? '';
         $total_volume_ref = $total_volume;
-        $avg_intensity_ref = $avg_intensity;
 
         $rating_ref = $rating !== null ? $rating : 0;
         $template_id_ref = $template_id !== null ? $template_id : 0;
@@ -150,7 +151,7 @@ function saveWorkoutToDatabase($conn, $userId, $workoutData) {
             $rating_ref,
             $template_id_ref,
             $total_volume_ref,
-            $avg_intensity_ref
+            $avg_intensity
         );
 
         if (!mysqli_stmt_execute($stmt)) {
@@ -178,12 +179,14 @@ function saveWorkoutToDatabase($conn, $userId, $workoutData) {
                 }
             }
             
-            $exercise_avg_rpe = $exercise_rpe_sets > 0 ? round($exercise_total_rpe / $exercise_rpe_sets, 1) : 0;
+            $exercise_avg_rpe = isset($exercise['avg_rpe']) && $exercise['avg_rpe'] > 0 
+                ? floatval($exercise['avg_rpe']) 
+                : ($exercise_rpe_sets > 0 ? round($exercise_total_rpe / $exercise_rpe_sets, 1) : 3);
+                
             $sets_completed = count($exercise['sets']);
             $exercise_order = $exercise_index + 1;
             $exercise_name = $exercise['name'];
             $exercise_total_volume_ref = $exercise_total_volume;
-            $exercise_avg_rpe_ref = $exercise_avg_rpe;
 
             $exercise_query = "INSERT INTO workout_exercises (
                 workout_id,
@@ -210,7 +213,7 @@ function saveWorkoutToDatabase($conn, $userId, $workoutData) {
                 $sets_completed,
                 $exercise_total_reps,
                 $exercise_total_volume_ref,
-                $exercise_avg_rpe_ref
+                $exercise_avg_rpe
             );
 
             if (!mysqli_stmt_execute($stmt)) {
@@ -238,7 +241,7 @@ function saveWorkoutToDatabase($conn, $userId, $workoutData) {
                 $set_number = $set_index + 1;
                 $weight = floatval($set['weight']);
                 $reps = intval($set['reps']);
-                $rpe = isset($set['rpe']) ? intval($set['rpe']) : 0;
+                $rpe = isset($set['rpe']) && $set['rpe'] > 0 ? intval($set['rpe']) : 3;
 
                 mysqli_stmt_bind_param($stmt, "iiidii",
                     $exercise_id,

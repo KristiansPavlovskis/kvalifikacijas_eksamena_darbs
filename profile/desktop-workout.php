@@ -1,5 +1,6 @@
 <?php
 require_once 'profile_access_control.php';
+require_once 'languages.php';
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php?redirect=profile/active-workout.php");
@@ -23,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["save_workout"])) {
         
         if (empty($workoutData["exercises"])) {
             throw new Exception("No exercises recorded. Please add at least one exercise to save your workout.");
-        }
+        } 
         
         $workout_id = saveWorkoutToDatabase($conn, $user_id, $workoutData);
         
@@ -284,11 +285,11 @@ try {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION["language"] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYMVERSE - Desktop Workout</title>
+    <title>GYMVERSE - <?php echo t('start_workout'); ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -302,7 +303,7 @@ try {
         
         <div class="main-content">
             <div class="page-header">
-                <h1 class="page-title">Start Workout</h1>
+                <h1 class="page-title"><?php echo t('start_workout'); ?></h1>
             </div>
            
             <div class="step-content active" id="step1-content">
@@ -310,32 +311,32 @@ try {
                     <div class="categories-panel">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <i class="fas fa-th-large"></i> Categories
+                                <i class="fas fa-th-large"></i> <?php echo t('categories'); ?>
                             </div>
                         </div>
                         <div class="panel-content">
                             <div class="category-list">
                                 <div class="category-item active" data-category="all">
                                     <div class="category-name">
-                                        <i class="fas fa-layer-group"></i> All Templates
+                                        <i class="fas fa-layer-group"></i> <?php echo t('all_templates'); ?>
                                     </div>
                                     <div class="category-count"><?php echo $all_templates_count; ?></div>
                                 </div>
                                 <div class="category-item" data-category="Strength Training">
                                     <div class="category-name">
-                                        <i class="fas fa-dumbbell"></i> Strength Training
+                                        <i class="fas fa-dumbbell"></i> <?php echo t('strength_training'); ?>
                                     </div>
                                     <div class="category-count"><?php echo $strength_templates_count; ?></div>
                                 </div>
                                 <div class="category-item" data-category="hiit">
                                     <div class="category-name">
-                                        <i class="fas fa-bolt"></i> HIIT
+                                        <i class="fas fa-bolt"></i> <?php echo t('hiit'); ?>
                                     </div>
                                     <div class="category-count"><?php echo $hiit_templates_count; ?></div>
                                 </div>
                                 <div class="category-item" data-category="cardio">
                                     <div class="category-name">
-                                        <i class="fas fa-heartbeat"></i> Cardio
+                                        <i class="fas fa-heartbeat"></i> <?php echo t('cardio'); ?>
                                     </div>
                                     <div class="category-count"><?php echo $cardio_templates_count; ?></div>
                                 </div>
@@ -343,33 +344,33 @@ try {
                             
                             <div class="filters-section">
                                 <h3 class="panel-title pdw-panel-title">
-                                    <i class="fas fa-globe"></i> Global Templates
+                                    <i class="fas fa-globe"></i> <?php echo t('global_templates'); ?>
                                 </h3>
                                 <div class="pdw-toggle-container">
                                     <label class="pdw-toggle-switch">
                                         <input type="checkbox" id="globalTemplatesToggle">
                                         <span class="pdw-toggle-slider"></span>
                                     </label>
-                                    <span class="pdw-toggle-label">Show global templates</span>
+                                    <span class="pdw-toggle-label"><?php echo t('show_global_templates'); ?></span>
                                 </div>
-                                <p class="pdw-toggle-description">Toggle to view official workout templates created by trainers.</p>
+                                <p class="pdw-toggle-description"><?php echo t('toggle_global_description'); ?></p>
                                 
                                 <div class="filter-group">
-                                    <label class="filter-label">Duration</label>
+                                    <label class="filter-label"><?php echo t('duration'); ?></label>
                                     <select class="filter-select" id="durationFilter">
-                                        <option value="any">Any duration</option>
-                                        <option value="short">Short (< 30 min)</option>
-                                        <option value="medium">Medium (30-60 min)</option>
-                                        <option value="long">Long (> 60 min)</option>
+                                        <option value="any"><?php echo t('any_duration'); ?></option>
+                                        <option value="short"><?php echo t('short'); ?> (< 30 min)</option>
+                                        <option value="medium"><?php echo t('medium'); ?> (30-60 min)</option>
+                                        <option value="long"><?php echo t('long'); ?> (> 60 min)</option>
                                     </select>
                                 </div>
                                 <div class="filter-group">
-                                    <label class="filter-label">Difficulty</label>
+                                    <label class="filter-label"><?php echo t('difficulty'); ?></label>
                                     <select class="filter-select" id="difficultyFilter">
-                                        <option value="any">All levels</option>
-                                        <option value="beginner">Beginner</option>
-                                        <option value="intermediate">Intermediate</option>
-                                        <option value="advanced">Advanced</option>
+                                        <option value="any"><?php echo t('all_levels'); ?></option>
+                                        <option value="beginner"><?php echo t('beginner'); ?></option>
+                                        <option value="intermediate"><?php echo t('intermediate'); ?></option>
+                                        <option value="advanced"><?php echo t('advanced'); ?></option>
                                     </select>
                                 </div>
                             </div>
@@ -379,7 +380,7 @@ try {
                     <div class="templates-panel">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <i class="fas fa-clipboard-list"></i> Available Templates
+                                <i class="fas fa-clipboard-list"></i> <?php echo t('available_templates'); ?>
                             </div>
                             <div class="panel-actions">
                                 <button class="view-toggle-btn" id="gridViewBtn">
@@ -393,7 +394,7 @@ try {
                         <div class="panel-content">
                             <div class="search-box">
                                 <i class="fas fa-search search-icon"></i>
-                                <input type="text" class="search-input" id="templateSearch" placeholder="Search templates...">
+                                <input type="text" class="search-input" id="templateSearch" placeholder="<?php echo t('search_templates'); ?>">
                             </div>
                             
                             <?php if ($templates && mysqli_num_rows($templates) > 0): ?>
@@ -448,7 +449,7 @@ try {
                                                 </div>
                                                 <div class="template-card-meta-item">
                                                     <i class="fas fa-dumbbell"></i>
-                                                    <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                                    <span><?php echo $template['exercise_count']; ?> <?php echo t('exercises'); ?></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -459,7 +460,7 @@ try {
                                         </div>
                                         <div class="template-card-footer">
                                             <div class="template-card-action">
-                                                <i class="fas fa-chevron-right"></i> Select
+                                                <i class="fas fa-chevron-right"></i> <?php echo t('select'); ?>
                                             </div>
                                         </div>
                                     </div>
@@ -519,7 +520,7 @@ try {
                                             </div>
                                             <div class="template-list-item-meta-item">
                                                 <i class="fas fa-dumbbell"></i>
-                                                <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                                <span><?php echo $template['exercise_count']; ?> <?php echo t('exercises'); ?></span>
                                             </div>
                                         </div>
                                         <?php if (!empty($template['description'])): ?>
@@ -531,9 +532,9 @@ try {
                             <?php else: ?>
                                 <div class="empty-message" id="noTemplatesMessage">
                                     <i class="fas fa-clipboard"></i>
-                                    <p>No workout templates found. Create a template first to start a workout.</p>
+                                    <p><?php echo t('no_templates_found'); ?></p>
                                     <a href="workout-templates.php" class="btn btn-primary">
-                                        <i class="fas fa-plus"></i> Create Template
+                                        <i class="fas fa-plus"></i> <?php echo t('create_template'); ?>
                                     </a>
                                 </div>
                             <?php endif; ?>
@@ -543,14 +544,14 @@ try {
                     <div class="selected-panel">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <i class="fas fa-clipboard-check"></i> Selected Template
+                                <i class="fas fa-clipboard-check"></i> <?php echo t('selected_template'); ?>
                             </div>
                         </div>
                         <div id="selectedTemplateContainer">
                             <div class="selected-template-placeholder">
                                 <i class="fas fa-hand-pointer"></i>
-                                <h3>Choose a template to view</h3>
-                                <p>Select a workout template from the list to view details and begin your workout.</p>
+                                <h3><?php echo t('choose_template_to_view'); ?></h3>
+                                <p><?php echo t('select_template_details'); ?></p>
                             </div>
                         </div>
                     </div>
@@ -559,7 +560,7 @@ try {
             
             <div class="step-content" id="step2-content">
                 <div class="workout-header">
-                    <h1 class="workout-title" id="workout-title">Loading workout...</h1>
+                    <h1 class="workout-title" id="workout-title"><?php echo t('loading_workout'); ?></h1>
                     <div class="workout-progress">
                         <div class="timer-container">
                             <i class="fas fa-clock"></i>
@@ -568,23 +569,23 @@ try {
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: 0%"></div>
                         </div>
-                        <div class="progress-percentage">0% Complete</div>
+                        <div class="progress-percentage">0% <?php echo t('complete'); ?></div>
                     </div>
                 </div>
 
                 <div class="workout-tracking-layout">
                     <div class="overview-panel">
                         <div class="panel-section">
-                            <h2 class="panel-title">Workout Overview</h2>
+                            <h2 class="panel-title"><?php echo t('workout_overview'); ?></h2>
                             <div class="exercise-list" id="exercise-list">
                             </div>
                             <div class="pdw-exercise-reorder-controls">
-                                <p class="pdw-reorder-instructions">Drag exercises to reorder or use buttons:</p>
+                                <p class="pdw-reorder-instructions"><?php echo t('drag_exercises_reorder'); ?></p>
                                 <button class="btn btn-sm" id="move-exercise-up-btn" disabled>
-                                    <i class="fas fa-arrow-up"></i> Move Up
+                                    <i class="fas fa-arrow-up"></i> <?php echo t('move_up'); ?>
                                 </button>
                                 <button class="btn btn-sm" id="move-exercise-down-btn" disabled>
-                                    <i class="fas fa-arrow-down"></i> Move Down
+                                    <i class="fas fa-arrow-down"></i> <?php echo t('move_down'); ?>
                                 </button>
                             </div>
                         </div>
@@ -592,34 +593,33 @@ try {
 
                     <div class="current-exercise-panel">
                         <div id="current-exercise-container">
-                            <h2 class="exercise-title" id="current-exercise-name">Loading exercise...</h2>
-                            <p class="exercise-target" id="exercise-target">Target: -</p>
+                            <h2 class="exercise-title" id="current-exercise-name"><?php echo t('loading_exercise'); ?></h2>
+                            <p class="exercise-target" id="exercise-target"><?php echo t('target'); ?>: -</p>
                             
                             <div class="current-set-section">
-                                <h3 class="section-title">Current Set</h3>
+                                <h3 class="section-title"><?php echo t('current_set'); ?></h3>
                                 <div class="input-row">
                                     <div class="input-group">
-                                        <label for="weight-input">Weight (kg)</label>
+                                        <label for="weight-input"><?php echo t('weight'); ?> (kg)</label>
                                         <input type="number" id="weight-input" class="exercise-input" value="0">
                                     </div>
                                     <div class="input-group">
-                                        <label for="reps-input">Reps</label>
+                                        <label for="reps-input"><?php echo t('reps'); ?></label>
                                         <input type="number" id="reps-input" class="exercise-input" value="0">
                                     </div>
                                 </div>
                                 
-                                <button id="complete-set-btn" class="complete-set-btn">Complete Set</button>
+                                <button id="complete-set-btn" class="complete-set-btn"><?php echo t('complete_set'); ?></button>
                             </div>
                             
                             <div class="previous-sets-section">
-                                <h3 class="section-title">Previous Sets</h3>
+                                <h3 class="section-title"><?php echo t('previous_sets'); ?></h3>
                                 <table class="sets-table">
                                     <thead>
                                         <tr>
-                                            <th>Set</th>
-                                            <th>Weight</th>
-                                            <th>Reps</th>
-                                            <th>1RM</th>
+                                            <th><?php echo t('set'); ?></th>
+                                            <th><?php echo t('weight'); ?></th>
+                                            <th><?php echo t('reps'); ?></th>
                                         </tr>
                                     </thead>
                                     <tbody id="previous-sets-table">
@@ -630,8 +630,8 @@ try {
                         
                         <div id="rest-screen" class="rest-screen" style="display: none;">
                             <div class="rest-message">
-                                <h2>Rest Time</h2>
-                                <p>How was that set?</p>
+                                <h2><?php echo t('rest_time'); ?></h2>
+                                <p><?php echo t('how_was_set'); ?></p>
                             </div>
                             
                             <div class="rpe-selection">
@@ -654,40 +654,40 @@ try {
                             </div>
                             
                             <div class="next-exercise-preview">
-                                <h3>Next Up</h3>
+                                <h3><?php echo t('next_up'); ?></h3>
                                 <div id="rest-next-exercise"></div>
                             </div>
                             
                             <div class="rest-controls">
-                                <button id="skip-rest-btn" class="skip-rest-btn">Skip Rest</button>
+                                <button id="skip-rest-btn" class="skip-rest-btn"><?php echo t('skip_rest'); ?></button>
                             </div>
                         </div>
                     </div>
 
                     <div class="next-exercise-panel">
                         <div class="panel-section">
-                            <h2 class="panel-title">Next Exercise</h2>
+                            <h2 class="panel-title"><?php echo t('next_exercise'); ?></h2>
                             <div class="next-exercise-card" id="next-exercise-card">
                             </div>
                         </div>
                         
                         <div class="panel-section">
-                            <h2 class="panel-title">Workout Stats</h2>
+                            <h2 class="panel-title"><?php echo t('workout_stats'); ?></h2>
                             <div class="pdw-stats-grid">
                                 <div class="pdw-stat-row">
-                                    <div class="pdw-stat-label">Sets Completed</div>
+                                    <div class="pdw-stat-label"><?php echo t('sets_completed'); ?></div>
                                     <div class="pdw-stat-value" id="stats-sets-completed">0/0</div>
                                 </div>
                                 <div class="pdw-stat-row">
-                                    <div class="pdw-stat-label">Volume</div>
+                                    <div class="pdw-stat-label"><?php echo t('volume'); ?></div>
                                     <div class="pdw-stat-value" id="stats-volume">0 kg</div>
                                 </div>
                                 <div class="pdw-stat-row">
-                                    <div class="pdw-stat-label">Elapsed Time</div>
+                                    <div class="pdw-stat-label"><?php echo t('elapsed_time'); ?></div>
                                     <div class="pdw-stat-value" id="stats-elapsed-time">00:00:00</div>
                                 </div>
                                 <div class="pdw-stat-row">
-                                    <div class="pdw-stat-label">Calories Burned</div>
+                                    <div class="pdw-stat-label"><?php echo t('calories_burned'); ?></div>
                                     <div class="pdw-stat-value" id="stats-calories-burned">0 kcal</div>
                                 </div>
                             </div>
@@ -696,58 +696,57 @@ try {
                 </div>
                 
                 <div class="workout-footer">
-                    <button id="end-workout-btn" class="footer-btn danger"><i class="fas fa-flag-checkered"></i> End Workout</button>
+                    <button id="end-workout-btn" class="footer-btn danger"><i class="fas fa-flag-checkered"></i> <?php echo t('end_workout'); ?></button>
                 </div>
             </div>
             
             <div id="step3-content" class="step-content">
                 <div class="workout-complete-header">
-                    <h1 class="workout-complete-title">Workout Complete!</h1>
-                    <div class="workout-complete-date" id="workout-complete-date">Loading...</div>
+                    <h1 class="workout-complete-title"><?php echo t('workout_complete'); ?></h1>
+                    <div class="workout-complete-date" id="workout-complete-date"><?php echo t('loading'); ?>...</div>
                 </div>
 
                 <div class="workout-summary-grid">
                     <div class="summary-stat-card">
-                        <div class="summary-stat-label">Total Volume</div>
+                        <div class="summary-stat-label"><?php echo t('total_volume'); ?></div>
                         <div class="summary-stat-value" id="summary-volume">0 kg</div>
                         <div class="summary-stat-comparison positive" id="volume-comparison">-</div>
                     </div>
                     <div class="summary-stat-card">
-                        <div class="summary-stat-label">Total Sets</div>
+                        <div class="summary-stat-label"><?php echo t('total_sets'); ?></div>
                         <div class="summary-stat-value" id="summary-sets">0</div>
                         <div class="summary-stat-comparison neutral" id="sets-comparison">-</div>
                     </div>
                     <div class="summary-stat-card">
-                        <div class="summary-stat-label">Peak Weight</div>
+                        <div class="summary-stat-label"><?php echo t('peak_weight'); ?></div>
                         <div class="summary-stat-value" id="summary-peak-weight">0 kg</div>
                         <div class="summary-stat-comparison positive" id="peak-weight-comparison">-</div>
                     </div>
                     <div class="summary-stat-card">
-                        <div class="summary-stat-label">Avg Rest Time</div>
-                        <div class="summary-stat-value" id="summary-rest-time">0 sec</div>
+                        <div class="summary-stat-label"><?php echo t('total_time'); ?></div>
+                        <div class="summary-stat-value" id="summary-rest-time">00:00:00</div>
                         <div class="summary-stat-comparison positive" id="rest-time-comparison">-</div>
                     </div>
                 </div>
 
-
                 <div class="exercise-breakdown">
-                    <h3 class="chart-title">Exercise Breakdown</h3>
+                    <h3 class="chart-title"><?php echo t('exercise_breakdown'); ?></h3>
                     <div class="exercise-breakdown-list" id="exercise-breakdown-list">
                     </div>
                 </div>
 
                 <div class="workout-notes-container">
-                    <h3 class="chart-title">Workout Notes</h3>
-                    <textarea class="workout-notes" id="summary-workout-notes" placeholder="Add your thoughts about today's workout..."></textarea>
+                    <h3 class="chart-title"><?php echo t('workout_notes'); ?></h3>
+                    <textarea class="workout-notes" id="summary-workout-notes" placeholder="<?php echo t('add_workout_thoughts'); ?>"></textarea>
                 </div>
 
                 <div class="summary-actions">
                     <button class="save-workout-btn" id="final-save-workout-btn">
-                        <i class="fas fa-save"></i> Save Workout
+                        <i class="fas fa-save"></i> <?php echo t('save_workout'); ?>
                     </button>
                     <a href="workout.php">
                         <button class="save-template-btn">
-                            <i class="fas fa-bookmark"></i> Dont save
+                            <i class="fas fa-bookmark"></i> <?php echo t('dont_save'); ?>
                         </button>
                     </a>
                 </div>
@@ -871,6 +870,7 @@ try {
                     listViewBtn.classList.remove('active');
                     templateGrid.style.display = 'grid';
                     templateList.style.display = 'none';
+                    updateCategoryCounts(); 
                 });
 
                 listViewBtn.addEventListener('click', function() {
@@ -878,6 +878,7 @@ try {
                     gridViewBtn.classList.remove('active');
                     templateList.style.display = 'block';
                     templateGrid.style.display = 'none';
+                    updateCategoryCounts(); 
                 });
             }
 
@@ -946,8 +947,10 @@ try {
                     
                     let showTemplate = true;
                     
-                    if (template.classList.contains('template-global') && !showGlobal) {
-                        showTemplate = false;
+                    const isGlobalTemplate = template.classList.contains('pdw-template-global');
+                    if (isGlobalTemplate && !showGlobal) {
+                        template.style.display = 'none';
+                        return;
                     }
 
                     if (activeCategory !== 'all') {
@@ -990,6 +993,8 @@ try {
 
                     template.style.display = showTemplate ? '' : 'none';
                 });
+                
+                updateCategoryCounts();
             }
 
             function loadTemplateDetails(templateId) {
@@ -1089,11 +1094,11 @@ try {
                         </div>
                         <div class="selected-template-footer">
                             <button class="begin-workout-btn" data-template-id="${template.id}">
-                                <i class="fas fa-play"></i> Begin Workout
+                                <i class="fas fa-play"></i> <?php echo t('begin_workout'); ?>
                             </button>
                             ${!isGlobal ? `
                             <button class="modify-template-btn" data-template-id="${template.id}">
-                                <i class="fas fa-edit"></i> Modify Template
+                                <i class="fas fa-edit"></i> <?php echo t('modify_template'); ?>
                             </button>
                             ` : `
                             `}
@@ -1430,7 +1435,7 @@ try {
                 currentEx.sets[workoutState.currentSet - 1] = { 
                     weight, 
                     reps,
-                    rpe: null,
+                    rpe: 3,
                     completed: true 
                 };
                 currentEx.completedSets++;
@@ -1495,7 +1500,14 @@ try {
                 document.getElementById('summary-volume').textContent = `${workoutState.totalVolume.toFixed(1)} kg`;
                 document.getElementById('summary-sets').textContent = `${workoutState.completedSets}`;
                 document.getElementById('summary-peak-weight').textContent = `${workoutState.peakWeight} kg`;
-                document.getElementById('summary-rest-time').textContent = `${workoutState.restTime} sec`;
+                
+                const elapsed = Math.floor((workoutState.endTime - workoutState.startTime) / 1000);
+                const hours = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+                const minutes = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+                const seconds = String(elapsed % 60).padStart(2, '0');
+                const timeString = `${hours}:${minutes}:${seconds}`;
+                
+                document.getElementById('summary-rest-time').textContent = timeString;
                 document.getElementById('summary-workout-notes').value = workoutState.notes || '';
                 
                 const breakdownList = document.getElementById('exercise-breakdown-list');
@@ -1684,6 +1696,20 @@ try {
             }
 
             function saveWorkout() {
+                let totalRPE = 0;
+                let totalRPESets = 0;
+                
+                workoutState.exercises.forEach(exercise => {
+                    exercise.sets.forEach(set => {
+                        if (set.completed && set.rpe > 0) {
+                            totalRPE += set.rpe;
+                            totalRPESets++;
+                        }
+                    });
+                });
+                
+                const avgRPE = totalRPESets > 0 ? totalRPE / totalRPESets : 3;
+                
                 const workoutData = {
                     title: workoutState.templateName,
                     type: 'strength',
@@ -1691,12 +1717,28 @@ try {
                     duration_minutes: Math.round((workoutState.endTime - workoutState.startTime) / 60000),
                     template_id: workoutState.templateId,
                     total_volume: workoutState.totalVolume,
+                    avg_intensity: avgRPE,
                     calories_burned: workoutState.caloriesBurned || Math.round(calculateCaloriesBurned()),
                     exercises: workoutState.exercises.map(exercise => {
                         if (exercise.completedSets > 0) {
+                            let exerciseTotalRPE = 0;
+                            let exerciseRPESets = 0;
+                            
+                            const filteredSets = exercise.sets.filter(set => set.completed);
+                            
+                            filteredSets.forEach(set => {
+                                if (set.rpe > 0) {
+                                    exerciseTotalRPE += set.rpe;
+                                    exerciseRPESets++;
+                                }
+                            });
+                            
+                            const exerciseAvgRPE = exerciseRPESets > 0 ? exerciseTotalRPE / exerciseRPESets : 3;
+                            
                             return {
                                 name: exercise.exercise_name,
-                                sets: exercise.sets.filter(set => set.completed)
+                                sets: filteredSets,
+                                avg_rpe: exerciseAvgRPE
                             };
                         }
                         return null;
@@ -1734,12 +1776,10 @@ try {
                 currentEx.sets.forEach((set, index) => {
                     if (set.completed) {
                         const row = document.createElement('tr');
-                        const oneRM = set.weight * (1 + set.reps / 30);
                         row.innerHTML = `
                             <td>${index + 1}</td>
                             <td>${set.weight} kg</td>
                             <td>${set.reps}</td>
-                            <td>${oneRM.toFixed(1)} kg</td>
                         `;
                         tbody.appendChild(row);
                     }
@@ -1885,7 +1925,7 @@ try {
                         const selectedRPE = parseInt(button.dataset.rpe);
                         
                         const currentExercise = workoutState.exercises[workoutState.currentExerciseIndex];
-                        const setIndex = workoutState.currentSet - 1 > 0 ? workoutState.currentSet - 1 : 0;
+                        const setIndex = workoutState.currentSet - 1 >= 0 ? workoutState.currentSet - 1 : 0;
                         
                         if (currentExercise && currentExercise.sets[setIndex]) {
                             currentExercise.sets[setIndex].rpe = selectedRPE;
@@ -1923,6 +1963,13 @@ try {
                 restTimeRemaining = parseInt(currentExercise.rest_time) || workoutState.restTime;
                 
                 updateRestTimerDisplay();
+                    
+                const rpeButtons = document.querySelectorAll('.rpe-button');
+                rpeButtons.forEach(btn => btn.classList.remove('selected'));
+                const defaultRpeButton = document.querySelector('.rpe-button[data-rpe="3"]');
+                if (defaultRpeButton) {
+                    defaultRpeButton.classList.add('selected');
+                }
                 
                 let nextExercise = "";
                 if (workoutState.currentSet < workoutState.exercises[workoutState.currentExerciseIndex].sets.length) {
@@ -2007,6 +2054,23 @@ try {
                 }
                 
                 filterTemplates();
+                updateCategoryCounts();
+            }
+            
+            function updateCategoryCounts() {
+                const activeView = document.getElementById('gridViewBtn').classList.contains('active') ? '.template-card' : '.template-list-item';
+                
+                const allVisibleTemplates = document.querySelectorAll(`${activeView}:not([style*="display: none"])`);
+                document.querySelector('.category-item[data-category="all"] .category-count').textContent = allVisibleTemplates.length;
+                
+                const strengthTemplates = document.querySelectorAll(`${activeView}.template-strength:not([style*="display: none"])`);
+                document.querySelector('.category-item[data-category="Strength Training"] .category-count').textContent = strengthTemplates.length;
+            
+                const hiitTemplates = document.querySelectorAll(`${activeView}.template-hiit:not([style*="display: none"])`);
+                document.querySelector('.category-item[data-category="hiit"] .category-count').textContent = hiitTemplates.length;
+                
+                const cardioTemplates = document.querySelectorAll(`${activeView}.template-cardio:not([style*="display: none"])`);
+                document.querySelector('.category-item[data-category="cardio"] .category-count').textContent = cardioTemplates.length;
             }
             
             const globalTemplatesToggle = document.getElementById('globalTemplatesToggle');
@@ -2115,7 +2179,7 @@ try {
                                     </div>
                                     <div class="template-card-meta-item">
                                         <i class="fas fa-dumbbell"></i>
-                                        <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                        <span><?php echo $template['exercise_count']; ?> <?php echo t('exercises'); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -2126,7 +2190,7 @@ try {
                             </div>
                             <div class="template-card-footer">
                                 <div class="template-card-action">
-                                    <i class="fas fa-chevron-right"></i> Select
+                                    <i class="fas fa-chevron-right"></i> <?php echo t('select'); ?>
                                 </div>
                             </div>
                         `;
@@ -2149,7 +2213,7 @@ try {
                                 </div>
                                 <div class="template-list-item-meta-item">
                                     <i class="fas fa-dumbbell"></i>
-                                    <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                    <span><?php echo $template['exercise_count']; ?> <?php echo t('exercises'); ?></span>
                                 </div>
                                 <div class="template-list-item-meta-item">
                                     <i class="fas fa-user"></i>

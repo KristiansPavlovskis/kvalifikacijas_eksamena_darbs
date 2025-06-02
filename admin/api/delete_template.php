@@ -9,8 +9,7 @@ try {
 
     session_start();
     if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-        http_response_code(401);
-        echo json_encode(["success" => false, "message" => "Unauthorized"]);
+        echo json_encode(['success' => false, 'message' => 'Not authorized']);
         exit;
     }
 
@@ -31,40 +30,22 @@ try {
     }
 
     if (!$is_superadmin) {
-        http_response_code(403);
-        echo json_encode(["success" => false, "message" => "Access denied"]);
+        echo json_encode(['success' => false, 'message' => 'Access denied']);
         exit;
     }
 
-    $template_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-    if ($template_id === 0) {
-        echo json_encode(["success" => false, "message" => "Template ID is required"]);
+    if (!isset($_GET['id']) || empty($_GET['id'])) {
+        echo json_encode(['success' => false, 'message' => 'Template ID is required']);
         exit;
     }
+
+    $template_id = intval($_GET['id']);
 
     $conn->begin_transaction();
 
     try {
-        $check_sql = "SELECT wt.id 
-                    FROM workout_templates wt
-                    INNER JOIN users u ON wt.user_id = u.id
-                    INNER JOIN user_roles ur ON u.id = ur.user_id
-                    WHERE wt.id = ? AND ur.role_id = 5";
-        $stmt = $conn->prepare($check_sql);
-        if (!$stmt) {
-            throw new Exception("Database error: " . $conn->error);
-        }
-        
-        $stmt->bind_param("i", $template_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows === 0) {
-            throw new Exception("Template not found or you don't have permission to delete it");
-        }
-
-        $delete_exercises_sql = "DELETE FROM workout_template_exercises WHERE workout_template_id = ?";
-        $stmt = $conn->prepare($delete_exercises_sql);
+        $delete_exercises_query = "DELETE FROM workout_template_exercises WHERE workout_template_id = ?";
+        $stmt = $conn->prepare($delete_exercises_query);
         if (!$stmt) {
             throw new Exception("Database error: " . $conn->error);
         }
@@ -72,8 +53,8 @@ try {
         $stmt->bind_param("i", $template_id);
         $stmt->execute();
         
-        $delete_template_sql = "DELETE FROM workout_templates WHERE id = ?";
-        $stmt = $conn->prepare($delete_template_sql);
+        $delete_template_query = "DELETE FROM workout_templates WHERE id = ?";
+        $stmt = $conn->prepare($delete_template_query);
         if (!$stmt) {
             throw new Exception("Database error: " . $conn->error);
         }
@@ -82,15 +63,14 @@ try {
         $stmt->execute();
         
         if ($stmt->affected_rows === 0) {
-            throw new Exception("Failed to delete template");
+            $conn->rollback();
+            echo json_encode(['success' => false, 'message' => 'Template not found']);
+            exit;
         }
         
         $conn->commit();
         
-        echo json_encode([
-            "success" => true, 
-            "message" => "Template deleted successfully"
-        ]);
+        echo json_encode(['success' => true]);
         
     } catch (Exception $e) {
         $conn->rollback();

@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/assets/db_connection.php';
+require_once dirname(__DIR__, 2) . '/profile/languages.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("Location: ../../pages/login.php");
@@ -82,12 +83,12 @@ while ($row = $users_result->fetch_assoc()) {
     $users[] = $row;
 }
 
-$pageTitle = "User Management";
+$pageTitle = t('user_management');
 $bodyClass = "admin-page";
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo isset($_SESSION['language']) ? $_SESSION['language'] : 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -346,10 +347,10 @@ $bodyClass = "admin-page";
         
         <div class="main-content">
             <div class="admin-topbar">
-                <h1>User Management</h1>
+                <h1><?php echo t('user_management'); ?></h1>
                 <div class="admin-user">
                     <div class="admin-avatar"><?php echo substr($_SESSION["username"], 0, 1); ?></div>
-                    <span>Admin</span>
+                    <span><?php echo t('admin'); ?></span>
                 </div>
             </div>
             
@@ -380,13 +381,13 @@ $bodyClass = "admin-page";
                     <div class="search-container">
                         <i class="fas fa-search search-icon"></i>
                         <form action="" method="GET">
-                            <input type="text" class="search-input" name="search" placeholder="Search users by name, email or ID..." value="<?php echo htmlspecialchars($search); ?>">
+                            <input type="text" class="search-input" name="search" placeholder="<?php echo t('search_users_placeholder'); ?>" value="<?php echo htmlspecialchars($search); ?>">
                         </form>
                     </div>
                     <div class="toolbar-actions">
                         <a href="#" class="add-btn" id="openAddUserModal">
                             <i class="fas fa-plus"></i>
-                            <span>Add User</span>
+                            <span><?php echo t('add_user'); ?></span>
                         </a>
                     </div>
                 </div>
@@ -398,13 +399,13 @@ $bodyClass = "admin-page";
                                 <input type="checkbox" id="select-all">
                             </th>
                             <th>ID</th>
-                            <th>User</th>
-                            <th>Registration</th>
-                            <th>Last Active</th>
-                            <th>Templates</th>
-                            <th>Workouts</th>
-                            <th>Type</th>
-                            <th>Actions</th>
+                            <th><?php echo t('user'); ?></th>
+                            <th><?php echo t('registration'); ?></th>
+                            <th><?php echo t('last_active'); ?></th>
+                            <th><?php echo t('templates'); ?></th>
+                            <th><?php echo t('workouts'); ?></th>
+                            <th><?php echo t('type'); ?></th>
+                            <th><?php echo t('actions'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -426,7 +427,7 @@ $bodyClass = "admin-page";
                                     </div>
                                 </td>
                                 <td><?php echo date('Y-m-d', strtotime($user['registration_date'])); ?></td>
-                                <td><?php echo $user['last_active'] ? date('Y-m-d', strtotime($user['last_active'])) : 'Never'; ?></td>
+                                <td><?php echo $user['last_active'] ? date('Y-m-d', strtotime($user['last_active'])) : t('never'); ?></td>
                                 <td><?php echo $user['templates_count']; ?></td>
                                 <td><?php echo $user['workouts_count']; ?></td>
                                 <td>
@@ -435,17 +436,17 @@ $bodyClass = "admin-page";
                                     $is_premium = strpos($roles, 'premium') !== false;
                                     ?>
                                     <span class="user-type <?php echo $is_premium ? 'premium' : ''; ?>">
-                                        <?php echo $is_premium ? 'Premium' : 'Basic'; ?>
+                                        <?php echo $is_premium ? t('premium') : t('basic'); ?>
                                     </span>
                                 </td>
                                 <td class="action-cell">
-                                    <button class="action-btn view-btn" data-user-id="<?php echo $user['id']; ?>" title="View Details">
+                                    <button class="action-btn view-btn" data-user-id="<?php echo $user['id']; ?>" title="<?php echo t('view_details'); ?>">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <a href="edit-user.php?id=<?php echo $user['id']; ?>" class="action-btn edit-btn" title="Edit User">
+                                    <a href="edit-user.php?id=<?php echo $user['id']; ?>" class="action-btn edit-btn" title="<?php echo t('edit_user'); ?>">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button class="action-btn delete-btn" data-user-id="<?php echo $user['id']; ?>" title="Delete User">
+                                    <button class="action-btn delete-btn" data-user-id="<?php echo $user['id']; ?>" title="<?php echo t('delete_user'); ?>">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -454,7 +455,7 @@ $bodyClass = "admin-page";
                         
                         <?php if (empty($users)): ?>
                             <tr>
-                                <td colspan="10" style="text-align: center; padding: 2rem;">No users found</td>
+                                <td colspan="10" style="text-align: center; padding: 2rem;"><?php echo t('no_users_found'); ?></td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -471,8 +472,8 @@ $bodyClass = "admin-page";
                             <div class="user-name"><?php echo htmlspecialchars($user['username']); ?></div>
                             <div class="user-email"><?php echo htmlspecialchars($user['email']); ?></div>
                             <div class="user-card-meta">
-                                Registered: <?php echo date('M d, Y', strtotime($user['registration_date'])); ?><br>
-                                Last active: <?php echo $user['last_active'] ? date('M d, Y', strtotime($user['last_active'])) : 'Never'; ?>
+                                <?php echo t('registered'); ?>: <?php echo date('M d, Y', strtotime($user['registration_date'])); ?><br>
+                                <?php echo t('last_active'); ?>: <?php echo $user['last_active'] ? date('M d, Y', strtotime($user['last_active'])) : t('never'); ?>
                             </div>
                         </div>
                     </div>
@@ -481,22 +482,22 @@ $bodyClass = "admin-page";
                 <div class="user-card-stats">
                     <div class="user-card-stat">
                         <div class="stat-number"><?php echo $user['workouts_count']; ?></div>
-                        <div class="stat-label">Workouts</div>
+                        <div class="stat-label"><?php echo t('workouts'); ?></div>
                     </div>
                     <div class="user-card-stat">
                         <div class="stat-number"><?php echo $user['templates_count']; ?></div>
-                        <div class="stat-label">Templates</div>
+                        <div class="stat-label"><?php echo t('templates'); ?></div>
                     </div>
                 </div>
                 
                 <div class="user-card-actions">
                     <a href="edit-user.php?id=<?php echo $user['id']; ?>" class="user-card-action edit-action">
                         <i class="fas fa-edit"></i>
-                        <span>Edit User</span>
+                        <span><?php echo t('edit_user'); ?></span>
                     </a>
                     <button class="user-card-action delete-action" data-user-id="<?php echo $user['id']; ?>">
                         <i class="fas fa-trash"></i>
-                        <span>Delete</span>
+                        <span><?php echo t('delete'); ?></span>
                     </button>
                 </div>
             </div>
@@ -504,13 +505,13 @@ $bodyClass = "admin-page";
         
         <?php if (empty($users)): ?>
             <div class="user-card">
-                <p style="text-align: center; padding: 2rem;">No users found</p>
+                <p style="text-align: center; padding: 2rem;"><?php echo t('no_users_found'); ?></p>
             </div>
         <?php endif; ?>
     </div>
                 <div class="pagination">
                     <div class="pagination-info">
-                        Showing <?php echo min(($page - 1) * $limit + 1, $total_users); ?>-<?php echo min($page * $limit, $total_users); ?> of <?php echo $total_users; ?> users
+                        <?php echo t('showing'); ?> <?php echo min(($page - 1) * $limit + 1, $total_users); ?>-<?php echo min($page * $limit, $total_users); ?> <?php echo t('of'); ?> <?php echo $total_users; ?> <?php echo t('users'); ?>
                     </div>
                     <div class="pagination-buttons">
                         <?php if ($page > 1): ?>
@@ -547,31 +548,31 @@ $bodyClass = "admin-page";
     <div class="user-detail-modal" id="userDetailModal">
         <div class="user-detail-content">
             <div class="user-detail-header">
-                <h2 id="modalUserEmail">Loading...</h2>
+                <h2 id="modalUserEmail"><?php echo t('loading'); ?>...</h2>
                 <div class="user-detail-info">
-                    <div id="modalRegistered">Registered: Loading...</div>
-                    <div id="modalLastLogin">Last active: Loading...</div>
+                    <div id="modalRegistered"><?php echo t('registered'); ?>: <?php echo t('loading'); ?>...</div>
+                    <div id="modalLastLogin"><?php echo t('last_active'); ?>: <?php echo t('loading'); ?>...</div>
                 </div>
             </div>
             <div class="user-detail-stats">
                 <div class="stat-item">
                     <div class="stat-value" id="modalWorkouts">0</div>
-                    <div class="stat-label">Workouts</div>
+                    <div class="stat-label"><?php echo t('workouts'); ?></div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value" id="modalTemplates">0</div>
-                    <div class="stat-label">Templates</div>
+                    <div class="stat-label"><?php echo t('templates'); ?></div>
                 </div>
                
             </div>
             <div class="user-detail-actions">
                 <a href="#" class="action-btn-full edit-user-btn" id="modalEditBtn">
                     <i class="fas fa-edit"></i>
-                    <span>Edit User</span>
+                    <span><?php echo t('edit_user'); ?></span>
                 </a>
                 <button class="action-btn-full delete-user-btn" id="modalDeleteBtn">
                     <i class="fas fa-trash"></i>
-                    <span>Delete Account</span>
+                    <span><?php echo t('delete_account'); ?></span>
                 </button>
             </div>
         </div>
@@ -580,28 +581,28 @@ $bodyClass = "admin-page";
     <div class="modal" id="addUserModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Add New User</h2>
+                <h2 class="modal-title"><?php echo t('add_user'); ?></h2>
             </div>
             <form id="addUserForm" method="post" action="process-add-user.php">
                 <div class="form-group">
-                    <label for="username">Username</label>
+                    <label for="username"><?php echo t('username'); ?></label>
                     <input type="text" class="form-control" id="username" name="username" required>
                 </div>
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email"><?php echo t('email_address'); ?></label>
                     <input type="email" class="form-control" id="email" name="email" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password"><?php echo t('password'); ?></label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
                 <div class="form-group">
-                    <label for="repeat_password">Repeat Password</label>
+                    <label for="repeat_password"><?php echo t('confirm_new_password'); ?></label>
                     <input type="password" class="form-control" id="repeat_password" name="repeat_password" required>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-cancel" id="closeAddUserModal">Cancel</button>
-                    <button type="submit" class="btn-submit">Add User</button>
+                    <button type="button" class="btn-cancel" id="closeAddUserModal"><?php echo t('cancel'); ?></button>
+                    <button type="submit" class="btn-submit"><?php echo t('add_user'); ?></button>
                 </div>
             </form>
         </div>
@@ -637,9 +638,9 @@ $bodyClass = "admin-page";
             const userTemplates = userRow.cells[5].textContent;
             
             document.getElementById('modalUserEmail').textContent = userEmail;
-            document.getElementById('modalUserEmail').innerHTML = `${userName} <span class="user-status-pill active">Active</span>`;
-            document.getElementById('modalRegistered').textContent = `Registered: ${userRegistration}`;
-            document.getElementById('modalLastLogin').textContent = `Last active: ${userLastActive}`;
+            document.getElementById('modalUserEmail').innerHTML = `${userName} <span class="user-status-pill active"><?php echo t('active'); ?></span>`;
+            document.getElementById('modalRegistered').textContent = `<?php echo t('registered'); ?>: ${userRegistration}`;
+            document.getElementById('modalLastLogin').textContent = `<?php echo t('last_active'); ?>: ${userLastActive}`;
             document.getElementById('modalWorkouts').textContent = userWorkouts;
             document.getElementById('modalTemplates').textContent = userTemplates;
             
@@ -660,7 +661,7 @@ $bodyClass = "admin-page";
         deleteButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const userId = button.getAttribute('data-user-id');
-                if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+                if (confirm('<?php echo t('confirm_delete_account_message'); ?>')) {
                     deleteUser(userId);
                 }
             });
@@ -685,12 +686,12 @@ $bodyClass = "admin-page";
                     
                     window.location.reload();
                 } else {
-                    alert('Error: ' + data.message);
+                    alert('<?php echo t('error'); ?>: ' + data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred while deleting the user');
+                alert('<?php echo t('error_deleting_account'); ?>');
             });
         }
         
@@ -702,7 +703,7 @@ $bodyClass = "admin-page";
         document.querySelectorAll('.delete-action').forEach(button => {
             button.addEventListener('click', () => {
                 const userId = button.getAttribute('data-user-id');
-                if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+                if (confirm('<?php echo t('confirm_delete_account_message'); ?>')) {
                     deleteUser(userId);
                 }
             });
@@ -746,7 +747,7 @@ $bodyClass = "admin-page";
             
             if (password !== repeatPassword) {
                 e.preventDefault();
-                alert('Passwords do not match');
+                alert('<?php echo t('passwords_dont_match'); ?>');
             }
         });
     </script>

@@ -70,6 +70,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                         $_SESSION["username"] = $row["username"];
                         $_SESSION["email"] = $row["email"];
                         
+                        $lang_sql = "SELECT language FROM users WHERE id = ?";
+                        $lang_stmt = $conn->prepare($lang_sql);
+                        $lang_stmt->bind_param("i", $row["id"]);
+                        $lang_stmt->execute();
+                        $lang_result = $lang_stmt->get_result();
+                        
+                        if($lang_row = $lang_result->fetch_assoc()) {
+                            $_SESSION["language"] = $lang_row["language"] ?? 'en';
+                        } else {
+                            $_SESSION["language"] = 'en';
+                        }
+                        
                         $user_id = $row["id"];
                         $sql = "SELECT r.name FROM roles r 
                                 JOIN user_roles ur ON r.id = ur.role_id 

@@ -2,10 +2,6 @@
 
 ob_start();
 
-// $serveris = "localhost";
-// $lietotajs = "grobina1_pavlovskis";
-// $parole = "3LZeL@hxv";
-// $db_nosaukums = "grobina1_pavlovskis";
 $serveris = '127.0.0.1';
 $db_nosaukums = 'gymverse_db';
 $lietotajs = 'root';
@@ -52,4 +48,3 @@ function showSqlError($message, $sql = "", $error = "") {
         'error' => $error
     ];
 }
-?> 

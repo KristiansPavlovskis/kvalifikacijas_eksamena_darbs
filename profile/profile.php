@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
 require_once 'profile_access_control.php';
-
+require_once 'languages.php';
 require_once '../assets/db_connection.php';
 
 $user_id = $_SESSION["user_id"];
@@ -337,7 +337,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION['language'] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -392,45 +392,45 @@ if ($today_workout && !empty($today_workout['template_id'])) {
             }
             ?>
             <div class="profile-page-header">
-                <h1 class="profile-page-title">Fitness Dashboard</h1>
+                <h1 class="profile-page-title"><?php echo t('fitness_dashboard'); ?></h1>
             </div>
             
             <div class="profile-dashboard-grid">
                 <div class="profile-left-column">
                     <div class="profile-panel">
                         <div class="profile-panel-header">
-                            <h3 class="profile-panel-title">Body Metrics</h3>
+                            <h3 class="profile-panel-title"><?php echo t('body_metrics'); ?></h3>
                         </div>
                         <?php if ($current_weight == 0 && $body_fat == 0): ?>
                             <div style="text-align: center; padding: 20px 0;">
                                 <i class="fas fa-weight" style="font-size: 2rem; opacity: 0.5; margin-bottom: 15px;"></i>
-                                <p>You haven't set your body metrics yet</p>
+                                <p><?php echo t('not_set_metrics'); ?></p>
                             </div>
                         <?php else: ?>
                             <div class="profile-body-metrics-list">
                                 <div class="profile-metric-item">
-                                    <span class="profile-metric-label">Weight</span>
+                                    <span class="profile-metric-label"><?php echo t('weight'); ?></span>
                                     <span class="profile-metric-value"><?= $current_weight ?> kg</span>
                                 </div>
                                 <div class="profile-metric-item">
-                                    <span class="profile-metric-label">Body Fat</span>
+                                    <span class="profile-metric-label"><?php echo t('body_fat'); ?></span>
                                     <span class="profile-metric-value"><?= $body_fat ?>%</span>
                                 </div>
                             </div>
                         <?php endif; ?>
                         <a href="body-measurements.php" class="profile-start-workout-btn">
-                            Update Metrics
+                            <?php echo t('update_metrics'); ?>
                         </a>
                     </div>
                     
                     <div class="profile-panel">
                         <div class="profile-panel-header">
-                            <h3 class="profile-panel-title">Recent templates</h3>
+                            <h3 class="profile-panel-title"><?php echo t('recent_templates'); ?></h3>
                         </div>
                         <?php if (empty($recent_templates)): ?>
                             <div style="text-align: center; padding: 20px 0;">
                                 <i class="fas fa-clipboard" style="font-size: 2rem; opacity: 0.5; margin-bottom: 15px;"></i>
-                                <p>You haven't created any templates yet</p>
+                                <p><?php echo t('no_templates'); ?></p>
                             </div>
                         <?php else: ?>
                             <div class="profile-templates-grid">
@@ -453,7 +453,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             </div>
                         <?php endif; ?>
                         <a href="workout-templates.php" class="profile-start-workout-btn">
-                            Update templates
+                            <?php echo t('update_templates'); ?>
                         </a>
                     </div>
                 </div>
@@ -464,7 +464,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             <h2 class="profile-calendar-title"><?= $month_name ?> <?= $selected_year ?></h2>
                             <div class="profile-calendar-actions">
                                 <button class="profile-action-button secondary" id="create-split-btn">
-                                    <i class="fas fa-calendar-week"></i> Create Split
+                                    <i class="fas fa-calendar-week"></i> <?php echo t('create_split'); ?>
                                 </button>
                             </div>
                         </div>
@@ -545,37 +545,37 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 <div class="profile-right-column">
                     <div class="profile-panel profile-today-workout">
                         <div class="profile-panel-header">
-                            <h3 class="profile-panel-title">Today's Workout</h3>
+                            <h3 class="profile-panel-title"><?php echo t('todays_workout'); ?></h3>
                         </div>
                         
                         <?php if ($today_workout): ?>
                             <?php if ($today_workout['workout_type'] === 'rest'): ?>
                                 <div class="profile-rest-day-message">
                                     <i class="fas fa-bed"></i>
-                                    <h3>Rest Day</h3>
-                                    <p>Take time to recover and recharge.</p>
+                                    <h3><?php echo t('rest_day'); ?></h3>
+                                    <p><?php echo t('rest_message'); ?></p>
                                 </div>
                             <?php else: ?>
                                 <div class="profile-workout-time">
-                                    <i class="far fa-clock"></i> 45 minutes • <?= count($today_exercises) ?> exercises
+                                    <i class="far fa-clock"></i> 45 <?php echo t('minutes'); ?> • <?= count($today_exercises) ?> <?php echo t('exercises'); ?>
                                 </div>
                                 <h4><?= htmlspecialchars($today_workout['template_name']) ?></h4>
                                 
                                 <?php if (!empty($today_exercises)): ?>
                                 <?php else: ?>
-                                    <p style="opacity: 0.7; margin-top: 20px;">No exercises found for this workout.</p>
+                                    <p style="opacity: 0.7; margin-top: 20px;"><?php echo t('no_exercises_found'); ?></p>
                                 <?php endif; ?>
                                 
                                 <button class="profile-start-workout-btn" id="startWorkoutBtn" data-template-id="<?= htmlspecialchars($today_workout['template_id']) ?>" onclick="return startWorkout(this)">
-                                    Start Workout
+                                    <?php echo t('start_workout'); ?>
                                 </button>
                             <?php endif; ?>
                         <?php else: ?>
                             <div class="profile-day-has-workout" style="text-align: center; padding: 30px 0;">
                                 <i class="fas fa-calendar-plus" style="font-size: 2rem; opacity: 0.5; margin-bottom: 15px;"></i>
-                                <p>No workout scheduled for today</p>
+                                <p><?php echo t('no_workout_scheduled'); ?></p>
                                 <button class="profile-start-workout-btn" style="margin-top: 20px;" id="plan-today-btn">
-                                    Plan Today's Workout
+                                    <?php echo t('plan_today'); ?>
                                 </button>
                             </div>
                         <?php endif; ?>
@@ -585,7 +585,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     <div class="profile-panel">
                         <div class="profile-panel-header">
                             <h3 class="profile-panel-title"><?= htmlspecialchars($today_workout['workout_type']) ?> day</h3>
-                            <span class="profile-workout-type profile-<?= strtolower($today_workout['workout_type']) ?>-day"><?= count($today_exercises) ?> exercises</span>
+                            <span class="profile-workout-type profile-<?= strtolower($today_workout['workout_type']) ?>-day"><?= count($today_exercises) ?> <?php echo t('exercises'); ?></span>
                         </div>
                         
                         <ul class="profile-workout-exercises">
@@ -603,41 +603,41 @@ if ($today_workout && !empty($today_workout['template_id'])) {
             <div class="profile-mobile-app-view">
                 <div class="profile-mobile-header">
                     <div class="profile-mobile-header-title">
-                        Today's Focus
+                        <?php echo t('today_focus'); ?>
                         <span class="profile-mobile-header-date"><?= date('F j, Y') ?></span>
                     </div>
                 </div>
                 
                 <div class="profile-mobile-card">
                     <?php if ($today_workout && $today_workout['workout_type'] !== 'rest'): ?>
-                        <h3 class="profile-mobile-card-title">Scheduled: <?= htmlspecialchars($today_workout['template_name']) ?></h3>
+                        <h3 class="profile-mobile-card-title"><?php echo t('scheduled'); ?>: <?= htmlspecialchars($today_workout['template_name']) ?></h3>
                         <div class="profile-mobile-workout-meta">
-                            <span>45 min</span> • <span><?= count($today_exercises) ?> exercises</span>
+                            <span>45 <?php echo t('minutes'); ?></span> • <span><?= count($today_exercises) ?> <?php echo t('exercises'); ?></span>
                         </div>
-                        <button class="profile-mobile-start-btn" id="mobileStartWorkoutBtn" data-template-id="<?= htmlspecialchars($today_workout['template_id']) ?>" onclick="return startWorkout(this)">Start Workout</button>
+                        <button class="profile-mobile-start-btn" id="mobileStartWorkoutBtn" data-template-id="<?= htmlspecialchars($today_workout['template_id']) ?>" onclick="return startWorkout(this)"><?php echo t('start_workout'); ?></button>
                     <?php elseif ($today_workout && $today_workout['workout_type'] === 'rest'): ?>
-                        <h3 class="profile-mobile-card-title">Scheduled: Rest Day</h3>
+                        <h3 class="profile-mobile-card-title"><?php echo t('scheduled_rest'); ?></h3>
                         <div class="profile-mobile-workout-meta">
-                            <span>Take time to recover and recharge</span>
+                            <span><?php echo t('take_time_recover'); ?></span>
                         </div>
-                        <button class="profile-mobile-start-btn" style="background-color: #555;">Rest Day</button>
+                        <button class="profile-mobile-start-btn" style="background-color: #555;"><?php echo t('rest_day'); ?></button>
                     <?php else: ?>
-                        <h3 class="profile-mobile-card-title">No Workout Scheduled</h3>
+                        <h3 class="profile-mobile-card-title"><?php echo t('no_workout_scheduled_mobile'); ?></h3>
                         <div class="profile-mobile-workout-meta">
-                            <span>Schedule a workout for today</span>
+                            <span><?php echo t('schedule_workout'); ?></span>
                         </div>
-                        <button class="profile-mobile-start-btn" id="mobilePlanWorkoutBtn">Schedule Workout</button>
+                        <button class="profile-mobile-start-btn" id="mobilePlanWorkoutBtn"><?php echo t('schedule_workout_btn'); ?></button>
                     <?php endif; ?>
                 </div>
                 
                 <div class="profile-mobile-card">
-                    <h3 class="profile-mobile-card-title">Today's Weight</h3>
+                    <h3 class="profile-mobile-card-title"><?php echo t('today_weight'); ?></h3>
                     <div class="profile-mobile-weight-section">
                         <div>
                             <span class="profile-mobile-weight-value"><?= $current_weight ?></span>
                             <span class="profile-mobile-weight-unit">kg</span>
                         </div>
-                        <button class="profile-mobile-update-btn">Update</button>
+                        <button class="profile-mobile-update-btn"><?php echo t('update_metrics'); ?></button>
                     </div>
                 </div>
                 
@@ -690,25 +690,25 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                         <div class="profile-mobile-feature-icon">
                             <i class="fas fa-bolt"></i>
                         </div>
-                        <div class="profile-mobile-feature-label">Quick Workout</div>
+                        <div class="profile-mobile-feature-label"><?php echo t('quick_workout'); ?></div>
                     </a>
                     <a href="workout-history.php" class="profile-mobile-feature-btn">
                         <div class="profile-mobile-feature-icon">
                             <i class="fas fa-history"></i>
                         </div>
-                        <div class="profile-mobile-feature-label">Workout History</div>
+                        <div class="profile-mobile-feature-label"><?php echo t('workout_history'); ?></div>
                     </a>
                     <a href="workout-templates.php" class="profile-mobile-feature-btn">
                         <div class="profile-mobile-feature-icon">
                             <i class="fas fa-edit"></i>
                         </div>
-                        <div class="profile-mobile-feature-label">Edit Templates</div>
+                        <div class="profile-mobile-feature-label"><?php echo t('edit_templates'); ?></div>
                     </a>
                     <a href="workout-analytics.php" class="profile-mobile-feature-btn">
                         <div class="profile-mobile-feature-icon">
                             <i class="fas fa-chart-line"></i>
                         </div>
-                        <div class="profile-mobile-feature-label">Progress</div>
+                        <div class="profile-mobile-feature-label"><?php echo t('progress'); ?></div>
                     </a>
                 </div>
                 
@@ -724,7 +724,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
             <div class="profile-modal" id="mobileDayModal">
                 <div class="profile-modal-content">
                     <span class="profile-modal-close">&times;</span>
-                    <h3 class="profile-modal-title">Edit workout for <span id="mobileSelectedDate"></span></h3>
+                    <h3 class="profile-modal-title"><?php echo t('plan_workout_for'); ?> <span id="mobileSelectedDate"></span></h3>
                     
                     <form id="mobileWorkoutPlanForm">
                         <input type="hidden" id="mobileSelectedDay" name="day">
@@ -732,21 +732,21 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                         <input type="hidden" id="mobileSelectedYear" name="year" value="<?= $selected_year ?>">
                         
                         <div class="profile-form-group">
-                            <label class="profile-form-label" for="mobileWorkoutType">Workout Type</label>
+                            <label class="profile-form-label" for="mobileWorkoutType"><?php echo t('workout_type'); ?></label>
                             <select class="profile-form-select" id="mobileWorkoutType" name="workoutType">
-                                <option value="">Select workout type</option>
-                                <option value="push">Push Day</option>
-                                <option value="pull">Pull Day</option>
-                                <option value="leg">Leg Day</option>
-                                <option value="rest">Rest Day</option>
+                                <option value=""><?php echo t('select_workout_type'); ?></option>
+                                <option value="push"><?php echo t('push_day'); ?></option>
+                                <option value="pull"><?php echo t('pull_day'); ?></option>
+                                <option value="leg"><?php echo t('leg_day'); ?></option>
+                                <option value="rest"><?php echo t('rest_day'); ?></option>
                                 <option value="custom">Custom</option>
                             </select>
                         </div>
                         
                         <div class="profile-form-group" id="mobileTemplateSelectGroup" style="display: none;">
-                            <label class="profile-form-label" for="mobileTemplateSelect">Select Template</label>
+                            <label class="profile-form-label" for="mobileTemplateSelect"><?php echo t('select_template'); ?></label>
                             <select class="profile-form-select" id="mobileTemplateSelect" name="templateId">
-                                <option value="">Select a template</option>
+                                <option value=""><?php echo t('select_template'); ?></option>
                                 <?php 
                                 try {
                                     $stmt = mysqli_prepare($conn, "SELECT id, name FROM workout_templates WHERE user_id = ? ORDER BY name");
@@ -765,13 +765,13 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                         </div>
                         
                         <div class="profile-form-group" id="mobileCustomNameGroup" style="display: none;">
-                            <label class="profile-form-label" for="mobileCustomName">Custom Workout Name</label>
-                            <input type="text" class="profile-form-input" id="mobileCustomName" name="customName" placeholder="Enter workout name">
+                            <label class="profile-form-label" for="mobileCustomName"><?php echo t('custom_workout_name'); ?></label>
+                            <input type="text" class="profile-form-input" id="mobileCustomName" name="customName" placeholder="<?php echo t('enter_workout_name'); ?>">
                         </div>
                         
                         <div class="profile-form-actions">
-                            <button type="button" class="profile-form-button secondary" id="mobileEditCancel">Cancel</button>
-                            <button type="submit" class="profile-form-button primary">Save</button>
+                            <button type="button" class="profile-form-button secondary" id="mobileEditCancel"><?php echo t('cancel'); ?></button>
+                            <button type="submit" class="profile-form-button primary"><?php echo t('save_plan'); ?></button>
                         </div>
                     </form>
                 </div>
@@ -780,12 +780,12 @@ if ($today_workout && !empty($today_workout['template_id'])) {
             <div class="profile-modal" id="mobileSplitModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; overflow: auto;">
                 <div class="profile-modal-content" style="background-color: #21242e; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; position: relative; max-height: 80vh; overflow-y: auto;">
                     <span class="profile-modal-close" onclick="document.getElementById('mobileSplitModal').style.display='none'" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
-                    <h3 class="profile-modal-title">Weekly Split Plan</h3>
+                    <h3 class="profile-modal-title"><?php echo t('create_weekly_split'); ?></h3>
                     
                     <form id="mobileSplitForm">
                         <div class="profile-form-group">
-                            <label class="profile-form-label" for="mobileSplitName">Split Name</label>
-                            <input type="text" class="profile-form-input" id="mobileSplitName" name="splitName" placeholder="e.g., Bro Split, PPL, Upper/Lower" required>
+                            <label class="profile-form-label" for="mobileSplitName"><?php echo t('split_name'); ?></label>
+                            <input type="text" class="profile-form-input" id="mobileSplitName" name="splitName" placeholder="<?php echo t('split_name_placeholder'); ?>" required>
                         </div>
                         
                         <div class="profile-mobile-split-days">
@@ -797,8 +797,8 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                     
                                     echo "<div class='profile-form-group'>";
                                     echo "<select class='profile-form-select profile-mobile-split-type' id='mobile_day_{$index}' name='days[{$index}][type]'>";
-                                    echo "<option value=''>Select workout</option>";
-                                    echo "<option value='rest'>Rest Day</option>";
+                                    echo "<option value=''>".t('select_workout_type')."</option>";
+                                    echo "<option value='rest'>".t('rest_day')."</option>";
                                     
                                     try {
                                         $stmt = mysqli_prepare($conn, "SELECT id, name, category FROM workout_templates WHERE user_id = ? ORDER BY name");
@@ -823,9 +823,9 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                         </div>
                         
                         <div class="profile-form-actions">
-                            <button type="button" class="profile-form-button secondary" id="mobileSplitCancel">Cancel</button>
+                            <button type="button" class="profile-form-button secondary" id="mobileSplitCancel"><?php echo t('cancel'); ?></button>
                             <div class="profile-form-group">
-                                <label for="mobileTargetMonth">Apply to:</label>
+                                <label for="mobileTargetMonth"><?php echo t('apply_to'); ?></label>
                                 <select id="mobileTargetMonth" name="target_month" class="profile-form-select">
                                     <?php
                                         for ($i = 0; $i <= 3; $i++) {
@@ -838,8 +838,8 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                     ?>
                                 </select>
                             </div>
-                            <button type="submit" class="profile-form-button primary" id="mobileSplitSave">Save Split</button>
-                            <button type="button" class="profile-form-button primary" id="mobileSplitApply">Apply to Calendar</button>
+                            <button type="submit" class="profile-form-button primary" id="mobileSplitSave"><?php echo t('save_plan'); ?></button>
+                            <button type="button" class="profile-form-button primary" id="mobileSplitApply"><?php echo t('apply_to_month'); ?></button>
                         </div>
                     </form>
                 </div>

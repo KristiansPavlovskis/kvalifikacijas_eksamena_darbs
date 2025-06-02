@@ -1,6 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/assets/db_connection.php';
-
+require_once dirname(__DIR__, 2) . '/profile/languages.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("Location: ../../pages/login.php");
@@ -25,7 +25,7 @@ if (!$is_superadmin) {
 }
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    $_SESSION['admin_error'] = "Invalid user ID.";
+    $_SESSION['admin_error'] = t("error");
     header("Location: index.php");
     exit;
 }
@@ -49,7 +49,7 @@ $user_stmt->execute();
 $user_result = $user_stmt->get_result();
 
 if ($user_result->num_rows === 0) {
-    $_SESSION['admin_error'] = "User not found.";
+    $_SESSION['admin_error'] = t("no_users_found");
     header("Location: index.php");
     exit;
 }
@@ -57,7 +57,7 @@ if ($user_result->num_rows === 0) {
 $user = $user_result->fetch_assoc();
 
 $roles_sql = "
-    SELECT r.id, r.name
+    SELECT r.id, r.name, ur.user_id
     FROM roles r
     LEFT JOIN user_roles ur ON r.id = ur.role_id AND ur.user_id = ?
     ORDER BY r.name
@@ -84,16 +84,20 @@ $success_message = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $email = trim($_POST['email']);
-    $roles = isset($_POST['roles']) ? $_POST['roles'] : [];
+    $role_id = isset($_POST['roles']) ? intval($_POST['roles']) : null;
     
     if (empty($username)) {
-        $errors[] = "Username is required.";
+        $errors[] = t("username_required");
     }
     
     if (empty($email)) {
-        $errors[] = "Email is required.";
+        $errors[] = t("email_required");
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Invalid email format.";
+        $errors[] = t("invalid_email");
+    }
+
+    if (empty($role_id)) {
+        $errors[] = t("role_required");
     }
     
     if (empty($errors)) {
@@ -110,17 +114,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $delete_roles_stmt->bind_param("i", $edit_user_id);
             $delete_roles_stmt->execute();
             
-            if (!empty($roles)) {
-                $insert_roles_sql = "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)";
-                $insert_roles_stmt = $conn->prepare($insert_roles_sql);
-                foreach ($roles as $role_id) {
-                    $insert_roles_stmt->bind_param("ii", $edit_user_id, $role_id);
-                    $insert_roles_stmt->execute();
-                }
-            }
+            $insert_roles_sql = "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)";
+            $insert_roles_stmt = $conn->prepare($insert_roles_sql);
+            $insert_roles_stmt->bind_param("ii", $edit_user_id, $role_id);
+            $insert_roles_stmt->execute();
             
             $conn->commit();
-            $success_message = "User updated successfully.";
+            $success_message = t("user_updated");
             
             $user_stmt->execute();
             $user_result = $user_stmt->get_result();
@@ -140,17 +140,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         } catch (Exception $e) {
             $conn->rollback();
-            $errors[] = "Error updating user: " . $e->getMessage();
+            $errors[] = t("error_updating_user") . " " . $e->getMessage();
         }
     }
 }
 
-$pageTitle = "Edit User";
+$pageTitle = t("edit_user");
 $bodyClass = "admin-page";
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo isset($_SESSION['language']) ? $_SESSION['language'] : 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -293,10 +293,10 @@ $bodyClass = "admin-page";
         
         <div class="main-content">
             <div class="admin-topbar">
-                <h1>Edit User</h1>
+                <h1><?php echo t("edit_user"); ?></h1>
                 <div class="admin-user">
                     <div class="admin-avatar"><?php echo substr($_SESSION["username"], 0, 1); ?></div>
-                    <span>Admin</span>
+                    <span><?php echo t("admin"); ?></span>
                 </div>
             </div>
             
@@ -323,35 +323,40 @@ $bodyClass = "admin-page";
                             <?php echo substr($user['username'], 0, 1); ?>
                         </div>
                         <div class="user-info-edit">
-                            <h2>Edit User Details</h2>
-                            <p>User ID: #<?php echo $user['id']; ?> | Registered: <?php echo date('M d, Y', strtotime($user['created_at'])); ?></p>
+                            <h2><?php echo t("edit_user_details"); ?></h2>
+                            <p><?php echo t("user_id"); ?>: #<?php echo $user['id']; ?> | <?php echo t("registered"); ?>: <?php echo date('M d, Y', strtotime($user['created_at'])); ?></p>
                         </div>
                     </div>
                     
                     <form method="POST" action="">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="username" class="form-label">Username</label>
+                                <label for="username" class="form-label"><?php echo t("username"); ?></label>
                                 <input type="text" id="username" name="username" class="form-control" value="<?php echo htmlspecialchars($user['username']); ?>" required>
                             </div>
                             
                             <div class="form-group">
-                                <label for="email" class="form-label">Email Address</label>
+                                <label for="email" class="form-label"><?php echo t("email_address"); ?></label>
                                 <input type="email" id="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required>
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label">Last Active</label>
-                                <input type="text" class="form-control" value="<?php echo $user['last_active'] ? date('M d, Y H:i', strtotime($user['last_active'])) : 'Never'; ?>" disabled>
+                                <label class="form-label"><?php echo t("last_active"); ?></label>
+                                <input type="text" class="form-control" value="<?php echo $user['last_active'] ? date('M d, Y H:i', strtotime($user['last_active'])) : t('never'); ?>" disabled>
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">User Roles</label>
+                            <label class="form-label"><?php echo t("user_role"); ?></label>
                             <div class="checkbox-group">
                                 <?php foreach ($all_roles as $role): ?>
                                     <div class="checkbox-item">
-                                        <input type="checkbox" id="role_<?php echo $role['id']; ?>" name="roles[]" value="<?php echo $role['id']; ?>" <?php echo in_array($role['id'], $user_roles) ? 'checked' : ''; ?>>
+                                        <input type="radio" 
+                                               id="role_<?php echo $role['id']; ?>" 
+                                               name="roles" 
+                                               value="<?php echo $role['id']; ?>" 
+                                               <?php echo isset($role['user_id']) ? 'checked' : ''; ?> 
+                                               required>
                                         <label for="role_<?php echo $role['id']; ?>"><?php echo ucfirst($role['name']); ?></label>
                                     </div>
                                 <?php endforeach; ?>
@@ -361,11 +366,11 @@ $bodyClass = "admin-page";
                         <div class="form-buttons">
                             <a href="index.php" class="btn-secondary">
                                 <i class="fas fa-arrow-left"></i>
-                                <span>Back to List</span>
+                                <span><?php echo t("back_to_list"); ?></span>
                             </a>
                             <button type="submit" class="admin-btn">
                                 <i class="fas fa-save"></i>
-                                <span>Save Changes</span>
+                                <span><?php echo t("save_changes"); ?></span>
                             </button>
                         </div>
                     </form>

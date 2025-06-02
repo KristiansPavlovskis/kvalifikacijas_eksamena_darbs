@@ -2,14 +2,12 @@
 require_once 'profile_access_control.php';
 require_once '../assets/db_connection.php';
 require_once 'workout_functions.php';
+require_once 'languages.php';
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php?redirect=profile/workout.php");
     exit;
 }
-
-error_log("MOBILE-WORKOUT DEBUG - GET params: " . json_encode($_GET));
-error_log("MOBILE-WORKOUT DEBUG - POST params: " . json_encode($_POST));
 
 $user_id = $_SESSION["user_id"];
 
@@ -131,11 +129,11 @@ function formatLastUsed($lastUsedDate) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION["language"] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYMVERSE - Mobile Workout</title>
+    <title>GYMVERSE - <?php echo t('mobile_workout'); ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -149,13 +147,13 @@ function formatLastUsed($lastUsedDate) {
                 <button class="mw-back-button" onclick="window.history.back()">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <div class="mw-header-title">Start Workout</div>
+                <div class="mw-header-title"><?php echo t('start_workout'); ?></div>
             </div>
 
             <div class="mw-content step1-content">
                 <div class="mw-tabs">
-                    <div class="mw-tab active" data-category="personal">Personal Templates</div>
-                    <div class="mw-tab" data-category="global">Global Templates</div>
+                    <div class="mw-tab active" data-category="personal"><?php echo t('personal_templates'); ?></div>
+                    <div class="mw-tab" data-category="global"><?php echo t('global_templates'); ?></div>
                 </div>
 
                 <div class="mw-templates">
@@ -166,28 +164,28 @@ function formatLastUsed($lastUsedDate) {
                             <div class="mw-template-card" data-id="<?php echo $template['id']; ?>" data-name="<?php echo htmlspecialchars($template['name']); ?>" data-category="personal">
                                 <div class="mw-template-header">
                                     <div class="mw-template-title"><?php echo htmlspecialchars($template['name']); ?></div>
-                                    <a href="workout-templates.php?edit=<?php echo $template['id']; ?>" class="mw-template-edit">edit template</a>
+                                    <a href="workout-templates.php?edit=<?php echo $template['id']; ?>" class="mw-template-edit"><?php echo t('edit_template'); ?></a>
                                 </div>
                                 <div class="mw-template-meta">
                                     <div class="mw-template-meta-item">
                                         <i class="fas fa-dumbbell"></i>
-                                        <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                        <span><?php echo $template['exercise_count']; ?> <?php echo t('exercises'); ?></span>
                                     </div>
                                     <div class="mw-template-meta-item">
                                         <i class="fas fa-clock"></i>
-                                        <span><?php echo $template['estimated_time'] ?? '45'; ?> min</span>
+                                        <span><?php echo $template['estimated_time'] ?? '45'; ?> <?php echo t('minutes'); ?></span>
                                     </div>
                                     <div class="mw-template-meta-item">
                                         <i class="fas fa-calendar-check"></i>
-                                        <span>Last: <?php echo $lastUsed; ?></span>
+                                        <span><?php echo t('last'); ?>: <?php echo $lastUsed; ?></span>
                                     </div>
                                 </div>
                             </div>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <div class="mw-no-templates-message personal-message">
-                            <p>You don't have any personal templates yet.</p>
-                            <p>Create your first template in the Templates section!</p>
+                            <p><?php echo t('no_personal_templates'); ?></p>
+                            <p><?php echo t('create_first_template'); ?></p>
                         </div>
                     <?php endif; ?>
                     
@@ -196,34 +194,34 @@ function formatLastUsed($lastUsedDate) {
                             <div class="mw-template-card" data-id="<?php echo $template['id']; ?>" data-name="<?php echo htmlspecialchars($template['name']); ?>" data-category="global" style="display:none;">
                                 <div class="mw-template-header">
                                     <div class="mw-template-title"><?php echo htmlspecialchars($template['name']); ?></div>
-                                    <div class="mw-template-global-tag">global</div>
+                                    <div class="mw-template-global-tag"><?php echo t('global'); ?></div>
                                 </div>
                                 <div class="mw-template-meta">
                                     <div class="mw-template-meta-item">
                                         <i class="fas fa-dumbbell"></i>
-                                        <span><?php echo $template['exercise_count']; ?> exercises</span>
+                                        <span><?php echo $template['exercise_count']; ?> <?php echo t('exercises'); ?></span>
                                     </div>
                                     <div class="mw-template-meta-item">
                                         <i class="fas fa-clock"></i>
-                                        <span><?php echo $template['estimated_time'] ?? '45'; ?> min</span>
+                                        <span><?php echo $template['estimated_time'] ?? '45'; ?> <?php echo t('minutes'); ?></span>
                                     </div>
                                     <div class="mw-template-meta-item">
                                         <i class="fas fa-user"></i>
-                                        <span>By: <?php echo htmlspecialchars($template['creator'] ?? 'GYMVERSE'); ?></span>
+                                        <span><?php echo t('by'); ?>: <?php echo htmlspecialchars($template['creator'] ?? 'GYMVERSE'); ?></span>
                                     </div>
                                 </div>
                             </div>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <div class="mw-no-templates-message global-message" style="display:none;">
-                            <p>No global templates available at this time.</p>
-                            <p>Check back later for new workouts!</p>
+                            <p><?php echo t('no_global_templates'); ?></p>
+                            <p><?php echo t('check_back_later'); ?></p>
                         </div>
                     <?php endif; ?>
                 </div>
                 
                 <div class="mw-begin-workout-container">
-                    <button id="mw-begin-workout-btn" disabled>Begin Workout</button>
+                    <button id="mw-begin-workout-btn" disabled><?php echo t('begin_workout'); ?></button>
                 </div>
             </div>
         </div>
@@ -235,7 +233,7 @@ function formatLastUsed($lastUsedDate) {
                 <button class="mw-back-button" id="back-to-templates">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <div class="mw-header-title" id="workout-title">Start Workout</div>
+                <div class="mw-header-title" id="workout-title"><?php echo t('start_workout'); ?></div>
                 <div class="mw-header-timer">
                     <i class="fas fa-clock"></i>
                     <span id="workout-timer">00:00</span>
@@ -248,23 +246,23 @@ function formatLastUsed($lastUsedDate) {
 
             <div class="mw-content step2-content">
                 <div class="mw-workout-progress">
-                    <div id="workout-progress-text">0/0 Exercises</div> 
+                    <div id="workout-progress-text">0/0 <?php echo t('exercises'); ?></div> 
                 </div>
                 
                 <div class="mw-exercise-card">
                     <div class="mw-exercise-header">
-                        <h2 id="exercise-name">Select a template to start</h2>
-                        <div id="mw-set-counter">Set 0/0</div>
+                        <h2 id="exercise-name"><?php echo t('select_template_to_start'); ?></h2>
+                        <div id="mw-set-counter"><?php echo t('set'); ?> 0/0</div>
                     </div>
                     
                     <div class="mw-previous-set" style="display: none;">
-                        <div class="mw-set-label">Previous Set</div>
+                        <div class="mw-set-label"><?php echo t('previous_set'); ?></div>
                         <div class="mw-set-info" id="previous-set-info"></div>
                         <div class="mw-set-completion-mark">✓</div>
                     </div>
                     
                     <div class="weight-input">
-                        <div class="mw-input-label">Weight (kg)</div>
+                        <div class="mw-input-label"><?php echo t('weight'); ?> (kg)</div>
                         <div class="mw-number-input">
                             <button class="decrease-btn">−</button>
                             <input type="number" id="weight-input" value="0">
@@ -274,7 +272,7 @@ function formatLastUsed($lastUsedDate) {
                     </div>
                     
                     <div class="reps-input">
-                        <div class="mw-input-label">Reps</div>
+                        <div class="mw-input-label"><?php echo t('reps'); ?></div>
                         <div class="mw-number-input">
                             <button class="decrease-btn">−</button>
                             <input type="number" id="reps-input" value="0">
@@ -283,7 +281,7 @@ function formatLastUsed($lastUsedDate) {
                         <div class="mw-input-hint" id="reps-hint"></div>
                     </div>
                     
-                    <button id="mw-complete-set-btn">Complete Set</button>
+                    <button id="mw-complete-set-btn"><?php echo t('complete_set'); ?></button>
                     
                 </div>
                 
@@ -295,19 +293,19 @@ function formatLastUsed($lastUsedDate) {
             <div class="mw-navigation">
                 <a href="#" class="mw-nav-item active">
                     <i class="fas fa-home"></i>
-                    <span>Home</span>
+                    <span><?php echo t('home'); ?></span>
                 </a>
                 <a href="#" class="mw-nav-item">
                     <i class="fas fa-clipboard-list"></i>
-                    <span>Templates</span>
+                    <span><?php echo t('templates'); ?></span>
                 </a>
                 <a href="#" class="mw-nav-item">
                     <i class="fas fa-history"></i>
-                    <span>History</span>
+                    <span><?php echo t('workout_history'); ?></span>
                 </a>
                 <a href="#" class="mw-nav-item">
                     <i class="fas fa-user"></i>
-                    <span>Profile</span>
+                    <span><?php echo t('profile'); ?></span>
                 </a>
             </div>
         </div>
@@ -332,7 +330,7 @@ function formatLastUsed($lastUsedDate) {
 
             <div class="mw-content step3-content">
                 <div class="mw-rest-message">
-                    <h2>How was that set?</h2>
+                    <h2><?php echo t('how_was_set'); ?></h2>
                     
                     <div class="mw-rating-options">
                         <div class="mw-rating-option" data-rating="1">
@@ -365,7 +363,7 @@ function formatLastUsed($lastUsedDate) {
                 </div>
                 
                 <div class="mw-next-exercise-preview">
-                    <div class="mw-preview-header">Next Exercise</div>
+                    <div class="mw-preview-header"><?php echo t('next_exercise'); ?></div>
                     <div class="mw-preview-exercise">
                         <div class="mw-preview-icon">
                             <i class="fas fa-dumbbell"></i>
@@ -380,25 +378,25 @@ function formatLastUsed($lastUsedDate) {
                     </div>
                 </div>
                 
-                <button id="mw-skip-rest-btn">Skip Rest</button>
+                <button id="mw-skip-rest-btn"><?php echo t('skip_rest'); ?></button>
             </div>
             
             <div class="mw-navigation">
                 <a href="#" class="mw-nav-item active">
                     <i class="fas fa-home"></i>
-                    <span>Home</span>
+                    <span><?php echo t('home'); ?></span>
                 </a>
                 <a href="#" class="mw-nav-item">
                     <i class="fas fa-clipboard-list"></i>
-                    <span>Templates</span>
+                    <span><?php echo t('templates'); ?></span>
                 </a>
                 <a href="#" class="mw-nav-item">
                     <i class="fas fa-history"></i>
-                    <span>History</span>
+                    <span><?php echo t('workout_history'); ?></span>
                 </a>
                 <a href="#" class="mw-nav-item">
                     <i class="fas fa-user"></i>
-                    <span>Profile</span>
+                    <span><?php echo t('profile'); ?></span>
                 </a>
             </div>
         </div>
@@ -410,7 +408,7 @@ function formatLastUsed($lastUsedDate) {
                 <button class="mw-back-button" id="back-to-rest">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <div class="mw-header-title">Workout Summary</div>
+                <div class="mw-header-title"><?php echo t('workout_stats'); ?></div>
             </div>
 
             <div class="mw-content step4-content">
@@ -418,15 +416,15 @@ function formatLastUsed($lastUsedDate) {
                     <i class="fas fa-check"></i>
                 </div>
                 
-                <h2 class="mw-summary-title">Workout Complete!</h2>
-                <p id="achievement-text" class="mw-achievement-text">Great job! You crushed it today.</p>
+                <h2 class="mw-summary-title"><?php echo t('workout_complete'); ?></h2>
+                <p id="achievement-text" class="mw-achievement-text"><?php echo t('great_job'); ?></p>
                 
                 <div class="mw-summary-stats">
                     <div class="mw-summary-stat">
                         <div class="mw-summary-stat-icon">
                             <i class="fas fa-clock"></i>
                         </div>
-                        <div class="mw-summary-stat-label">Duration</div>
+                        <div class="mw-summary-stat-label"><?php echo t('duration'); ?></div>
                         <div id="summary-time" class="mw-summary-stat-value">00:00</div>
                     </div>
                     
@@ -434,7 +432,7 @@ function formatLastUsed($lastUsedDate) {
                         <div class="mw-summary-stat-icon">
                             <i class="fas fa-list-ul"></i>
                         </div>
-                        <div class="mw-summary-stat-label">Sets Done</div>
+                        <div class="mw-summary-stat-label"><?php echo t('sets_completed'); ?></div>
                         <div id="mw-summary-sets" class="mw-summary-stat-value">0</div>
                     </div>
                     
@@ -442,18 +440,18 @@ function formatLastUsed($lastUsedDate) {
                         <div class="mw-summary-stat-icon">
                             <i class="fas fa-dumbbell"></i>
                         </div>
-                        <div class="mw-summary-stat-label">Volume</div>
+                        <div class="mw-summary-stat-label"><?php echo t('volume'); ?></div>
                         <div id="summary-weight" class="mw-summary-stat-value">0 kg</div>
                     </div>
                 </div>
                 
                 <div class="mw-notes-section">
-                    <h3>Workout Notes</h3>
-                    <textarea id="workout-notes" class="mw-notes-textarea" placeholder="How was your workout? Note any achievements or challenges..."></textarea>
+                    <h3><?php echo t('workout_notes'); ?></h3>
+                    <textarea id="workout-notes" class="mw-notes-textarea" placeholder="<?php echo t('add_workout_thoughts'); ?>"></textarea>
                 </div>
                 
                 <div class="mw-rating-section">
-                    <h3>Rate Your Workout</h3>
+                    <h3><?php echo t('rate_workout'); ?></h3>
                     <div class="mw-rating-options">
                         <div class="mw-rating-option" data-rating="1">
                             <div class="mw-rating-icon">😣</div>
@@ -475,10 +473,10 @@ function formatLastUsed($lastUsedDate) {
                 
                 <div class="mw-actions">
                     <button id="mw-save-workout-btn">
-                        <i class="fas fa-save mw-icon-margin"></i> Save Workout
+                        <i class="fas fa-save mw-icon-margin"></i> <?php echo t('save_workout'); ?>
                     </button>
                     <button id="mw-discard-workout-btn">
-                        <i class="fas fa-trash mw-icon-margin"></i> Discard
+                        <i class="fas fa-trash mw-icon-margin"></i> <?php echo t('dont_save'); ?>
                     </button>
                 </div>
             </div>
@@ -486,19 +484,19 @@ function formatLastUsed($lastUsedDate) {
             <div class="mw-navigation">
                 <a href="#" class="mw-nav-item active">
                     <i class="fas fa-home"></i>
-                    <span>Home</span>
+                    <span><?php echo t('home'); ?></span>
                 </a>
                 <a href="#" class="mw-nav-item">
                     <i class="fas fa-clipboard-list"></i>
-                    <span>Templates</span>
+                    <span><?php echo t('templates'); ?></span>
                 </a>
                 <a href="#" class="mw-nav-item">
                     <i class="fas fa-history"></i>
-                    <span>History</span>
+                    <span><?php echo t('workout_history'); ?></span>
                 </a>
                 <a href="#" class="mw-nav-item">
                     <i class="fas fa-user"></i>
-                    <span>Profile</span>
+                    <span><?php echo t('profile'); ?></span>
                 </a>
             </div>
         </div>

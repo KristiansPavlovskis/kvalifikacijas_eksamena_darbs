@@ -1,5 +1,6 @@
 <?php
-session_start();
+
+require_once 'profile_access_control.php';
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php?redirect=profile/workout-history.php");
@@ -7,6 +8,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 }
 
 require_once '../assets/db_connection.php';
+require_once 'languages.php';
 
 $user_id = $_SESSION["user_id"];
 $message = "";
@@ -357,7 +359,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout History - GYMVERSE</title>
+    <title><?= t('workout_history') ?> - GYMVERSE</title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -373,10 +375,10 @@ $chart_data['muscles'] = json_encode($muscle_groups);
 
     <div class="wh-main-content">
         <div class="wh-page-header">
-            <h1 class="wh-page-title">Workout History</h1>
+            <h1 class="wh-page-title"><?= t('workout_history') ?></h1>
             <div style="display: flex; gap: 16px; align-items: center;">
                 <button class="wh-export-btn">
-                    <i class="fas fa-file-export"></i> Export Data
+                    <i class="fas fa-file-export"></i> <?= t('export_data') ?>
                 </button>
             </div>
         </div>
@@ -387,40 +389,40 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 <div style="display: grid; grid-template-columns: 250px 1fr; gap: 24px;">
                     <div>
                         <div class="wh-filters">
-                            <h3>Filters</h3>
+                            <h3><?= t('filters') ?></h3>
                             <div class="wh-filter-group">
-                                <label class="wh-filter-label">Templates</label>
+                                <label class="wh-filter-label"><?= t('templates') ?></label>
                                 <select class="wh-filter-select" id="template-filter">
-                                    <option value="all">All Templates</option>
+                                    <option value="all"><?= t('all_templates') ?></option>
                                     
                                 </select>
                             </div>
                             
                             <div class="wh-filter-group">
-                                <label class="wh-filter-label">Rating</label>
+                                <label class="wh-filter-label"><?= t('rating') ?></label>
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <input type="range" min="0" max="5" value="0" step="1" class="wh-rating-slider" id="rating-filter">
-                                    <span id="rating-value">All</span>
+                                    <span id="rating-value"><?= t('all') ?></span>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="wh-summary-stats">
-                            <h3>Summary Stats</h3>
+                            <h3><?= t('summary_stats') ?></h3>
                             <div class="wh-stat-row">
-                                <span class="wh-stat-label">Total Workouts</span>
+                                <span class="wh-stat-label"><?= t('total_workouts') ?></span>
                                 <span class="wh-stat-value"><?= $stats['workout_count'] ?? 0 ?></span>
                             </div>
                             <div class="wh-stat-row">
-                                <span class="wh-stat-label">Avg. Duration</span>
-                                <span class="wh-stat-value"><?= isset($stats['avg_duration']) ? round($stats['avg_duration'], 1) : 0 ?> min</span>
+                                <span class="wh-stat-label"><?= t('avg_duration') ?></span>
+                                <span class="wh-stat-value"><?= isset($stats['avg_duration']) ? round($stats['avg_duration'], 1) : 0 ?> <?= t('min') ?></span>
                             </div>
                             <div class="wh-stat-row">
-                                <span class="wh-stat-label">Total Volume</span>
-                                <span class="wh-stat-value"><?= isset($stats['total_volume']) ? number_format($stats['total_volume'], 1) : 0 ?> kg</span>
+                                <span class="wh-stat-label"><?= t('total_volume') ?></span>
+                                <span class="wh-stat-value"><?= isset($stats['total_volume']) ? number_format($stats['total_volume'], 1) : 0 ?> <?= t('kg') ?></span>
                             </div>
                             <div class="wh-stat-row">
-                                <span class="wh-stat-label">Total Calories</span>
+                                <span class="wh-stat-label"><?= t('total_calories') ?></span>
                                 <span class="wh-stat-value"><?= isset($stats['total_calories']) ? number_format($stats['total_calories']) : 0 ?></span>
                             </div>
                         </div>
@@ -429,13 +431,13 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     <div>
                         <div class="wh-workout-table">
                             <div class="wh-table-header">
-                                <div>Date</div>
-                                <div>Workout Name</div>
-                                <div>Duration</div>
-                                <div>Volume</div>
-                                <div>Calories</div>
-                                <div>Rating</div>
-                                <div>Action</div>
+                                <div><?= t('date') ?></div>
+                                <div><?= t('workout_name') ?></div>
+                                <div><?= t('duration') ?></div>
+                                <div><?= t('volume') ?></div>
+                                <div><?= t('calories') ?></div>
+                                <div><?= t('rating') ?></div>
+                                <div><?= t('action') ?></div>
                             </div>
 
                             <?php if (!empty($workout_logs)): ?>
@@ -443,14 +445,14 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                                     <div class="wh-workout-row">
                                         <div><?= date('M d, Y', strtotime($workout['created_at'])) ?></div>
                                         <div><?= htmlspecialchars($workout['name']) ?></div>
-                                        <div><?= $workout['duration_minutes'] ?> min</div>
-                                        <div><?= $workout['total_volume'] ?> kg</div>
+                                        <div><?= $workout['duration_minutes'] ?> <?= t('min') ?></div>
+                                        <div><?= $workout['total_volume'] ?> <?= t('kg') ?></div>
                                         <div><?= $workout['calories_burned'] ?></div>
                                         <div class="wh-star-rating">
                                             <?= str_repeat('★', $workout['rating']) . str_repeat('☆', 5 - $workout['rating']) ?>
                                         </div>
                                         <div>
-                                            <a href="workout-details.php?id=<?= $workout['id'] ?>" class="wh-view-btn">View</a>
+                                            <a href="workout-details.php?id=<?= $workout['id'] ?>" class="wh-view-btn"><?= t('view') ?></a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -475,10 +477,10 @@ $chart_data['muscles'] = json_encode($muscle_groups);
         
         <div class="wh-mobile-container">
             <div class="wh-period-tabs">
-                <div class="wh-period-tab active">This Week</div>
-                <div class="wh-period-tab">Last Week</div>
-                <div class="wh-period-tab">This Month</div>
-                <div class="wh-period-tab">Custom</div>
+                <div class="wh-period-tab active"><?= t('this_week') ?></div>
+                <div class="wh-period-tab"><?= t('last_week') ?></div>
+                <div class="wh-period-tab"><?= t('this_month') ?></div>
+                <div class="wh-period-tab"><?= t('custom') ?></div>
             </div>
             
             <div class="wh-stats-grid">
@@ -486,25 +488,25 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     <div class="wh-stats-value">
                         12<span class="trend wh-trend-up">↑2</span>
                     </div>
-                    <div class="wh-stats-label">Total Workouts</div>
+                    <div class="wh-stats-label"><?= t('total_workouts') ?></div>
                 </div>
                 <div class="wh-stats-card">
                     <div class="wh-stats-value">
                         45m<span class="trend wh-trend-down">↓5m</span>
                     </div>
-                    <div class="wh-stats-label">Avg Duration</div>
+                    <div class="wh-stats-label"><?= t('avg_duration') ?></div>
                 </div>
                 <div class="wh-stats-card">
                     <div class="wh-stats-value">
                         2.4t<span class="trend wh-trend-up">↑0.2</span>
                     </div>
-                    <div class="wh-stats-label">Total Volume</div>
+                    <div class="wh-stats-label"><?= t('total_volume') ?></div>
                 </div>
                 <div class="wh-stats-card">
                     <div class="wh-stats-value">
                         8.2k<span class="trend wh-trend-up">↑1.1k</span>
                     </div>
-                    <div class="wh-stats-label">Calories</div>
+                    <div class="wh-stats-label"><?= t('calories') ?></div>
                 </div>
             </div>
             
@@ -515,19 +517,19 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         <div class="wh-workout-header">
                             <div>
                                 <div class="wh-workout-title">
-                                    <?= $key == 0 ? 'Upper Body Strength' : 'Leg Day' ?>
+                                    <?= $key == 0 ? t('upper_body_strength') : t('leg_day') ?>
                                     <i class="fas fa-dumbbell"></i>
                                 </div>
                                 <div class="wh-workout-date">
                                     <?= $key == 0 ? 'May 6, 2025' : 'May 5, 2025' ?> • 
-                                    <?= $key == 0 ? '50' : '65' ?>min
+                                    <?= $key == 0 ? '50' : '65' ?><?= t('min') ?>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="wh-workout-meta">
                             <div class="wh-workout-volume">
-                                Volume: <?= $key == 0 ? '850kg' : '1200kg' ?>
+                                <?= t('volume') ?>: <?= $key == 0 ? '850' : '1200' ?><?= t('kg') ?>
                                 <span class="trend <?= $key == 0 ? 'wh-trend-up' : 'wh-trend-down' ?>">
                                     <?= $key == 0 ? '↑50kg' : '↓100kg' ?>
                                 </span>
@@ -540,12 +542,12 @@ $chart_data['muscles'] = json_encode($muscle_groups);
 
                         <?php if ($key == 1): ?>
                         <div class="wh-workout-notes">
-                            <b>Notes:</b> Felt strong today. Increased weight on squats.
+                            <b><?= t('notes') ?>:</b> <?= t('notes_felt_strong') ?>
                         </div>
                         <?php endif; ?>
                         
                         <div class="wh-card-actions">
-                            <button class="wh-card-btn wh-secondary-btn">View Details</button>
+                            <button class="wh-card-btn wh-secondary-btn"><?= t('view_details') ?></button>
                             <button class="wh-icon-btn">
                                 <i class="fas fa-share"></i>
                             </button>
@@ -555,7 +557,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 <?php endforeach; ?>
             <?php else: ?>
                 <div class="wh-workout-card">
-                    <p style="text-align: center;">No workout history found.</p>
+                    <p style="text-align: center;"><?= t('no_workout_history_found') ?></p>
                 </div>
             <?php endif; ?>
         </div>
@@ -563,35 +565,35 @@ $chart_data['muscles'] = json_encode($muscle_groups);
 
     <div id="exportModal" class="wh-modal">
         <div class="wh-modal-content">
-            <h3 style="margin-top: 0;">Export Workout Data</h3>
-            <p>Select the time period for your workout data export:</p>
+            <h3 style="margin-top: 0;"><?= t('export_workout_data') ?></h3>
+            <p><?= t('select_time_period') ?></p>
             
             <div style="margin: 20px 0;">
                 <div class="wh-export-option">
                     <label>
-                        <input type="radio" name="exportPeriod" value="week" checked> Latest Week
+                        <input type="radio" name="exportPeriod" value="week" checked> <?= t('latest_week') ?>
                     </label>
                 </div>
                 <div class="wh-export-option">
                     <label>
-                        <input type="radio" name="exportPeriod" value="month"> Latest Month
+                        <input type="radio" name="exportPeriod" value="month"> <?= t('latest_month') ?>
                     </label>
                 </div>
                 <div class="wh-export-option">
                     <label>
-                        <input type="radio" name="exportPeriod" value="year"> Latest Year
+                        <input type="radio" name="exportPeriod" value="year"> <?= t('latest_year') ?>
                     </label>
                 </div>
                 <div class="wh-export-option">
                     <label>
-                        <input type="radio" name="exportPeriod" value="all"> All Time
+                        <input type="radio" name="exportPeriod" value="all"> <?= t('all_time') ?>
                     </label>
                 </div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
-                <button id="cancelExport" class="wh-card-btn wh-secondary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Cancel</button>
-                <button id="confirmExport" class="wh-card-btn wh-primary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Export PDF</button>
+                <button id="cancelExport" class="wh-card-btn wh-secondary-btn" style="flex: 0 0 auto; padding: 10px 16px;"><?= t('cancel') ?></button>
+                <button id="confirmExport" class="wh-card-btn wh-primary-btn" style="flex: 0 0 auto; padding: 10px 16px;"><?= t('export_pdf') ?></button>
             </div>
         </div>
     </div>
@@ -1404,22 +1406,22 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 const modalContent = `
                     <div id="customDateModal" class="wh-modal" style="display: flex;">
                         <div class="wh-modal-content">
-                            <h3 style="margin-top: 0;">Select Date Range</h3>
+                            <h3 style="margin-top: 0;"><?= t('select_date_range') ?></h3>
                             
                             <div style="margin: 20px 0;">
                                 <div style="margin-bottom: 16px;">
-                                    <label style="display: block; margin-bottom: 8px; color: var(--gray-light);">Start Date</label>
+                                    <label style="display: block; margin-bottom: 8px; color: var(--gray-light);"><?= t('start_date') ?></label>
                                     <input type="date" id="customStartDate" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--dark-bg); border: 1px solid rgba(255,255,255,0.1); color: white;">
                                 </div>
                                 <div>
-                                    <label style="display: block; margin-bottom: 8px; color: var(--gray-light);">End Date</label>
+                                    <label style="display: block; margin-bottom: 8px; color: var(--gray-light);"><?= t('end_date') ?></label>
                                     <input type="date" id="customEndDate" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--dark-bg); border: 1px solid rgba(255,255,255,0.1); color: white;">
                                 </div>
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
-                                <button id="cancelCustomDate" class="wh-card-btn wh-secondary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Cancel</button>
-                                <button id="applyCustomDate" class="wh-card-btn wh-primary-btn" style="flex: 0 0 auto; padding: 10px 16px;">Apply</button>
+                                <button id="cancelCustomDate" class="wh-card-btn wh-secondary-btn" style="flex: 0 0 auto; padding: 10px 16px;"><?= t('cancel') ?></button>
+                                <button id="applyCustomDate" class="wh-card-btn wh-primary-btn" style="flex: 0 0 auto; padding: 10px 16px;"><?= t('apply') ?></button>
                             </div>
                         </div>
                     </div>

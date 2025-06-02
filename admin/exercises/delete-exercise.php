@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/assets/db_connection.php';
+require_once dirname(__DIR__, 2) . '/profile/languages.php';
 
 session_start();
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -24,10 +25,10 @@ if (!$is_admin) {
     exit;
 }
 
-if (!isset($_GET['id']) || empty($_GET['id'])) {
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     $_SESSION['message'] = [
         'type' => 'danger',
-        'text' => 'No exercise specified for deletion.'
+        'text' => t('no_exercise_specified')
     ];
     header("Location: index.php");
     exit;
@@ -42,9 +43,9 @@ $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
 if ($check_result->num_rows === 0) {
-    $_SESSION["message"] = [
-        "type" => "error",
-        "text" => "Exercise not found."
+    $_SESSION['message'] = [
+        'type' => 'danger',
+        'text' => t('exercise_not_found')
     ];
     header("Location: index.php");
     exit;
@@ -59,12 +60,12 @@ $delete_stmt->bind_param("i", $exercise_id);
 if ($delete_stmt->execute()) {
     $_SESSION['message'] = [
         'type' => 'success',
-        'text' => 'Exercise deleted successfully.'
+        'text' => t('exercise_deleted_successfully')
     ];
 } else {
     $_SESSION['message'] = [
         'type' => 'danger',
-        'text' => 'Error deleting exercise: ' . $conn->error
+        'text' => t('error_deleting_exercise') . ": " . $conn->error
     ];
 }
 

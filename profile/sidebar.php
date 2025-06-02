@@ -1,6 +1,7 @@
 <?php
 
 require_once 'profile_access_control.php';
+require_once 'languages.php';
 
 if (!isset($user_id)) {
     $user_id = $_SESSION["user_id"] ?? null;
@@ -33,6 +34,14 @@ if (!isset($join_date) && isset($conn)) {
 
 if (isset($conn) && isset($user_id)) {
 }
+
+if (isset($_POST['change_language']) && in_array($_POST['language'], ['en', 'lv'])) {
+    $_SESSION['language'] = $_POST['language'];
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
+}
+
+$current_language = $_SESSION['language'] ?? 'en';
 ?>
 
 <link href="global-profile.css" rel="stylesheet">
@@ -48,65 +57,94 @@ if (isset($conn) && isset($user_id)) {
     
     <nav class="profile-sidebar-nav">
         <div class="profile-sidebar-nav-title" data-toggle="collapse" data-target="dashboard-nav">
-            My Fitness <i class="fas fa-chevron-down"></i>
+            <?= t('my_fitness') ?> <i class="fas fa-chevron-down"></i>
         </div>
         <ul class="profile-sidebar-nav-items" id="dashboard-nav">
             <li class="profile-sidebar-nav-item">
                 <a href="profile.php" class="profile-sidebar-nav-link <?= $current_page === 'profile.php' ? 'active' : '' ?>">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                    <i class="fas fa-tachometer-alt"></i> <?= t('dashboard') ?>
                 </a>
             </li>
         </ul>
         
         <div class="profile-sidebar-nav-title" data-toggle="collapse" data-target="workouts-nav">
-            Workouts <i class="fas fa-chevron-down"></i>
+            <?= t('workouts') ?> <i class="fas fa-chevron-down"></i>
         </div>
         <ul class="profile-sidebar-nav-items" id="workouts-nav">
             <li class="profile-sidebar-nav-item">
                 <a href="workout.php" class="profile-sidebar-nav-link <?= $current_page === 'workout.php' ? 'active' : '' ?>">
-                    <i class="fas fa-play-circle"></i> Active Workout
+                    <i class="fas fa-play-circle"></i> <?= t('active_workout') ?>
                 </a>
             </li>
             <li class="profile-sidebar-nav-item">
                 <a href="workout-templates.php" class="profile-sidebar-nav-link <?= $current_page === 'workout-templates.php' ? 'active' : '' ?>">
-                    <i class="fas fa-clipboard-list"></i> My Templates
+                    <i class="fas fa-clipboard-list"></i> <?= t('my_templates') ?>
                 </a>
             </li>
             <li class="profile-sidebar-nav-item">
                 <a href="workout-history.php" class="profile-sidebar-nav-link <?= $current_page === 'workout-history.php' ? 'active' : '' ?>">
-                    <i class="fas fa-history"></i> Workout History
+                    <i class="fas fa-history"></i> <?= t('workout_history') ?>
                 </a>
             </li>
         </ul>
         
         <div class="profile-sidebar-nav-title" data-toggle="collapse" data-target="progress-nav">
-            Progress <i class="fas fa-chevron-down"></i>
+            <?= t('progress') ?> <i class="fas fa-chevron-down"></i>
         </div>
         <ul class="profile-sidebar-nav-items" id="progress-nav">
             <li class="profile-sidebar-nav-item">
                 <a href="stats-overviews.php" class="profile-sidebar-nav-link <?= $current_page === 'stats-overviews.php' ? 'active' : '' ?>">
-                    <i class="fas fa-chart-line"></i> Stats Overview
+                    <i class="fas fa-chart-line"></i> <?= t('stats_and_prs') ?>
                 </a>
             </li>
             <li class="profile-sidebar-nav-item">
                 <a href="body-measurements.php" class="profile-sidebar-nav-link <?= $current_page === 'body-measurements.php' ? 'active' : '' ?>">
-                    <i class="fas fa-ruler"></i> Body Measurements
+                    <i class="fas fa-ruler"></i> <?= t('body_measurements') ?>
                 </a>
             </li>
             <li class="profile-sidebar-nav-item">
                 <a href="current-goal.php" class="profile-sidebar-nav-link <?= $current_page === 'current-goal.php' ? 'active' : '' ?>">
-                    <i class="fas fa-bullseye"></i> Setting Goals
+                    <i class="fas fa-bullseye"></i> <?= t('your_active_goals') ?>
                 </a>
             </li>
         </ul>
+        
+        <?php
+        $is_admin = false;
+        if (isset($conn) && isset($_SESSION["user_id"])) {
+            $admin_check_sql = "SELECT COUNT(*) as count FROM user_roles WHERE user_id = ? AND role_id = 5";
+            $admin_check_stmt = mysqli_prepare($conn, $admin_check_sql);
+            if ($admin_check_stmt) {
+                mysqli_stmt_bind_param($admin_check_stmt, "i", $_SESSION["user_id"]);
+                mysqli_stmt_execute($admin_check_stmt);
+                $admin_check_result = mysqli_stmt_get_result($admin_check_stmt);
+                if ($row = mysqli_fetch_assoc($admin_check_result)) {
+                    $is_admin = ($row['count'] > 0);
+                }
+            }
+        }
+        
+        if ($is_admin): 
+        ?>
+        <div class="profile-sidebar-nav-title" data-toggle="collapse" data-target="admin-nav">
+            <?= t('administration') ?> <i class="fas fa-chevron-down"></i>
+        </div>
+        <ul class="profile-sidebar-nav-items" id="admin-nav">
+            <li class="profile-sidebar-nav-item">
+                <a href="../admin/index.php" class="profile-sidebar-nav-link">
+                    <i class="fas fa-user-shield"></i> <?= t('admin_dashboard') ?>
+                </a>
+            </li>
+        </ul>
+        <?php endif; ?>
     </nav>
     
     <div class="profile-sidebar-footer">
         <a href="settings.php" class="profile-sidebar-footer-button">
-            <i class="fas fa-cog"></i> Settings
+            <i class="fas fa-cog"></i> <?= t('settings') ?>
         </a>
         <a href="../pages/logout.php" class="profile-sidebar-footer-button">
-            <i class="fas fa-sign-out-alt"></i> Logout
+            <i class="fas fa-sign-out-alt"></i> <?= t('logout') ?>
         </a>
     </div>
 </aside>
@@ -114,26 +152,26 @@ if (isset($conn) && isset($user_id)) {
 <nav class="profile-mobile-nav">
     <a href="profile.php" class="profile-mobile-nav-item <?= $current_page === 'profile.php' ? 'active' : '' ?>">
         <i class="fas fa-home"></i>
-        <span>Home</span>
+        <span><?= t('home') ?></span>
     </a>
     <a href="workout.php" class="profile-mobile-nav-item <?= $current_page === 'workout.php' ? 'active' : '' ?>">
         <i class="fas fa-play-circle"></i>
-        <span>Workout</span>
+        <span><?= t('workout') ?></span>
     </a>
     <a href="workout-templates.php" class="profile-mobile-nav-item <?= $current_page === 'workout-templates.php' ? 'active' : '' ?>">
         <i class="fas fa-clipboard-list"></i>
-        <span>Templates</span>
+        <span><?= t('templates') ?></span>
     </a>
     <a href="#" class="profile-mobile-nav-item" id="moreBtn">
         <i class="fas fa-ellipsis-h"></i>
-        <span>More</span>
+        <span><?= t('more') ?></span>
     </a>
 </nav>
 
 <div class="profile-more-menu-overlay" id="moreMenuOverlay">
     <div class="profile-more-menu-container">
         <div class="profile-more-menu-header">
-            <div class="profile-more-menu-title">More Options</div>
+            <div class="profile-more-menu-title"><?= t('more_options') ?></div>
             <button class="profile-more-menu-close" id="closeMoreMenu">
                 <i class="fas fa-times"></i>
             </button>
@@ -141,31 +179,62 @@ if (isset($conn) && isset($user_id)) {
         <div class="profile-more-menu-items">
             <a href="workout-history.php" class="profile-more-menu-item">
                 <i class="fas fa-history"></i>
-                <span>Workout History</span>
+                <span><?= t('workout_history') ?></span>
             </a>
             <a href="stats-overviews.php" class="profile-more-menu-item">
                 <i class="fas fa-chart-line"></i>
-                <span>Stats Overview</span>
+                <span><?= t('stats_and_prs') ?></span>
             </a>
             <a href="body-measurements.php" class="profile-more-menu-item">
                 <i class="fas fa-ruler"></i>
-                <span>Body Measurements</span>
+                <span><?= t('body_measurements') ?></span>
             </a>
             <a href="current-goal.php" class="profile-more-menu-item">
                 <i class="fas fa-bullseye"></i>
-                <span>Setting Goals</span>
+                <span><?= t('your_active_goals') ?></span>
             </a>
             <a href="settings.php" class="profile-more-menu-item">
                 <i class="fas fa-cog"></i>
-                <span>Settings</span>
+                <span><?= t('settings') ?></span>
             </a>
             <a href="../pages/logout.php" class="profile-more-menu-item">
                 <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
+                <span><?= t('logout') ?></span>
             </a>
         </div>
     </div>
 </div>
+
+<style>
+.language-selector {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.language-selector select {
+    background: #2d3748;
+    color: #fff;
+    border: 1px solid #4a5568;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.mobile-language-selector {
+    padding: 10px 15px;
+    margin-top: 10px;
+    border-top: 1px solid #4a5568;
+}
+
+.mobile-language-selector select {
+    width: 100%;
+    padding: 8px;
+    background: #2d3748;
+    color: #fff;
+    border: 1px solid #4a5568;
+    border-radius: 4px;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

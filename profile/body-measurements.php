@@ -1,5 +1,6 @@
 <?php
 require_once 'profile_access_control.php';
+require_once 'languages.php';
 
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php?redirect=profile/quick-workout.php");
@@ -262,7 +263,7 @@ foreach ($chart_data as $row) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="../assets/css/variables.css" rel="stylesheet">
     <link href="global-profile.css" rel="stylesheet">
-    <title>Body Measurements | Fitness Tracker</title>
+    <title><?= t('body_measurements') ?> | <?= t('fitness_dashboard') ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body style="display: block;">
@@ -270,19 +271,19 @@ foreach ($chart_data as $row) {
     <?php require_once 'sidebar.php'; ?>
     <div class="bm-container">
             <div class="bm-card"> 
-                <h2><i class="fas fa-chart-line"></i> Body Measurements</h2>
+                <h2><i class="fas fa-chart-line"></i> <?= t('body_measurements') ?></h2>
                 
                 <div class="bm-content-layout">
                     <div class="bm-left-content">
-                        <h3><i class="fas fa-history"></i> Measurement History</h3>
+                        <h3><i class="fas fa-history"></i> <?= t('measurement_history') ?></h3>
                         <div class="bm-table-responsive">
                             <table class="bm-table">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Weight</th>
-                                        <th>Body Fat</th>
-                                        <th>Actions</th>
+                                        <th><?= t('date') ?></th>
+                                        <th><?= t('weight') ?></th>
+                                        <th><?= t('body_fat') ?></th>
+                                        <th><?= t('action') ?></th>
                                     </tr>
                                 </thead>
                                 <tbody id="measurementHistory">
@@ -290,13 +291,13 @@ foreach ($chart_data as $row) {
                                         <?php foreach ($measurements as $measurement): ?>
                                             <tr>
                                                 <td><?= htmlspecialchars($measurement['measurement_date']) ?></td>
-                                                <td><?= $measurement['weight'] ? htmlspecialchars($measurement['weight']) . ' kg' : 'N/A' ?></td>
-                                                <td><?= $measurement['body_fat'] ? htmlspecialchars($measurement['body_fat']) . '%' : 'N/A' ?></td>
+                                                <td><?= $measurement['weight'] ? htmlspecialchars($measurement['weight']) . ' ' . t('kg') : t('na') ?></td>
+                                                <td><?= $measurement['body_fat'] ? htmlspecialchars($measurement['body_fat']) . '%' : t('na') ?></td>
                                                 <td>
-                                                    <button class="bm-btn bm-btn-secondary view-details" data-id="<?= $measurement['id'] ?>" title="View Details">
+                                                    <button class="bm-btn bm-btn-secondary view-details" data-id="<?= $measurement['id'] ?>" title="<?= t('view_details') ?>">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
-                                                    <button class="bm-btn bm-btn-danger delete-measurement" data-id="<?= $measurement['id'] ?>" title="Delete Measurement">
+                                                    <button class="bm-btn bm-btn-danger delete-measurement" data-id="<?= $measurement['id'] ?>" title="<?= t('delete') ?>">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </td>
@@ -304,7 +305,7 @@ foreach ($chart_data as $row) {
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="4" class="text-center">No measurements recorded yet</td>
+                                            <td colspan="4" class="text-center"><?= t('no_measurements') ?></td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -314,8 +315,8 @@ foreach ($chart_data as $row) {
                         <?php if ($total_pages > 1): ?>
                         <div class="bm-pagination">
                             <?php if ($page > 1): ?>
-                                <a href="?page=1" class="bm-pagination-link">&laquo; First</a>
-                                <a href="?page=<?= $page - 1 ?>" class="bm-pagination-link">&lsaquo; Previous</a>
+                                <a href="?page=1" class="bm-pagination-link">&laquo; <?= t('first') ?></a>
+                                <a href="?page=<?= $page - 1 ?>" class="bm-pagination-link">&lsaquo; <?= t('previous') ?></a>
                             <?php endif; ?>
                             
                             <?php
@@ -329,34 +330,34 @@ foreach ($chart_data as $row) {
                             <?php endfor; ?>
                             
                             <?php if ($page < $total_pages): ?>
-                                <a href="?page=<?= $page + 1 ?>" class="bm-pagination-link">Next &rsaquo;</a>
-                                <a href="?page=<?= $total_pages ?>" class="bm-pagination-link">Last &raquo;</a>
+                                <a href="?page=<?= $page + 1 ?>" class="bm-pagination-link"><?= t('next') ?> &rsaquo;</a>
+                                <a href="?page=<?= $total_pages ?>" class="bm-pagination-link"><?= t('last') ?> &raquo;</a>
                             <?php endif; ?>
                         </div>
                         <?php endif; ?>
                     </div>
                     
                     <div class="bm-right-content">
-                        <h3>Measurement Change Heatmap</h3>
-                        <p>Comparing your latest measurements with previous</p>
+                        <h3><?= t('measurement_change_heatmap') ?></h3>
+                        <p><?= t('comparing_latest_measurements') ?></p>
                         
                         <div class="bm-heatmap">
                             <?php
                             $changes = [
-                                'Weight' => [$weight_change ?? 0, $weight_change_percent ?? 0],
-                                'Body Fat' => [$bodyfat_change ?? 0, $bodyfat_change_percent ?? 0],
-                                'Chest' => [$chest_change ?? 0, $chest_change_percent ?? 0],
-                                'Left Bicep' => [$arm_left_bicep_change ?? 0, $arm_left_bicep_change_percent ?? 0],
-                                'Right Bicep' => [$arm_right_bicep_change ?? 0, $arm_right_bicep_change_percent ?? 0],
-                                'Waist' => [$waist_change ?? 0, $waist_change_percent ?? 0],
-                                'Left Forearm' => [$arm_left_forearm_change ?? 0, $arm_left_forearm_change_percent ?? 0],
-                                'Right Forearm' => [$arm_right_forearm_change ?? 0, $arm_right_forearm_change_percent ?? 0],
-                                'Shoulders' => [$shoulders_change ?? 0, $shoulders_change_percent ?? 0],
-                                'Hips' => [$hips_change ?? 0, $hips_change_percent ?? 0],
-                                'Left Quad' => [$leg_left_quad_change ?? 0, $leg_left_quad_change_percent ?? 0],
-                                'Right Quad' => [$leg_right_quad_change ?? 0, $leg_right_quad_change_percent ?? 0],
-                                'Left Calf' => [$leg_left_calf_change ?? 0, $leg_left_calf_change_percent?? 0],
-                                'Right Calf' => [$leg_right_calf_change ?? 0, $leg_right_calf_change_percent ?? 0]           
+                                t('weight') => [$weight_change ?? 0, $weight_change_percent ?? 0],
+                                t('body_fat') => [$bodyfat_change ?? 0, $bodyfat_change_percent ?? 0],
+                                t('chest') => [$chest_change ?? 0, $chest_change_percent ?? 0],
+                                t('shoulders') => [$shoulders_change ?? 0, $shoulders_change_percent ?? 0],
+                                t('waist') => [$waist_change ?? 0, $waist_change_percent ?? 0],
+                                t('hips') => [$hips_change ?? 0, $hips_change_percent ?? 0],
+                                t('left_bicep') => [$arm_left_bicep_change ?? 0, $arm_left_bicep_change_percent ?? 0],
+                                t('right_bicep') => [$arm_right_bicep_change ?? 0, $arm_right_bicep_change_percent ?? 0],
+                                t('left_forearm') => [$arm_left_forearm_change ?? 0, $arm_left_forearm_change_percent ?? 0],
+                                t('right_forearm') => [$arm_right_forearm_change ?? 0, $arm_right_forearm_change_percent ?? 0],
+                                t('left_quad') => [$leg_left_quad_change ?? 0, $leg_left_quad_change_percent ?? 0],
+                                t('right_quad') => [$leg_right_quad_change ?? 0, $leg_right_quad_change_percent ?? 0],
+                                t('left_calf') => [$leg_left_calf_change ?? 0, $leg_left_calf_change_percent ?? 0],
+                                t('right_calf') => [$leg_right_calf_change ?? 0, $leg_right_calf_change_percent ?? 0]
                             ];
                             
                             foreach ($changes as $label => $change):
@@ -365,11 +366,11 @@ foreach ($chart_data as $row) {
                                 $intensity = min(abs($percent) / 10, 0.5);
                                 $sign = '';
                                 
-                                if ($label === 'Weight') {
+                                if ($label === t('weight')) {
                                     $color = 'rgba(100, 100, 100, ' . $intensity . ')';
                                     $sign = $value >= 0 ? '+' : '-';
                                 }
-                                else if ($label === 'Body Fat' || $label === 'Waist' || $label === 'Hips') {
+                                else if ($label === t('body_fat') || $label === t('waist') || $label === t('hips')) {
                                     if ($value > 0) {
                                         $color = 'rgba(244, 67, 54, ' . $intensity . ')';
                                         $sign = '+';
@@ -410,32 +411,32 @@ foreach ($chart_data as $row) {
         <div class="bm-modal-content">
             <span class="bm-modal-close">&times;</span>
             <div class="bm-modal-header">
-                <h2><i class="fas fa-tape"></i> Record Measurements</h2>
+                <h2><i class="fas fa-tape"></i> <?= t('record_measurements') ?></h2>
             </div>
             
             <form id="measurementForm">
                 <div class="bm-two-column-layout">
                     <div class="bm-column">
-                        <h3>Basic Measurements</h3>
+                        <h3><?= t('basic_measurements') ?></h3>
                         <div class="bm-form-row">
                             <div class="bm-form-control">
-                                <label for="measurement_date">Date</label>
+                                <label for="measurement_date"><?= t('date') ?></label>
                                 <input type="date" id="measurement_date" name="measurement_date" required>
                             </div>
                         </div>
                         
                         <div class="bm-form-row">
                             <div class="bm-form-control">
-                                <label for="weight">Weight</label>
+                                <label for="weight"><?= t('weight') ?></label>
                                 <div class="bm-input-group">
-                                    <input type="number" step="0.1" id="weight" name="weight" placeholder="Your current weight" required>
-                                    <div class="bm-input-group-append">kg</div>
+                                    <input type="number" step="0.1" id="weight" name="weight" required>
+                                    <div class="bm-input-group-append"><?= t('kg') ?></div>
                                 </div>
                             </div>
                             <div class="bm-form-control">
-                                <label for="body_fat">Body Fat Percentage</label>
+                                <label for="body_fat"><?= t('body_fat') ?></label>
                                 <div class="bm-input-group">
-                                    <input type="number" step="0.1" id="body_fat" name="body_fat" placeholder="Your body fat percentage">
+                                    <input type="number" step="0.1" id="body_fat" name="body_fat">
                                     <div class="bm-input-group-append">%</div>
                                 </div>
                             </div>
@@ -443,16 +444,16 @@ foreach ($chart_data as $row) {
                         
                         <div class="bm-form-row">
                             <div class="bm-form-control">
-                                <label for="chest">Chest</label>
+                                <label for="chest"><?= t('chest') ?></label>
                                 <div class="bm-input-group">
-                                    <input type="number" step="0.1" id="chest" name="chest" placeholder="Chest circumference">
+                                    <input type="number" step="0.1" id="chest" name="chest">
                                     <div class="bm-input-group-append">cm</div>
                                 </div>
                             </div>
                             <div class="bm-form-control">
-                                <label for="shoulders">Shoulders</label>
+                                <label for="shoulders"><?= t('shoulders') ?></label>
                                 <div class="bm-input-group">
-                                    <input type="number" step="0.1" id="shoulders" name="shoulders" placeholder="Shoulder circumference">
+                                    <input type="number" step="0.1" id="shoulders" name="shoulders">
                                     <div class="bm-input-group-append">cm</div>
                                 </div>
                             </div>
@@ -460,16 +461,16 @@ foreach ($chart_data as $row) {
                         
                         <div class="bm-form-row">
                             <div class="bm-form-control">
-                                <label for="waist">Waist</label>
+                                <label for="waist"><?= t('waist') ?></label>
                                 <div class="bm-input-group">
-                                    <input type="number" step="0.1" id="waist" name="waist" placeholder="Waist circumference">
+                                    <input type="number" step="0.1" id="waist" name="waist">
                                     <div class="bm-input-group-append">cm</div>
                                 </div>
                             </div>
                             <div class="bm-form-control">
-                                <label for="hips">Hips</label>
+                                <label for="hips"><?= t('hips') ?></label>
                                 <div class="bm-input-group">
-                                    <input type="number" step="0.1" id="hips" name="hips" placeholder="Hip circumference">
+                                    <input type="number" step="0.1" id="hips" name="hips">
                                     <div class="bm-input-group-append">cm</div>
                                 </div>
                             </div>
@@ -477,18 +478,18 @@ foreach ($chart_data as $row) {
                     </div>
 
                     <div class="bm-column">
-                        <h3>Detailed Measurements</h3>
-                        <div class="bm-form-group-title">Arms</div>
+                        <h3><?= t('detailed_measurements') ?></h3>
+                        <div class="bm-form-group-title"><?= t('arms') ?></div>
                         <div class="bm-form-row">
                             <div class="bm-form-control">
-                                <label for="arm_left_bicep">Left Bicep</label>
+                                <label for="arm_left_bicep"><?= t('left_bicep') ?></label>
                                 <div class="bm-input-group">
                                     <input type="number" step="0.1" id="arm_left_bicep" name="arm_left_bicep">
                                     <div class="bm-input-group-append">cm</div>
                                 </div>
                             </div>
                             <div class="bm-form-control">
-                                <label for="arm_right_bicep">Right Bicep</label>
+                                <label for="arm_right_bicep"><?= t('right_bicep') ?></label>
                                 <div class="bm-input-group">
                                     <input type="number" step="0.1" id="arm_right_bicep" name="arm_right_bicep">
                                     <div class="bm-input-group-append">cm</div>
@@ -498,14 +499,14 @@ foreach ($chart_data as $row) {
 
                         <div class="bm-form-row">
                             <div class="bm-form-control">
-                                <label for="arm_left_forearm">Left Forearm</label>
+                                <label for="arm_left_forearm"><?= t('left_forearm') ?></label>
                                 <div class="bm-input-group">
                                     <input type="number" step="0.1" id="arm_left_forearm" name="arm_left_forearm">
                                     <div class="bm-input-group-append">cm</div>
                                 </div>
                             </div>
                             <div class="bm-form-control">
-                                <label for="arm_right_forearm">Right Forearm</label>
+                                <label for="arm_right_forearm"><?= t('right_forearm') ?></label>
                                 <div class="bm-input-group">
                                     <input type="number" step="0.1" id="arm_right_forearm" name="arm_right_forearm">
                                     <div class="bm-input-group-append">cm</div>
@@ -513,17 +514,17 @@ foreach ($chart_data as $row) {
                             </div>
                         </div>
                         
-                        <div class="bm-form-group-title">Legs</div>
+                        <div class="bm-form-group-title"><?= t('legs') ?></div>
                         <div class="bm-form-row">
                             <div class="bm-form-control">
-                                <label for="leg_left_quad">Left Quad</label>
+                                <label for="leg_left_quad"><?= t('left_quad') ?></label>
                                 <div class="bm-input-group">
                                     <input type="number" step="0.1" id="leg_left_quad" name="leg_left_quad">
                                     <div class="bm-input-group-append">cm</div>
                                 </div>
                             </div>
                             <div class="bm-form-control">
-                                <label for="leg_right_quad">Right Quad</label>
+                                <label for="leg_right_quad"><?= t('right_quad') ?></label>
                                 <div class="bm-input-group">
                                     <input type="number" step="0.1" id="leg_right_quad" name="leg_right_quad">
                                     <div class="bm-input-group-append">cm</div>
@@ -532,14 +533,14 @@ foreach ($chart_data as $row) {
                         </div>
                         <div class="bm-form-row">
                             <div class="bm-form-control">
-                                <label for="leg_left_calf">Left Calf</label>
+                                <label for="leg_left_calf"><?= t('left_calf') ?></label>
                                 <div class="bm-input-group">
                                     <input type="number" step="0.1" id="leg_left_calf" name="leg_left_calf">
                                     <div class="bm-input-group-append">cm</div>
                                 </div>
                             </div>
                             <div class="bm-form-control">
-                                <label for="leg_right_calf">Right Calf</label>
+                                <label for="leg_right_calf"><?= t('right_calf') ?></label>
                                 <div class="bm-input-group">
                                     <input type="number" step="0.1" id="leg_right_calf" name="leg_right_calf">
                                     <div class="bm-input-group-append">cm</div>
@@ -550,7 +551,7 @@ foreach ($chart_data as $row) {
                 </div>
                 
                 <div class="bm-modal-footer">
-                    <button type="submit" id="saveButton" class="bm-btn">Save Measurements</button>
+                    <button type="submit" id="saveButton" class="bm-btn"><?= t('save_measurements') ?></button>
                 </div>
             </form>
         </div>
@@ -560,38 +561,38 @@ foreach ($chart_data as $row) {
         <div class="bm-modal-content">
             <span class="bm-modal-close" id="detailsModalClose">&times;</span>
             <div class="bm-modal-header">
-                <h2><i class="fas fa-info-circle"></i> Measurement Details</h2>
+                <h2><i class="fas fa-info-circle"></i> <?= t('measurement_details') ?></h2>
             </div>
             
             <div class="bm-two-column-layout">
                 <div class="bm-column">
-                    <h3>Basic Information</h3>
+                    <h3><?= t('basic_information') ?></h3>
                     <div class="bm-details-group">
-                        <p><strong>Date:</strong> <span id="detail-date"></span></p>
-                        <p><strong>Weight:</strong> <span id="detail-weight"></span> kg</p>
-                        <p><strong>Body Fat:</strong> <span id="detail-bodyfat"></span> %</p>
-                        <p><strong>Chest:</strong> <span id="detail-chest"></span> cm</p>
-                        <p><strong>Waist:</strong> <span id="detail-waist"></span> cm</p>
-                        <p><strong>Shoulders:</strong> <span id="detail-shoulders"></span> cm</p>
-                        <p><strong>Hips:</strong> <span id="detail-hips"></span> cm</p>
+                        <p><strong><?= t('date') ?>:</strong> <span id="detail-date"></span></p>
+                        <p><strong><?= t('weight') ?>:</strong> <span id="detail-weight"></span> <?= t('kg') ?></p>
+                        <p><strong><?= t('body_fat') ?>:</strong> <span id="detail-bodyfat"></span> %</p>
+                        <p><strong><?= t('chest') ?>:</strong> <span id="detail-chest"></span> cm</p>
+                        <p><strong><?= t('waist') ?>:</strong> <span id="detail-waist"></span> cm</p>
+                        <p><strong><?= t('shoulders') ?>:</strong> <span id="detail-shoulders"></span> cm</p>
+                        <p><strong><?= t('hips') ?>:</strong> <span id="detail-hips"></span> cm</p>
                     </div>
                 </div>
                 <div class="bm-column">
-                    <h3>Detailed Measurements</h3>
-                    <div class="bm-form-group-title">Arms</div>
+                    <h3><?= t('detailed_measurements') ?></h3>
+                    <div class="bm-form-group-title"><?= t('arms') ?></div>
                     <div class="bm-details-group">
-                        <p><strong>Left Bicep:</strong> <span id="detail-left-bicep"></span> cm</p>
-                        <p><strong>Right Bicep:</strong> <span id="detail-right-bicep"></span> cm</p>
-                        <p><strong>Left Forearm:</strong> <span id="detail-left-forearm"></span> cm</p>
-                        <p><strong>Right Forearm:</strong> <span id="detail-right-forearm"></span> cm</p>
+                        <p><strong><?= t('left_bicep') ?>:</strong> <span id="detail-left-bicep"></span> cm</p>
+                        <p><strong><?= t('right_bicep') ?>:</strong> <span id="detail-right-bicep"></span> cm</p>
+                        <p><strong><?= t('left_forearm') ?>:</strong> <span id="detail-left-forearm"></span> cm</p>
+                        <p><strong><?= t('right_forearm') ?>:</strong> <span id="detail-right-forearm"></span> cm</p>
                     </div>
                     
-                    <div class="bm-form-group-title">Legs</div>
+                    <div class="bm-form-group-title"><?= t('legs') ?></div>
                     <div class="bm-details-group">
-                        <p><strong>Left Quad:</strong> <span id="detail-left-quad"></span> cm</p>
-                        <p><strong>Right Quad:</strong> <span id="detail-right-quad"></span> cm</p>
-                        <p><strong>Left Calf:</strong> <span id="detail-left-calf"></span> cm</p>
-                        <p><strong>Right Calf:</strong> <span id="detail-right-calf"></span> cm</p>
+                        <p><strong><?= t('left_quad') ?>:</strong> <span id="detail-left-quad"></span> cm</p>
+                        <p><strong><?= t('right_quad') ?>:</strong> <span id="detail-right-quad"></span> cm</p>
+                        <p><strong><?= t('left_calf') ?>:</strong> <span id="detail-left-calf"></span> cm</p>
+                        <p><strong><?= t('right_calf') ?>:</strong> <span id="detail-right-calf"></span> cm</p>
                     </div>
                 </div>
             </div>
@@ -600,11 +601,11 @@ foreach ($chart_data as $row) {
 
     <div class="bm-confirm-modal" id="deleteConfirmModal">
         <div class="bm-confirm-content">
-            <h3><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h3>
-            <p>Are you sure you want to delete this measurement? This action cannot be undone.</p>
+            <h3><i class="fas fa-exclamation-triangle"></i> <?= t('confirm_deletion') ?></h3>
+            <p><?= t('confirm_delete_measurement') ?></p>
             <div class="bm-confirm-actions">
-                <button class="bm-btn bm-btn-secondary" id="cancelDelete">Cancel</button>
-                <button class="bm-btn bm-btn-danger" id="confirmDelete">Delete</button>
+                <button class="bm-btn bm-btn-secondary" id="cancelDelete"><?= t('cancel') ?></button>
+                <button class="bm-btn bm-btn-danger" id="confirmDelete"><?= t('delete') ?></button>
             </div>
         </div>
     </div>

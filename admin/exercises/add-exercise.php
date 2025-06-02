@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/assets/db_connection.php';
+require_once dirname(__DIR__, 2) . '/profile/languages.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("Location: ../../pages/login.php");
@@ -36,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $video_url = isset($_POST['video_url']) ? trim($_POST['video_url']) : null;
     
     if (empty($name)) {
-        $error = "Exercise name is required.";
+        $error = t('exercise_name_required');
     } else {
         $insert_sql = "INSERT INTO exercises (
             name, 
@@ -68,22 +69,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($insert_stmt->execute()) {
             $_SESSION['message'] = [
                 'type' => 'success',
-                'text' => 'Exercise added successfully.'
+                'text' => t('exercise_added_successfully')
             ];
             header("Location: index.php");
             exit;
         } else {
-            $error = "Error adding exercise: " . $conn->error;
+            $error = t('error_adding_exercise') . ": " . $conn->error;
         }
     }
 }
 
-$pageTitle = "Add New Exercise";
+$pageTitle = t('add_new_exercise');
 $bodyClass = "admin-page";
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $_SESSION['language'] ?? 'en'; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -178,10 +179,10 @@ $bodyClass = "admin-page";
         
         <div class="main-content">
             <div class="admin-topbar">
-                <h1>Add New Exercise</h1>
+                <h1><?php echo t('add_new_exercise'); ?></h1>
                 <div class="admin-user">
                     <div class="admin-avatar"><?php echo substr($_SESSION["username"], 0, 1); ?></div>
-                    <span>Admin</span>
+                    <span><?php echo t('admin'); ?></span>
                 </div>
             </div>
             
@@ -193,79 +194,81 @@ $bodyClass = "admin-page";
                     
                     <form action="add-exercise.php" method="POST" id="exerciseForm" onsubmit="return validateForm()">
                         <div class="form-group">
-                            <label for="name" class="form-label">Exercise Name</label>
+                            <label for="name" class="form-label"><?php echo t('exercise_name'); ?></label>
                             <input type="text" id="name" name="name" class="form-input" value="<?php echo isset($name) ? htmlspecialchars($name) : ''; ?>">
-                            <div class="error-message" id="nameError">Exercise name is required</div>
+                            <div class="error-message" id="nameError"><?php echo t('exercise_name_required'); ?></div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="exercise_type" class="form-label">Exercise Type</label>
-                            <select id="exercise_type" name="exercise_type" class="form-select">
-                                <option value="">Select Exercise Type</option>
-                                <option value="strength" <?php echo (isset($exercise_type) && $exercise_type == 'strength') ? 'selected' : ''; ?>>Strength</option>
-                                <option value="cardio" <?php echo (isset($exercise_type) && $exercise_type == 'cardio') ? 'selected' : ''; ?>>Cardio</option>
-                                <option value="flexibility" <?php echo (isset($exercise_type) && $exercise_type == 'flexibility') ? 'selected' : ''; ?>>Flexibility</option>
-                                <option value="balance" <?php echo (isset($exercise_type) && $exercise_type == 'balance') ? 'selected' : ''; ?>>Balance</option>
-                                <option value="plyometric" <?php echo (isset($exercise_type) && $exercise_type == 'plyometric') ? 'selected' : ''; ?>>Plyometric</option>
-                                <option value="functional" <?php echo (isset($exercise_type) && $exercise_type == 'functional') ? 'selected' : ''; ?>>Functional</option>
-                            </select>
-                            <div class="error-message" id="exerciseTypeError">Please select an exercise type</div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="difficulty" class="form-label">Difficulty Level</label>
-                            <select id="difficulty" name="difficulty" class="form-select">
-                                <option value="">Select Difficulty</option>
-                                <option value="beginner" <?php echo (isset($difficulty) && $difficulty == 'beginner') ? 'selected' : ''; ?>>Beginner</option>
-                                <option value="intermediate" <?php echo (isset($difficulty) && $difficulty == 'intermediate') ? 'selected' : ''; ?>>Intermediate</option>
-                                <option value="advanced" <?php echo (isset($difficulty) && $difficulty == 'advanced') ? 'selected' : ''; ?>>Advanced</option>
-                                <option value="expert" <?php echo (isset($difficulty) && $difficulty == 'expert') ? 'selected' : ''; ?>>Expert</option>
-                            </select>
-                            <div class="error-message" id="difficultyError">Please select a difficulty level</div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="description" class="form-label optional-field">Description</label>
+                            <label for="description" class="form-label optional-field"><?php echo t('description'); ?></label>
                             <textarea id="description" name="description" class="form-textarea"><?php echo isset($description) ? htmlspecialchars($description) : ''; ?></textarea>
                         </div>
                         
                         <div class="form-group">
-                            <label for="equipment" class="form-label optional-field">Equipment</label>
+                            <label for="exercise_type" class="form-label optional-field"><?php echo t('exercise_type'); ?></label>
+                            <select id="exercise_type" name="exercise_type" class="form-select">
+                                <option value=""><?php echo t('select_type'); ?></option>
+                                <option value="strength" <?php echo (isset($exercise_type) && $exercise_type == 'strength') ? 'selected' : ''; ?>><?php echo t('strength'); ?></option>
+                                <option value="cardio" <?php echo (isset($exercise_type) && $exercise_type == 'cardio') ? 'selected' : ''; ?>><?php echo t('cardio'); ?></option>
+                                <option value="flexibility" <?php echo (isset($exercise_type) && $exercise_type == 'flexibility') ? 'selected' : ''; ?>><?php echo t('flexibility'); ?></option>
+                                <option value="balance" <?php echo (isset($exercise_type) && $exercise_type == 'balance') ? 'selected' : ''; ?>><?php echo t('balance'); ?></option>
+                                <option value="plyometric" <?php echo (isset($exercise_type) && $exercise_type == 'plyometric') ? 'selected' : ''; ?>><?php echo t('plyometric'); ?></option>
+                                <option value="functional" <?php echo (isset($exercise_type) && $exercise_type == 'functional') ? 'selected' : ''; ?>><?php echo t('functional'); ?></option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="equipment" class="form-label optional-field"><?php echo t('equipment'); ?></label>
                             <input type="text" id="equipment" name="equipment" class="form-input" value="<?php echo isset($equipment) ? htmlspecialchars($equipment) : ''; ?>">
                         </div>
                         
                         <div class="form-group">
-                            <label for="primary_muscle" class="form-label optional-field">Primary Muscle Group</label>
-                            <input type="text" id="primary_muscle" name="primary_muscle" class="form-input" value="<?php echo isset($primary_muscle) ? htmlspecialchars($primary_muscle) : ''; ?>">
+                            <label for="primary_muscle" class="form-label optional-field"><?php echo t('primary_muscle'); ?></label>
+                            <select id="primary_muscle" name="primary_muscle" class="form-select">
+                                <option value=""><?php echo t('select_muscle_group'); ?></option>
+                                <option value="chest" <?php echo (isset($primary_muscle) && $primary_muscle == 'chest') ? 'selected' : ''; ?>><?php echo t('chest'); ?></option>
+                                <option value="back" <?php echo (isset($primary_muscle) && $primary_muscle == 'back') ? 'selected' : ''; ?>><?php echo t('back'); ?></option>
+                                <option value="shoulders" <?php echo (isset($primary_muscle) && $primary_muscle == 'shoulders') ? 'selected' : ''; ?>><?php echo t('shoulders'); ?></option>
+                                <option value="arms" <?php echo (isset($primary_muscle) && $primary_muscle == 'arms') ? 'selected' : ''; ?>><?php echo t('arms'); ?></option>
+                                <option value="legs" <?php echo (isset($primary_muscle) && $primary_muscle == 'legs') ? 'selected' : ''; ?>><?php echo t('legs'); ?></option>
+                                <option value="core" <?php echo (isset($primary_muscle) && $primary_muscle == 'core') ? 'selected' : ''; ?>><?php echo t('core'); ?></option>
+                                <option value="full_body" <?php echo (isset($primary_muscle) && $primary_muscle == 'full_body') ? 'selected' : ''; ?>><?php echo t('full_body'); ?></option>
+                            </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="instructions" class="form-label optional-field">Instructions</label>
+                            <label for="difficulty" class="form-label optional-field"><?php echo t('difficulty'); ?></label>
+                            <select id="difficulty" name="difficulty" class="form-select">
+                                <option value=""><?php echo t('select_difficulty'); ?></option>
+                                <option value="beginner" <?php echo (isset($difficulty) && $difficulty == 'beginner') ? 'selected' : ''; ?>><?php echo t('beginner'); ?></option>
+                                <option value="intermediate" <?php echo (isset($difficulty) && $difficulty == 'intermediate') ? 'selected' : ''; ?>><?php echo t('intermediate'); ?></option>
+                                <option value="advanced" <?php echo (isset($difficulty) && $difficulty == 'advanced') ? 'selected' : ''; ?>><?php echo t('advanced'); ?></option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="instructions" class="form-label optional-field"><?php echo t('instructions'); ?></label>
                             <textarea id="instructions" name="instructions" class="form-textarea"><?php echo isset($instructions) ? htmlspecialchars($instructions) : ''; ?></textarea>
                         </div>
                         
                         <div class="form-group">
-                            <label for="common_mistakes" class="form-label optional-field">Common Mistakes</label>
+                            <label for="common_mistakes" class="form-label optional-field"><?php echo t('common_mistakes'); ?></label>
                             <textarea id="common_mistakes" name="common_mistakes" class="form-textarea"><?php echo isset($common_mistakes) ? htmlspecialchars($common_mistakes) : ''; ?></textarea>
                         </div>
                         
                         <div class="form-group">
-                            <label for="benefits" class="form-label optional-field">Benefits</label>
+                            <label for="benefits" class="form-label optional-field"><?php echo t('benefits'); ?></label>
                             <textarea id="benefits" name="benefits" class="form-textarea"><?php echo isset($benefits) ? htmlspecialchars($benefits) : ''; ?></textarea>
                         </div>
                         
                         <div class="form-group">
-                            <label for="video_url" class="form-label optional-field">Video URL</label>
-                            <input type="url" id="video_url" name="video_url" class="form-input" placeholder="https://..." value="<?php echo isset($video_url) ? htmlspecialchars($video_url) : ''; ?>">
+                            <label for="video_url" class="form-label optional-field"><?php echo t('video_url'); ?></label>
+                            <input type="text" id="video_url" name="video_url" class="form-input" value="<?php echo isset($video_url) ? htmlspecialchars($video_url) : ''; ?>">
                         </div>
                         
                         <div class="button-container">
-                            <button type="submit" class="save-btn">
-                                <i class="fas fa-plus"></i> Add Exercise
-                            </button>
-                            <a href="index.php" class="cancel-btn">
-                                <i class="fas fa-times"></i> Cancel
-                            </a>
+                            <button type="submit" class="save-btn"><?php echo t('save'); ?></button>
+                            <a href="index.php" class="cancel-btn"><?php echo t('cancel'); ?></a>
                         </div>
                     </form>
                 </div>
@@ -276,63 +279,20 @@ $bodyClass = "admin-page";
     <script>
         function validateForm() {
             let isValid = true;
-            
-            const name = document.getElementById('name');
+            const nameInput = document.getElementById('name');
             const nameError = document.getElementById('nameError');
-            if (!name.value.trim()) {
-                name.classList.add('error');
+            
+            nameInput.classList.remove('error');
+            nameError.style.display = 'none';
+            
+            if (nameInput.value.trim() === '') {
+                nameInput.classList.add('error');
                 nameError.style.display = 'block';
                 isValid = false;
-            } else {
-                name.classList.remove('error');
-                nameError.style.display = 'none';
-            }
-            
-            const exerciseType = document.getElementById('exercise_type');
-            const exerciseTypeError = document.getElementById('exerciseTypeError');
-            if (!exerciseType.value) {
-                exerciseType.classList.add('error');
-                exerciseTypeError.style.display = 'block';
-                isValid = false;
-            } else {
-                exerciseType.classList.remove('error');
-                exerciseTypeError.style.display = 'none';
-            }
-            
-            const difficulty = document.getElementById('difficulty');
-            const difficultyError = document.getElementById('difficultyError');
-            if (!difficulty.value) {
-                difficulty.classList.add('error');
-                difficultyError.style.display = 'block';
-                isValid = false;
-            } else {
-                difficulty.classList.remove('error');
-                difficultyError.style.display = 'none';
             }
             
             return isValid;
         }
-
-        document.getElementById('name').addEventListener('input', function() {
-            if (this.value.trim()) {
-                this.classList.remove('error');
-                document.getElementById('nameError').style.display = 'none';
-            }
-        });
-
-        document.getElementById('exercise_type').addEventListener('change', function() {
-            if (this.value) {
-                this.classList.remove('error');
-                document.getElementById('exerciseTypeError').style.display = 'none';
-            }
-        });
-
-        document.getElementById('difficulty').addEventListener('change', function() {
-            if (this.value) {
-                this.classList.remove('error');
-                document.getElementById('difficultyError').style.display = 'none';
-            }
-        });
     </script>
 </body>
 </html> 

@@ -1,6 +1,8 @@
 <?php
-session_start();
+
+require_once 'profile_access_control.php';
 require_once '../assets/db_connection.php';
+require_once 'languages.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../pages/login.php");
@@ -120,11 +122,11 @@ $strength_leaders = $top_exercises->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= $_SESSION["language"] ?? 'en' ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GYMVERSE - Stats & PRs</title>
+    <title>GYMVERSE - <?= t('stats_and_prs') ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -137,30 +139,33 @@ $strength_leaders = $top_exercises->fetchAll(PDO::FETCH_ASSOC);
         <div class="stats-column-card">
             <div class="stats-card">
                 <div class="stats-card-header">
-                    <h2><div class="stats-icon-heading"><i class="fas fa-chart-bar"></i></div> Exercise Popularity</h2>
+                    <h2><div class="stats-icon-heading"><i class="fas fa-chart-bar"></i></div> <?= t('exercise_popularity') ?></h2>
                 </div>
                 
                 <?php if (empty($popular_exercises)): ?>
                 <div class="stats-empty-state">
                     <i class="fas fa-dumbbell"></i>
-                    <p>No exercise data found yet. Start logging your workouts!</p>
+                    <p><?= t('no_exercise_data') ?></p>
                 </div>
                 <?php else: ?>
                 <div class="stats-exercise-stats">
                     <div class="stats-total-count">
-                        <div class="stats-count-label">Total Repetitions Performed</div>
+                        <div class="stats-count-label"><?= t('total_repetitions') ?></div>
                         <div class="stats-count-value"><?= number_format($total_reps) ?></div>
                     </div>
                     
                     <div class="stats-popularity-list">
-                        <?php foreach ($popular_exercises as $index => $exercise): ?>
+                        <?php 
+                        $limited_popular_exercises = array_slice($popular_exercises, 0, 6);
+                        foreach ($limited_popular_exercises as $index => $exercise): 
+                        ?>
                             <?php 
                                 $percentage = ($exercise['total_reps'] / $total_reps) * 100;
                             ?>
                             <div class="stats-popularity-item">
                                 <div class="stats-popularity-info">
                                     <div class="stats-exercise-name"><?= htmlspecialchars($exercise['exercise_name']) ?></div>
-                                    <div class="stats-exercise-count"><?= number_format($exercise['total_reps']) ?> reps</div>
+                                    <div class="stats-exercise-count"><?= number_format($exercise['total_reps']) ?> <?= t('reps') ?></div>
                                 </div>
                                 <div class="stats-popularity-bar-container">
                                     <div class="stats-popularity-bar" style="width: <?= number_format($percentage, 0) ?>%"></div>
@@ -175,31 +180,34 @@ $strength_leaders = $top_exercises->fetchAll(PDO::FETCH_ASSOC);
             
             <div class="stats-card">
                 <div class="stats-card-header">
-                    <h2><div class="stats-icon-heading"><i class="fas fa-trophy"></i></div> Personal Records</h2>
+                    <h2><div class="stats-icon-heading"><i class="fas fa-trophy"></i></div> <?= t('personal_records') ?></h2>
                 </div>
                 
                 <?php if (empty($exercise_prs)): ?>
                 <div class="stats-empty-state">
                     <i class="fas fa-dumbbell"></i>
-                    <p>No personal records found yet. Start logging your workouts to track your PRs!</p>
+                    <p><?= t('no_personal_records') ?></p>
                 </div>
                 <?php else: ?>
                 <ul class="stats-pr-list">
-                    <?php foreach($exercise_prs as $exercise => $prs): ?>
+                    <?php 
+                    $limited_exercise_prs = array_slice($exercise_prs, 0, 10);
+                    foreach($limited_exercise_prs as $exercise => $prs): 
+                    ?>
                         <li class="stats-pr-item">
                             <div class="stats-pr-exercise"><?= htmlspecialchars($exercise) ?></div>
                             <div class="stats-pr-stats">
                                 <?php if (isset($prs['single_rep']) && $prs['single_rep'] !== null): ?>
                                 <div>
-                                    <div class="stats-pr-value"><?= $prs['single_rep']['weight'] ?? 0 ?> kg × 1</div>
+                                    <div class="stats-pr-value"><?= $prs['single_rep']['weight'] ?? 0 ?> <?= t('kg') ?> × 1</div>
                                     <div class="stats-pr-date"><?= !empty($prs['single_rep']['date']) ? date('M d, Y', strtotime($prs['single_rep']['date'])) : 'N/A' ?></div>
                                 </div>
                                 <?php endif; ?>
                                 
                                 <?php if (isset($prs['max_volume']) && $prs['max_volume'] !== null): ?>
                                 <div>
-                                    <div class="stats-pr-value"><?= $prs['max_volume']['weight'] ?? 0 ?> kg × <?= $prs['max_volume']['reps'] ?? 0 ?></div>
-                                    <div class="stats-pr-date"><?= !empty($prs['max_volume']['date']) ? date('M d, Y', strtotime($prs['max_volume']['date'])) : 'N/A' ?></div>
+                                    <div class="stats-pr-value"><?= $prs['max_volume']['weight'] ?? 0 ?> <?= t('kg') ?> × <?= $prs['max_volume']['reps'] ?? 0 ?></div>
+                                    <div class="stats-pr-date"><?= !empty($prs['max_volume']['date']) ? date('M d, Y', strtotime($prs['max_volume']['date'])) : t('na') ?></div>
                                 </div>
                                 <?php endif; ?>
                             </div>
@@ -211,23 +219,26 @@ $strength_leaders = $top_exercises->fetchAll(PDO::FETCH_ASSOC);
             
             <div class="stats-card">
                 <div class="stats-card-header">
-                    <h2><div class="stats-icon-heading"><i class="fas fa-fire"></i></div> Strength Leaders</h2>
+                    <h2><div class="stats-icon-heading"><i class="fas fa-fire"></i></div> <?= t('strength_leaders') ?></h2>
                 </div>
                 
                 <?php if (empty($strength_leaders)): ?>
                 <div class="stats-empty-state">
                     <i class="fas fa-dumbbell"></i>
-                    <p>No strength data found yet. Start logging your workouts!</p>
+                    <p><?= t('no_strength_data') ?></p>
                 </div>
                 <?php else: ?>
                 <div class="stats-top-exercises">
-                    <?php foreach ($strength_leaders as $index => $exercise): ?>
+                    <?php 
+                    $limited_strength_leaders = array_slice($strength_leaders, 0, 10);
+                    foreach ($limited_strength_leaders as $index => $exercise): 
+                    ?>
                     <div class="stats-exercise-row">
                         <div>
                             <span class="stats-rank">#<?= $index + 1 ?></span>
                             <span class="stats-exercise-name"><?= htmlspecialchars($exercise['exercise_name']) ?></span>
                         </div>
-                        <div class="stats-pr-value"><?= $exercise['max_weight'] ?> kg</div>
+                        <div class="stats-pr-value"><?= $exercise['max_weight'] ?> <?= t('kg') ?></div>
                     </div>
                     <?php endforeach; ?>
                 </div>
