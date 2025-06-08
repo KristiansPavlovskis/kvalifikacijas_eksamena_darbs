@@ -485,27 +485,19 @@ $chart_data['muscles'] = json_encode($muscle_groups);
             
             <div class="wh-stats-grid">
                 <div class="wh-stats-card">
-                    <div class="wh-stats-value">
-                        12<span class="trend wh-trend-up">↑2</span>
-                    </div>
+                    <div class="wh-stats-value">12</div>
                     <div class="wh-stats-label"><?= t('total_workouts') ?></div>
                 </div>
                 <div class="wh-stats-card">
-                    <div class="wh-stats-value">
-                        45m<span class="trend wh-trend-down">↓5m</span>
-                    </div>
+                    <div class="wh-stats-value">45m</div>
                     <div class="wh-stats-label"><?= t('avg_duration') ?></div>
                 </div>
                 <div class="wh-stats-card">
-                    <div class="wh-stats-value">
-                        2.4t<span class="trend wh-trend-up">↑0.2</span>
-                    </div>
+                    <div class="wh-stats-value">2.4t</div>
                     <div class="wh-stats-label"><?= t('total_volume') ?></div>
                 </div>
                 <div class="wh-stats-card">
-                    <div class="wh-stats-value">
-                        8.2k<span class="trend wh-trend-up">↑1.1k</span>
-                    </div>
+                    <div class="wh-stats-value">8.2k</div>
                     <div class="wh-stats-label"><?= t('calories') ?></div>
                 </div>
             </div>
@@ -530,9 +522,6 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         <div class="wh-workout-meta">
                             <div class="wh-workout-volume">
                                 <?= t('volume') ?>: <?= $key == 0 ? '850' : '1200' ?><?= t('kg') ?>
-                                <span class="trend <?= $key == 0 ? 'wh-trend-up' : 'wh-trend-down' ?>">
-                                    <?= $key == 0 ? '↑50kg' : '↓100kg' ?>
-                                </span>
                             </div>
                         </div>
                         
@@ -730,13 +719,7 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                         total_workouts: 0,
                         avg_duration: 0,
                         total_volume: 0,
-                        total_calories: 0,
-                        trend: {
-                            workouts: 0,
-                            duration: 0,
-                            volume: 0,
-                            calories: 0
-                        }
+                        total_calories: 0
                     };
                 }
 
@@ -754,31 +737,10 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     totalCalories: Math.round(Number(summary.total_calories) || 0)
                 };
 
-                if (summary.trend) {
-                    const trends = {
-                        workouts: Math.round(Number(summary.trend.workouts) || 0),
-                        duration: Math.round(Number(summary.trend.duration) || 0),
-                        volume: Math.round(Number(summary.trend.volume) || 0),
-                        calories: Math.round(Number(summary.trend.calories) || 0)
-                    };
-
-                    elements.totalWorkouts.innerHTML = `${values.totalWorkouts}<span class="trend ${trends.workouts >= 0 ? 'wh-trend-up' : 'wh-trend-down'}">
-                        ${trends.workouts >= 0 ? '↑' : '↓'}${Math.abs(trends.workouts)}</span>`;
-                    
-                    elements.avgDuration.innerHTML = `${values.avgDuration}m<span class="trend ${trends.duration >= 0 ? 'wh-trend-up' : 'wh-trend-down'}">
-                        ${trends.duration >= 0 ? '↑' : '↓'}${Math.abs(trends.duration)}m</span>`;
-                    
-                    elements.totalVolume.innerHTML = `${values.totalVolume.toLocaleString()}kg<span class="trend ${trends.volume >= 0 ? 'wh-trend-up' : 'wh-trend-down'}">
-                        ${trends.volume >= 0 ? '↑' : '↓'}${Math.abs(trends.volume)}kg</span>`;
-                    
-                    elements.totalCalories.innerHTML = `${values.totalCalories.toLocaleString()}kcal<span class="trend ${trends.calories >= 0 ? 'wh-trend-up' : 'wh-trend-down'}">
-                        ${trends.calories >= 0 ? '↑' : '↓'}${Math.abs(trends.calories)}kcal</span>`;
-                } else {
-                    elements.totalWorkouts.textContent = values.totalWorkouts;
-                    elements.avgDuration.textContent = `${values.avgDuration}m`;
-                    elements.totalVolume.textContent = `${values.totalVolume.toLocaleString()}kg`;
-                    elements.totalCalories.textContent = `${values.totalCalories.toLocaleString()}kcal`;
-                }
+                if (elements.totalWorkouts) elements.totalWorkouts.textContent = `${values.totalWorkouts}`;
+                if (elements.avgDuration) elements.avgDuration.textContent = `${values.avgDuration}m`;
+                if (elements.totalVolume) elements.totalVolume.textContent = `${values.totalVolume.toLocaleString()}kg`;
+                if (elements.totalCalories) elements.totalCalories.textContent = `${values.totalCalories.toLocaleString()}kcal`;
             }
             
             function formatWeight(weight) {
@@ -802,10 +764,6 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                 const date = new Date(workout.created_at);
                 const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 
-                const volumeTrend = workout.volume_trend || { value: 0, direction: 'up' };
-                const trendClass = volumeTrend.direction === 'up' ? 'wh-trend-up' : 'wh-trend-down';
-                const trendArrow = volumeTrend.direction === 'up' ? '↑' : '↓';
-                
                 card.innerHTML = `
                     <div class="wh-workout-header">
                         <div>
@@ -822,9 +780,6 @@ $chart_data['muscles'] = json_encode($muscle_groups);
                     <div class="wh-workout-meta">
                         <div class="wh-workout-volume">
                             Volume: ${workout.total_volume}kg
-                            <span class="trend ${trendClass}">
-                                ${trendArrow}${volumeTrend.value}kg
-                            </span>
                         </div>
                     </div>
                     

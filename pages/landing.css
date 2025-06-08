@@ -157,18 +157,6 @@ nav ul li a:hover::after {
     background-color: var(--primary-hover);
 }
 
-.mobile-menu-toggle {
-    display: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--light-text);
-    transition: var(--transition);
-}
-
-.mobile-menu-toggle:hover {
-    color: var(--primary-color);
-}
-
 .hero {
     position: relative;
     height: 100vh;
@@ -599,42 +587,26 @@ footer .container {
 
 @media (max-width: 768px) {
     header .container {
-        flex-wrap: wrap;
-    }
-
-    .mobile-menu-toggle {
-        display: block;
-        order: 3;
+        padding: 0 15px;
     }
 
     nav {
-        position: fixed;
-        top: 70px;
-        left: 0;
-        width: 100%;
-        background-color: var(--dark-bg);
-        padding: 20px 0;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        transform: translateY(-150%);
-        transition: transform 0.3s ease;
-        z-index: 999;
-    }
-
-    nav.active {
-        transform: translateY(0);
+        display: flex;
+        justify-content: center;
     }
 
     nav ul {
-        flex-direction: column;
-        align-items: center;
+        display: flex;
+        flex-direction: row;
+        margin: 0;
     }
 
     nav ul li {
-        margin: 15px 0;
+        margin: 0 10px;
     }
 
     .auth-buttons {
-        margin-left: auto;
+        margin-left: 15px;
     }
 
     .hero {

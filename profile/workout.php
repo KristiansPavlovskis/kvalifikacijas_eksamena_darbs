@@ -8,27 +8,6 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-function isMobile() {
-    return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
-}
-
-if (isMobile()) {
-    $params = [];
-    if (!empty($_GET)) {
-        $params = $_GET;
-    } elseif (!empty($_POST)) {
-        $params = $_POST;
-    }
-    
-    $redirect = 'mobile-workout.php';
-    if (!empty($params)) {
-        $redirect .= '?' . http_build_query($params);
-    }
-    
-    header("location: $redirect");
-    exit;
-}
-
 $user_id = $_SESSION["user_id"];
 
 $template_id = null;
@@ -78,6 +57,9 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Start Workout - GYMVERSE</title>
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -108,31 +90,21 @@ try {
             overflow-x: hidden;
         }
 
-        #desktopView, #mobileView {
-            display: none;
+        #desktopView {
+            display: none !important;
         }
-
-        @media screen and (min-width: 784px) {
+        
+        #mobileView {
+            display: block !important;
+        }
+        
+        @media screen and (min-width: 1086px) {
             #desktopView {
                 display: block !important;
             }
+            
             #mobileView {
                 display: none !important;
-            }
-        }
-
-        @media screen and (max-width: 783px) {
-            #desktopView {
-                display: none !important;
-            }
-            #mobileView {
-                display: block !important;
-            }
-            .sidebar {
-                display: none;
-            }
-            .main-content {
-                margin-left: 0;
             }
         }
     </style>
@@ -151,25 +123,5 @@ try {
         </div>
     </div>
 </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function handleViewSwitch() {
-                const desktopView = document.getElementById('desktopView');
-                const mobileView = document.getElementById('mobileView');
-                
-                if (window.innerWidth >= 784) {
-                    desktopView.style.display = 'block';
-                    mobileView.style.display = 'none';
-                } else {
-                    desktopView.style.display = 'none';
-                    mobileView.style.display = 'block';
-                }
-            }
-
-            handleViewSwitch();
-            window.addEventListener('resize', handleViewSwitch);
-        });
-    </script>
 </body>
 </html>

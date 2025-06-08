@@ -113,6 +113,167 @@ $bodyClass = "admin-page";
             display: inline-block;
         }
         
+        .user-avatar {
+            min-width: 32px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+        
+        .user-info {
+            min-width: 0;
+            flex: 1;
+        }
+        
+        @media (max-width: 1200px) {
+            .admin-table th:nth-child(4),
+            .admin-table td:nth-child(4) {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .admin-table th:nth-child(5),
+            .admin-table td:nth-child(5) {
+                display: none;
+            }
+            
+            .admin-table th:nth-child(8),
+            .admin-table td:nth-child(8) {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .admin-table {
+                display: none;
+            }
+            
+            .mobile-user-cards {
+                display: block;
+            }
+            
+            .user-card {
+                background-color: var(--dark-bg-surface);
+                border-radius: 0.75rem;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            
+            .user-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 0.5rem;
+            }
+            
+            .user-card-info {
+                margin-left: 0.5rem;
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .user-card-meta {
+                color: var(--text-muted);
+                font-size: 0.75rem;
+                margin-top: 0.5rem;
+            }
+            
+            .user-card-stats {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.75rem 0;
+                border-top: 1px solid var(--border-color);
+                border-bottom: 1px solid var(--border-color);
+                margin: 0.75rem 0;
+            }
+            
+            .user-card-stat {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .stat-number {
+                font-size: 1.25rem;
+                font-weight: 700;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+            }
+            
+            .user-card-actions {
+                display: flex;
+                gap: 0.5rem;
+            }
+            
+            .user-card-action {
+                flex: 1;
+                text-align: center;
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+                background-color: var(--dark-accent);
+                color: var(--text-color);
+                text-decoration: none;
+                font-size: 0.875rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            
+            .edit-action {
+                background-color: rgba(44, 198, 146, 0.2);
+                color: #2cc692;
+            }
+            
+            .delete-action {
+                background-color: rgba(230, 22, 22, 0.2);
+                color: #e61616;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-user-cards {
+                display: none;
+            }
+            
+            .admin-table {
+                display: table;
+            }
+            
+            .admin-table th, 
+            .admin-table td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
+            }
+            
+            .admin-table .user-name {
+                font-size: 0.875rem;
+            }
+            
+            .admin-table .user-email {
+                font-size: 0.75rem;
+            }
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -217,127 +378,6 @@ $bodyClass = "admin-page";
         .alert ul {
             margin: 0;
             padding-left: 1.5rem;
-        }
-        
-        @media (max-width: 768px) {
-            .admin-table {
-                display: none;
-            }
-            
-            .mobile-user-cards {
-                display: block;
-            }
-            
-            .user-card {
-                background-color: var(--dark-bg-surface);
-                border-radius: 0.75rem;
-                padding: 1rem;
-                margin-bottom: 1rem;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            }
-            
-            .user-card-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 0.5rem;
-            }
-            
-            .user-card-info {
-                margin-left: 0.5rem;
-                flex: 1;
-            }
-            
-            .user-card-meta {
-                color: var(--text-muted);
-                font-size: 0.75rem;
-                margin-top: 0.5rem;
-            }
-            
-            .user-card-stats {
-                display: flex;
-                justify-content: space-between;
-                padding: 0.75rem 0;
-                border-top: 1px solid var(--border-color);
-                border-bottom: 1px solid var(--border-color);
-                margin: 0.75rem 0;
-            }
-            
-            .user-card-stat {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .stat-number {
-                font-size: 1.25rem;
-                font-weight: 700;
-            }
-            
-            .stat-label {
-                font-size: 0.75rem;
-                color: var(--text-muted);
-            }
-            
-            .user-card-actions {
-                display: flex;
-                gap: 0.5rem;
-            }
-            
-            .user-card-action {
-                flex: 1;
-                text-align: center;
-                padding: 0.75rem;
-                border-radius: 0.5rem;
-                background-color: var(--dark-accent);
-                color: var(--text-color);
-                text-decoration: none;
-                font-size: 0.875rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 0.5rem;
-            }
-            
-            .edit-action {
-                background-color: rgba(44, 198, 146, 0.2);
-                color: #2cc692;
-            }
-            
-            .delete-action {
-                background-color: rgba(230, 22, 22, 0.2);
-                color: #e61616;
-            }
-        }
-    
-        @media (min-width: 769px) {
-            .mobile-user-cards {
-                display: none;
-            }
-            
-            .admin-table {
-                display: table;
-            }
-            
-            .admin-table th, 
-            .admin-table td {
-                padding: 0.75rem 0.5rem;
-                font-size: 0.875rem;
-            }
-            
-            .admin-table .user-name {
-                font-size: 0.875rem;
-            }
-            
-            .admin-table .user-email {
-                font-size: 0.75rem;
-            }
-            
-            .admin-table .user-avatar {
-                width: 32px;
-                height: 32px;
-                font-size: 0.875rem;
-            }
         }
     </style>
 </head>

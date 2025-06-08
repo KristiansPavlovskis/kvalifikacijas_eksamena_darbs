@@ -85,7 +85,7 @@ try {
                      WHERE w.user_id = ? 
                      AND w.created_at BETWEEN ? AND NOW() 
                      ORDER BY w.created_at DESC 
-                     LIMIT 5";
+                     LIMIT 3";
     $workouts_stmt = mysqli_prepare($conn, $workouts_query);
     if ($workouts_stmt) {
         $start_date = date('Y-m-d', strtotime('-30 days'));

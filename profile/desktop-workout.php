@@ -100,58 +100,6 @@ try {
 
 $favorite_exercises = false;
 
-function calculateWorkoutIntensity($exercises) {
-    if (empty($exercises)) {
-        return 1.0;
-    }
-    
-    $total_volume = 0;
-    $exercise_count = count($exercises);
-    
-    foreach ($exercises as $exercise) {
-        $sets = isset($exercise["sets"]) ? $exercise["sets"] : 0;
-        $reps = isset($exercise["reps"]) ? $exercise["reps"] : 0;
-        $weight = isset($exercise["weight"]) ? $exercise["weight"] : 0;
-        
-        $volume = $sets * $reps * ($weight > 0 ? $weight : 0.5);
-        $total_volume += $volume;
-    }
-    
-    $avg_volume = $total_volume / $exercise_count;
-    
-    if ($avg_volume < 50) {
-        return 1.0;
-    } else if ($avg_volume < 150) {
-        return 2.0;
-    } else if ($avg_volume < 300) {
-        return 3.0;
-    } else if ($avg_volume < 500) {
-        return 4.0;
-    } else {
-        return 5.0;
-    }
-}
-
-function getAverageRPE($workoutData) {
-    $allRPE = [];
-    
-    if (!isset($workoutData['exercises']) || !is_array($workoutData['exercises'])) {
-        return 5;
-    }
-    
-    foreach ($workoutData['exercises'] as $exercise) {
-        if (isset($exercise['sets']) && is_array($exercise['sets'])) {
-            foreach ($exercise['sets'] as $set) {
-                if (isset($set['rpe'])) {
-                    $allRPE[] = $set['rpe'];
-                }
-            }
-        }
-    }
-    
-    return empty($allRPE) ? 5 : array_sum($allRPE) / count($allRPE);
-}
-
 try {
     if (tableExists($conn, 'workout_templates')) {
         $templates_query = "SELECT wt.*, COUNT(wte.id) as exercise_count 
@@ -173,63 +121,6 @@ try {
 } catch (Exception $e) {
     error_log("Error fetching workout templates: " . $e->getMessage());
     $templates = false;
-}
-
-try {
-    if (tableExists($conn, 'workout_templates')) {
-        $all_templates_count_query = "SELECT COUNT(*) as count FROM workout_templates WHERE user_id = ?";
-        $stmt = mysqli_prepare($conn, $all_templates_count_query);
-        mysqli_stmt_bind_param($stmt, "i", $user_id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $all_templates_count = mysqli_fetch_assoc($result)['count'];
-        
-        $strength_templates_count_query = "SELECT COUNT(*) as count FROM workout_templates 
-                                         WHERE user_id = ? AND 
-                                         (category = 'Strength Training' OR
-                                         LOWER(name) LIKE '%strength%' OR 
-                                         LOWER(description) LIKE '%strength%')";
-        $stmt = mysqli_prepare($conn, $strength_templates_count_query);
-        mysqli_stmt_bind_param($stmt, "i", $user_id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $strength_templates_count = mysqli_fetch_assoc($result)['count'];
-        
-        $hiit_templates_count_query = "SELECT COUNT(*) as count FROM workout_templates 
-                                     WHERE user_id = ? AND 
-                                     (category = 'hiit' OR
-                                     LOWER(name) LIKE '%hiit%' OR 
-                                     LOWER(description) LIKE '%hiit%' OR
-                                     LOWER(name) LIKE '%interval%' OR
-                                     LOWER(description) LIKE '%interval%')";
-        $stmt = mysqli_prepare($conn, $hiit_templates_count_query);
-        mysqli_stmt_bind_param($stmt, "i", $user_id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $hiit_templates_count = mysqli_fetch_assoc($result)['count'];
-        
-        $cardio_templates_count_query = "SELECT COUNT(*) as count FROM workout_templates 
-                                       WHERE user_id = ? AND 
-                                       (category = 'cardio' OR
-                                       LOWER(name) LIKE '%cardio%' OR 
-                                       LOWER(description) LIKE '%cardio%')";
-        $stmt = mysqli_prepare($conn, $cardio_templates_count_query);
-        mysqli_stmt_bind_param($stmt, "i", $user_id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $cardio_templates_count = mysqli_fetch_assoc($result)['count'];
-    } else {
-        $all_templates_count = 0;
-        $strength_templates_count = 0;
-        $hiit_templates_count = 0;
-        $cardio_templates_count = 0;
-    }
-} catch (Exception $e) {
-    error_log("Error counting templates by category: " . $e->getMessage());
-    $all_templates_count = 0;
-    $strength_templates_count = 0;
-    $hiit_templates_count = 0;
-    $cardio_templates_count = 0;
 }
 
 function getGlobalWorkoutTemplates($conn) {
@@ -320,25 +211,21 @@ try {
                                     <div class="category-name">
                                         <i class="fas fa-layer-group"></i> <?php echo t('all_templates'); ?>
                                     </div>
-                                    <div class="category-count"><?php echo $all_templates_count; ?></div>
                                 </div>
                                 <div class="category-item" data-category="Strength Training">
                                     <div class="category-name">
                                         <i class="fas fa-dumbbell"></i> <?php echo t('strength_training'); ?>
                                     </div>
-                                    <div class="category-count"><?php echo $strength_templates_count; ?></div>
                                 </div>
-                                <div class="category-item" data-category="hiit">
+                                <div class="category-item" data-category="Bodyweight">
                                     <div class="category-name">
-                                        <i class="fas fa-bolt"></i> <?php echo t('hiit'); ?>
+                                        <i class="fas fa-running"></i> <?php echo t('bodyweight'); ?>
                                     </div>
-                                    <div class="category-count"><?php echo $hiit_templates_count; ?></div>
                                 </div>
-                                <div class="category-item" data-category="cardio">
+                                <div class="category-item" data-category="Cardio">
                                     <div class="category-name">
                                         <i class="fas fa-heartbeat"></i> <?php echo t('cardio'); ?>
                                     </div>
-                                    <div class="category-count"><?php echo $cardio_templates_count; ?></div>
                                 </div>
                             </div>
                             
@@ -383,9 +270,6 @@ try {
                                 <i class="fas fa-clipboard-list"></i> <?php echo t('available_templates'); ?>
                             </div>
                             <div class="panel-actions">
-                                <button class="view-toggle-btn" id="gridViewBtn">
-                                    <i class="fas fa-th"></i>
-                                </button>
                                 <button class="view-toggle-btn active" id="listViewBtn">
                                     <i class="fas fa-list"></i>
                                 </button>
@@ -414,30 +298,33 @@ try {
                                             $durationClass = 'duration-long';
                                         }
 
-                                        if (
+                                        if ($template['category'] === 'Strength Training' || 
                                             stripos($template['name'], 'strength') !== false || 
-                                            stripos($template['description'], 'strength') !== false
-                                        ) {
+                                            stripos($template['description'], 'strength') !== false) {
                                             $categoryClasses .= ' template-strength';
                                         }
                                         
-                                        if (
-                                            stripos($template['name'], 'hiit') !== false || 
-                                            stripos($template['description'], 'hiit') !== false ||
-                                            stripos($template['name'], 'interval') !== false || 
-                                            stripos($template['description'], 'interval') !== false
-                                        ) {
-                                            $categoryClasses .= ' template-hiit';
+                                        if ($template['category'] === 'Bodyweight' || $template['category'] === 'bodyweight' || 
+                                            stripos($template['name'], 'bodyweight') !== false || 
+                                            stripos($template['description'], 'bodyweight') !== false ||
+                                            stripos($template['name'], 'body weight') !== false || 
+                                            stripos($template['description'], 'body weight') !== false ||
+                                            stripos($template['name'], 'calisthenics') !== false || 
+                                            stripos($template['description'], 'calisthenics') !== false) {
+                                            $categoryClasses .= ' template-bodyweight';
                                         }
                                         
-                                        if (
+                                        if ($template['category'] === 'Cardio' || $template['category'] === 'cardio' || 
                                             stripos($template['name'], 'cardio') !== false || 
-                                            stripos($template['description'], 'cardio') !== false
-                                        ) {
+                                            stripos($template['description'], 'cardio') !== false ||
+                                            stripos($template['name'], 'aerobic') !== false || 
+                                            stripos($template['description'], 'aerobic') !== false ||
+                                            stripos($template['name'], 'running') !== false || 
+                                            stripos($template['description'], 'running') !== false) {
                                             $categoryClasses .= ' template-cardio';
                                         }
                                     ?>
-                                    <div class="template-card <?php echo $categoryClasses . ' ' . $difficultyClass . ' ' . $durationClass; ?>" 
+                                    <div class="template-card <?php echo $categoryClasses; ?> <?php echo $difficultyClass; ?> <?php echo $durationClass; ?>" 
                                          data-id="<?php echo $template['id']; ?>"
                                          data-category="<?php echo htmlspecialchars($template['category'] ?? ''); ?>">
                                         <div class="template-card-header">
@@ -483,30 +370,33 @@ try {
                                             $durationClass = 'duration-long';
                                         }
 
-                                        if (
+                                        if ($template['category'] === 'Strength Training' || 
                                             stripos($template['name'], 'strength') !== false || 
-                                            stripos($template['description'], 'strength') !== false
-                                        ) {
+                                            stripos($template['description'], 'strength') !== false) {
                                             $categoryClasses .= ' template-strength';
                                         }
                                         
-                                        if (
-                                            stripos($template['name'], 'hiit') !== false || 
-                                            stripos($template['description'], 'hiit') !== false ||
-                                            stripos($template['name'], 'interval') !== false || 
-                                            stripos($template['description'], 'interval') !== false
-                                        ) {
-                                            $categoryClasses .= ' template-hiit';
+                                        if ($template['category'] === 'Bodyweight' || $template['category'] === 'bodyweight' || 
+                                            stripos($template['name'], 'bodyweight') !== false || 
+                                            stripos($template['description'], 'bodyweight') !== false ||
+                                            stripos($template['name'], 'body weight') !== false || 
+                                            stripos($template['description'], 'body weight') !== false ||
+                                            stripos($template['name'], 'calisthenics') !== false || 
+                                            stripos($template['description'], 'calisthenics') !== false) {
+                                            $categoryClasses .= ' template-bodyweight';
                                         }
                                         
-                                        if (
+                                        if ($template['category'] === 'Cardio' || $template['category'] === 'cardio' || 
                                             stripos($template['name'], 'cardio') !== false || 
-                                            stripos($template['description'], 'cardio') !== false
-                                        ) {
+                                            stripos($template['description'], 'cardio') !== false ||
+                                            stripos($template['name'], 'aerobic') !== false || 
+                                            stripos($template['description'], 'aerobic') !== false ||
+                                            stripos($template['name'], 'running') !== false || 
+                                            stripos($template['description'], 'running') !== false) {
                                             $categoryClasses .= ' template-cardio';
                                         }
                                     ?>
-                                    <div class="template-list-item <?php echo $categoryClasses . ' ' . $difficultyClass . ' ' . $durationClass; ?>" 
+                                    <div class="template-list-item <?php echo $categoryClasses; ?> <?php echo $difficultyClass; ?> <?php echo $durationClass; ?>" 
                                          data-id="<?php echo $template['id']; ?>"
                                          data-category="<?php echo htmlspecialchars($template['category'] ?? ''); ?>">
                                         <div class="template-list-item-header">
@@ -863,6 +753,10 @@ try {
             const templateList = document.querySelector('.template-list');
             const skipRestBtn = document.getElementById('skip-rest-btn');
 
+            if (listViewBtn) {
+                listViewBtn.classList.add('active');
+                templateList.style.display = 'block';
+            }
 
             if (gridViewBtn && listViewBtn) {
                 gridViewBtn.addEventListener('click', function() {
@@ -870,7 +764,8 @@ try {
                     listViewBtn.classList.remove('active');
                     templateGrid.style.display = 'grid';
                     templateList.style.display = 'none';
-                    updateCategoryCounts(); 
+                    
+                    filterTemplates();
                 });
 
                 listViewBtn.addEventListener('click', function() {
@@ -878,6 +773,8 @@ try {
                     gridViewBtn.classList.remove('active');
                     templateList.style.display = 'block';
                     templateGrid.style.display = 'none';
+                    
+                    filterTemplates();
                     updateCategoryCounts(); 
                 });
             }
@@ -885,10 +782,12 @@ try {
             const categoryItems = document.querySelectorAll('.category-item');
             categoryItems.forEach(item => {
                 item.addEventListener('click', function() {
+                    const category = this.dataset.category;
+                    console.log("Category clicked:", category);
+                    
                     categoryItems.forEach(cat => cat.classList.remove('active'));
                     this.classList.add('active');
 
-                    const category = this.dataset.category;
                     filterTemplates();
                 });
             });
@@ -940,13 +839,13 @@ try {
                     ...document.querySelectorAll('.template-list-item')
                 ];
                 
-                console.log("Filtering templates:", allTemplates.length, "templates found");
+                console.log("Total templates before filtering:", allTemplates.length);
 
                 allTemplates.forEach(template => {
                     if (!template) return;
                     
                     let showTemplate = true;
-                    
+                
                     const isGlobalTemplate = template.classList.contains('pdw-template-global');
                     if (isGlobalTemplate && !showGlobal) {
                         template.style.display = 'none';
@@ -955,16 +854,22 @@ try {
 
                     if (activeCategory !== 'all') {
                         const templateCategory = template.getAttribute('data-category');
-                        if (templateCategory && templateCategory === activeCategory) {  
+                        console.log(`Checking template category: ${templateCategory} against active category: ${activeCategory}`);
+                        
+                        if (activeCategory === 'Strength Training') {
+                            if (!(templateCategory === 'Strength Training' || template.classList.contains('template-strength'))) {
+                                showTemplate = false;
+                            }
                         } 
-                        else if (activeCategory === 'Strength Training' && template.classList.contains('template-strength')) {
-                        } 
-                        else if (activeCategory === 'hiit' && template.classList.contains('template-hiit')) {
+                        else if (activeCategory === 'Bodyweight') {
+                            if (!(templateCategory === 'Bodyweight' || templateCategory === 'bodyweight' || template.classList.contains('template-bodyweight'))) {
+                                showTemplate = false;
+                            }
                         }
-                        else if (activeCategory === 'cardio' && template.classList.contains('template-cardio')) {
-                        }
-                        else {
-                            showTemplate = false;
+                        else if (activeCategory === 'Cardio') {
+                            if (!(templateCategory === 'Cardio' || templateCategory === 'cardio' || template.classList.contains('template-cardio'))) {
+                                showTemplate = false;
+                            }
                         }
                     }
 
@@ -994,7 +899,12 @@ try {
                     template.style.display = showTemplate ? '' : 'none';
                 });
                 
-                updateCategoryCounts();
+                const visibleTemplates = document.querySelectorAll('.template-card:not([style*="display: none"]), .template-list-item:not([style*="display: none"])');
+                const noTemplatesMessage = document.getElementById('noTemplatesMessage');
+                
+                if (noTemplatesMessage) {
+                    noTemplatesMessage.style.display = visibleTemplates.length === 0 ? 'block' : 'none';
+                }
             }
 
             function loadTemplateDetails(templateId) {
@@ -2014,63 +1924,45 @@ try {
                 });
             }
 
-            function toggleGlobalTemplates(show) {
-                console.log("Toggling global templates:", show);
-                const globalTemplates = document.querySelectorAll('.pdw-template-global');
-                console.log("Found", globalTemplates.length, "global template elements");
+            function updateCategoryCounts() {
+                const isGridView = document.querySelector('.template-grid').style.display !== 'none';
+                const activeSelector = isGridView ? '.template-card' : '.template-list-item';
                 
-                const listView = document.getElementById('listViewBtn').classList.contains('active');
-                const gridView = document.getElementById('gridViewBtn').classList.contains('active');
+                console.log("Updating category counts using selector:", activeSelector);
                 
-                globalTemplates.forEach(template => {
-                    if (show) {
-                        if (template.classList.contains('template-card') && gridView) {
-                            template.style.display = '';
-                        } else if (template.classList.contains('template-list-item') && listView) {
-                            template.style.display = '';
-                        } else if (!gridView && !listView) {
-                            template.style.display = '';
-                        }
-                    } else {
-                        template.style.display = 'none';
-                    }
+                const allVisibleTemplates = document.querySelectorAll(`${activeSelector}:not([style*="display: none"])`);
+                console.log("All visible templates:", allVisibleTemplates.length);
+                
+                allVisibleTemplates.forEach((template, index) => {
+                    console.log(`Template ${index} classes:`, template.className);
                 });
                 
-                const noTemplatesMessage = document.getElementById('noTemplatesMessage');
-                if (noTemplatesMessage && show && globalTemplates.length > 0) {
-                    noTemplatesMessage.style.display = 'none';
-                } else if (noTemplatesMessage && !show) {
-                    noTemplatesMessage.style.display = 'block';
-                }
-                
-                if (show) {
-                    if (globalTemplates.length > 0) {
-                        showNotification('Global templates are now visible', 'success');
-                    } else {
-                        showNotification('No global templates available', 'info');
-                    }
-                } else {
-                    showNotification('Global templates are now hidden', 'info');
-                }
-                
-                filterTemplates();
-                updateCategoryCounts();
-            }
-            
-            function updateCategoryCounts() {
-                const activeView = document.getElementById('gridViewBtn').classList.contains('active') ? '.template-card' : '.template-list-item';
-                
-                const allVisibleTemplates = document.querySelectorAll(`${activeView}:not([style*="display: none"])`);
                 document.querySelector('.category-item[data-category="all"] .category-count').textContent = allVisibleTemplates.length;
                 
-                const strengthTemplates = document.querySelectorAll(`${activeView}.template-strength:not([style*="display: none"])`);
-                document.querySelector('.category-item[data-category="Strength Training"] .category-count').textContent = strengthTemplates.length;
-            
-                const hiitTemplates = document.querySelectorAll(`${activeView}.template-hiit:not([style*="display: none"])`);
-                document.querySelector('.category-item[data-category="hiit"] .category-count').textContent = hiitTemplates.length;
+                function countTemplatesByCategory(categoryClass) {
+                    const templates = document.querySelectorAll(`${activeSelector}.${categoryClass}:not([style*="display: none"])`);
+                    console.log(`${categoryClass} templates:`, templates.length);
+                    
+                    templates.forEach((template, index) => {
+                        console.log(`${categoryClass} template ${index}:`, template.className);
+                    });
+                    
+                    return templates.length;
+                }
                 
-                const cardioTemplates = document.querySelectorAll(`${activeView}.template-cardio:not([style*="display: none"])`);
-                document.querySelector('.category-item[data-category="cardio"] .category-count').textContent = cardioTemplates.length;
+                const strengthCount = countTemplatesByCategory('template-strength');
+                document.querySelector('.category-item[data-category="Strength Training"] .category-count').textContent = strengthCount;
+                
+                const bodyweightCount = countTemplatesByCategory('template-bodyweight');
+                document.querySelector('.category-item[data-category="Bodyweight"] .category-count').textContent = bodyweightCount;
+                
+                const cardioCount = countTemplatesByCategory('template-cardio');
+                document.querySelector('.category-item[data-category="Cardio"] .category-count').textContent = cardioCount;
+                
+                console.log("Updated category counts - All:", allVisibleTemplates.length, 
+                    "Strength:", strengthCount, 
+                    "Bodyweight:", bodyweightCount, 
+                    "Cardio:", cardioCount);
             }
             
             const globalTemplatesToggle = document.getElementById('globalTemplatesToggle');
@@ -2078,8 +1970,20 @@ try {
             if (globalTemplatesToggle) {
                 console.log("Global templates toggle found");
                 globalTemplatesToggle.addEventListener('change', function() {
-                    console.log("Toggle changed:", this.checked);
-                    toggleGlobalTemplates(this.checked);
+                    console.log("Global templates toggle changed:", this.checked);
+                    
+                    filterTemplates();
+                    
+                    if (this.checked) {
+                        const globalTemplates = document.querySelectorAll('.pdw-template-global');
+                        if (globalTemplates.length > 0) {
+                            showNotification('Global templates are now visible', 'success');
+                        } else {
+                            showNotification('No global templates available', 'info');
+                        }
+                    } else {
+                        showNotification('Global templates are now hidden', 'info');
+                    }
                 });
             } else {
                 console.log("Global templates toggle not found - will be initialized later");
@@ -2145,17 +2049,23 @@ try {
                         }
                         
                         if (
-                            stripos($template['name'], 'hiit') !== false || 
-                            stripos($template['description'], 'hiit') !== false ||
-                            stripos($template['name'], 'interval') !== false || 
-                            stripos($template['description'], 'interval') !== false
+                            stripos($template['name'], 'bodyweight') !== false || 
+                            stripos($template['description'], 'bodyweight') !== false ||
+                            stripos($template['name'], 'body weight') !== false || 
+                            stripos($template['description'], 'body weight') !== false ||
+                            stripos($template['name'], 'calisthenics') !== false || 
+                            stripos($template['description'], 'calisthenics') !== false
                         ) {
-                            $categoryClasses .= ' template-hiit';
+                            $categoryClasses .= ' template-bodyweight';
                         }
                         
                         if (
                             stripos($template['name'], 'cardio') !== false || 
-                            stripos($template['description'], 'cardio') !== false
+                            stripos($template['description'], 'cardio') !== false ||
+                            stripos($template['name'], 'aerobic') !== false || 
+                            stripos($template['description'], 'aerobic') !== false ||
+                            stripos($template['name'], 'running') !== false || 
+                            stripos($template['description'], 'running') !== false
                         ) {
                             $categoryClasses .= ' template-cardio';
                         }
@@ -2247,6 +2157,8 @@ try {
                     console.log("No global templates found in PHP data");
                     <?php endif; ?>
                     
+                    updateCategoryCounts();
+                    
                     if (globalTemplatesToggle.checked) {
                         toggleGlobalTemplates(true);
                     }
@@ -2254,6 +2166,29 @@ try {
                 } catch (error) {
                     console.error("Error initializing global templates:", error);
                 }
+            }, 1000);
+
+            setTimeout(function() {
+                updateCategoryCounts();
+            }, 500);
+            
+            setTimeout(function() {
+                console.log("Verifying template classes...");
+                
+                const allTemplates = [
+                    ...document.querySelectorAll('.template-card'), 
+                    ...document.querySelectorAll('.template-list-item')
+                ];
+                
+                console.log(`Found ${allTemplates.length} total templates`);
+                
+                const strengthTemplates = allTemplates.filter(t => t.classList.contains('template-strength'));
+                const bodyweightTemplates = allTemplates.filter(t => t.classList.contains('template-bodyweight'));
+                const cardioTemplates = allTemplates.filter(t => t.classList.contains('template-cardio'));
+                
+                console.log(`Templates by category - Strength: ${strengthTemplates.length}, Bodyweight: ${bodyweightTemplates.length}, Cardio: ${cardioTemplates.length}`);
+                
+                updateCategoryCounts();
             }, 1000);
         });
     </script>

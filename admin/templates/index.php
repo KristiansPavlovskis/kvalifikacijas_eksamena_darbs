@@ -1083,10 +1083,7 @@ $bodyClass = "admin-page";
                         <option value="all"><?php echo t('all_categories'); ?></option>
                         <option value="Strength Training"><?php echo t('strength_training'); ?></option>
                         <option value="Cardio"><?php echo t('cardio'); ?></option>
-                        <option value="Flexibility"><?php echo t('flexibility'); ?></option>
-                        <option value="Balance"><?php echo t('balance'); ?></option>
-                        <option value="Plyometric"><?php echo t('plyometric'); ?></option>
-                        <option value="Functional"><?php echo t('functional'); ?></option>
+                        <option value="Bodyweight"><?php echo t('bodyweight'); ?></option>
                     </select>
                     
                     <select class="filter-dropdown" id="difficultyFilter">
@@ -1200,10 +1197,7 @@ $bodyClass = "admin-page";
                                     <div class="categories">
                                         <div class="category active" data-category="Strength Training"><?php echo t('strength_training'); ?></div>
                                         <div class="category" data-category="Cardio"><?php echo t('cardio'); ?></div>
-                                        <div class="category" data-category="Flexibility"><?php echo t('flexibility'); ?></div>
-                                        <div class="category" data-category="Balance"><?php echo t('balance'); ?></div>
-                                        <div class="category" data-category="Plyometric"><?php echo t('plyometric'); ?></div>
-                                        <div class="category" data-category="Functional"><?php echo t('functional'); ?></div>
+                                        <div class="category" data-category="Bodyweight"><?php echo t('bodyweight'); ?></div>
                                     </div>
                                 </div>
                                 
@@ -1254,21 +1248,9 @@ $bodyClass = "admin-page";
                                         <i class="fas fa-running"></i>
                                         <?php echo t('cardio'); ?>
                                     </div>
-                                    <div class="category-item" data-category="Flexibility">
+                                    <div class="category-item" data-category="Bodyweight">
                                         <i class="fas fa-child"></i>
-                                        <?php echo t('flexibility'); ?>
-                                    </div>
-                                    <div class="category-item" data-category="Balance">
-                                        <i class="fas fa-balance-scale"></i>
-                                        <?php echo t('balance'); ?>
-                                    </div>
-                                    <div class="category-item" data-category="Plyometric">
-                                        <i class="fas fa-running"></i>
-                                        <?php echo t('plyometric'); ?>
-                                    </div>
-                                    <div class="category-item" data-category="Functional">
-                                        <i class="fas fa-heartbeat"></i>
-                                        <?php echo t('functional'); ?>
+                                        <?php echo t('bodyweight'); ?>
                                     </div>
                                 </div>
                             </div>
@@ -1346,10 +1328,7 @@ $bodyClass = "admin-page";
                                     <div class="categories">
                                         <div class="category" data-category="Strength Training">Strength Training</div>
                                         <div class="category" data-category="Cardio">Cardio</div>
-                                        <div class="category" data-category="Flexibility">Flexibility</div>
-                                        <div class="category" data-category="Balance">Balance</div>
-                                        <div class="category" data-category="Plyometric">Plyometric</div>
-                                        <div class="category" data-category="Functional">Functional</div>
+                                        <div class="category" data-category="Bodyweight">Bodyweight</div>
                                     </div>
                                 </div>
                                 
@@ -1402,21 +1381,9 @@ $bodyClass = "admin-page";
                                         <i class="fas fa-running"></i>
                                         Cardio
                                     </div>
-                                    <div class="edit-category-item" data-category="Flexibility">
+                                    <div class="edit-category-item" data-category="Bodyweight">
                                         <i class="fas fa-child"></i>
-                                        Flexibility
-                                    </div>
-                                    <div class="edit-category-item" data-category="Balance">
-                                        <i class="fas fa-balance-scale"></i>
-                                        Balance
-                                    </div>
-                                    <div class="edit-category-item" data-category="Plyometric">
-                                        <i class="fas fa-running"></i>
-                                        Plyometric
-                                    </div>
-                                    <div class="edit-category-item" data-category="Functional">
-                                        <i class="fas fa-user"></i>
-                                        Functional
+                                        Bodyweight
                                     </div>
                                 </div>
                             </div>
@@ -2471,7 +2438,7 @@ $bodyClass = "admin-page";
             function updateCategoryCountsUI() {
                 const categoryCounts = {};
                 
-                const categories = ['Strength Training', 'Cardio', 'Flexibility', 'Balance', 'Plyometric', 'Functional'];
+                const categories = ['Strength Training', 'Cardio', 'Bodyweight'];
                 categories.forEach(cat => categoryCounts[cat] = 0);
                 
                 allExercises.forEach(exercise => {

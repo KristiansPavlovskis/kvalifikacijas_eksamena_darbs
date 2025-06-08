@@ -243,7 +243,6 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                                             <th><?= t('set') ?></th>
                                             <th><?= t('weight') ?></th>
                                             <th><?= t('reps') ?></th>
-                                            <th>RPE</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -252,7 +251,6 @@ while ($similar = mysqli_fetch_assoc($similar_result)) {
                                             <td><?= $set['set_number'] ?></td>
                                             <td><?= $set['weight'] ?> <?= t('kg') ?></td>
                                             <td><?= $set['reps'] ?></td>
-                                            <td><?= $set['rpe'] ?></td>
                                         </tr>
                                         <?php endforeach; ?>
                                     </tbody>

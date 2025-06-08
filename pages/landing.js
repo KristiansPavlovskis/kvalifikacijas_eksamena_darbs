@@ -68,37 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
         hero.style.backgroundPositionY = `${scrollPosition * 0.1}px`;
     });
     
-    const createMobileMenu = function() {
-        const header = document.querySelector('header');
-        const nav = document.querySelector('nav');
-        
-        const mobileMenuButton = document.createElement('div');
-        mobileMenuButton.classList.add('mobile-menu-toggle');
-        mobileMenuButton.innerHTML = '<i class="fas fa-bars"></i>';
-        
-        header.querySelector('.container').insertBefore(mobileMenuButton, nav);
-        
-        mobileMenuButton.addEventListener('click', function() {
-            nav.classList.toggle('active');
-            this.innerHTML = nav.classList.contains('active') ? 
-                '<i class="fas fa-times"></i>' : 
-                '<i class="fas fa-bars"></i>';
-        });
-    };
-    
-    if (window.innerWidth <= 768) {
-        createMobileMenu();
-    }
-    
-    window.addEventListener('resize', function() {
-        if (window.innerWidth <= 768 && !document.querySelector('.mobile-menu-toggle')) {
-            createMobileMenu();
-        } else if (window.innerWidth > 768 && document.querySelector('.mobile-menu-toggle')) {
-            document.querySelector('.mobile-menu-toggle').remove();
-            document.querySelector('nav').classList.remove('active');
-        }
-    });
-    
     const addSectionIds = function() {
         const sections = {
             'Features': document.querySelector('.benefits'),

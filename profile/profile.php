@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 
 require_once 'profile_access_control.php';
 require_once 'languages.php';
@@ -637,7 +634,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                             <span class="profile-mobile-weight-value"><?= $current_weight ?></span>
                             <span class="profile-mobile-weight-unit">kg</span>
                         </div>
-                        <button class="profile-mobile-update-btn"><?php echo t('update_metrics'); ?></button>
+                        <a href="body-measurements.php" class="profile-mobile-update-btn"><?php echo t('update_metrics'); ?></a>
                     </div>
                 </div>
                 
@@ -704,11 +701,11 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                         </div>
                         <div class="profile-mobile-feature-label"><?php echo t('edit_templates'); ?></div>
                     </a>
-                    <a href="workout-analytics.php" class="profile-mobile-feature-btn">
+                    <a href="current-goal.php" class="profile-mobile-feature-btn">
                         <div class="profile-mobile-feature-icon">
                             <i class="fas fa-chart-line"></i>
                         </div>
-                        <div class="profile-mobile-feature-label"><?php echo t('progress'); ?></div>
+                        <div class="profile-mobile-feature-label"><?php echo t('profile-goals'); ?></div>
                     </a>
                 </div>
                 
@@ -790,14 +787,14 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                         
                         <div class="profile-mobile-split-days">
                             <?php
-                                $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                                $weekdays = [t('monday'), t('tuesday'), t('wednesday'), t('thursday'), t('friday'), t('saturday'), t('sunday')];
                                 foreach ($weekdays as $index => $day) {
                                     echo "<div class='profile-mobile-split-day'>";
                                     echo "<h4>{$day}</h4>";
                                     
                                     echo "<div class='profile-form-group'>";
                                     echo "<select class='profile-form-select profile-mobile-split-type' id='mobile_day_{$index}' name='days[{$index}][type]'>";
-                                    echo "<option value=''>".t('select_workout_type')."</option>";
+                                    echo "<option value=''>".t('select_workout')."</option>";
                                     echo "<option value='rest'>".t('rest_day')."</option>";
                                     
                                     try {
@@ -904,24 +901,24 @@ if ($today_workout && !empty($today_workout['template_id'])) {
     <div class="profile-modal" id="splitModal">
         <div class="profile-modal-content profile-split-modal">
             <span class="profile-modal-close">&times;</span>
-            <h3 class="profile-modal-title">Create Weekly Split</h3>
+            <h3 class="profile-modal-title"><?php echo t('create_weekly_split'); ?></h3>
             
             <form id="splitPlanForm">
                 <div class="profile-form-group">
-                    <label class="profile-form-label" for="splitName">Split Name</label>
-                    <input type="text" class="profile-form-input" id="splitName" name="splitName" placeholder="e.g., Bro Split, PPL, Upper/Lower" required>
+                    <label class="profile-form-label" for="splitName"><?php echo t('split_name'); ?></label>
+                    <input type="text" class="profile-form-input" id="splitName" name="splitName" placeholder="<?php echo t('split_name_placeholder'); ?>" required>
                 </div>
                 
                 <div class="profile-weekly-calendar">
                     <?php
-                        $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        $weekdays = [t('monday'), t('tuesday'), t('wednesday'), t('thursday'), t('friday'), t('saturday'), t('sunday')];
                         foreach ($weekdays as $index => $day) {
                             echo "<div class='profile-week-day'>";
                             echo "<div class='profile-week-day-header'>{$day}</div>";
                             echo "<div class='profile-week-day-content'>";
                             echo "<select class='profile-form-select profile-week-day-select' id='day_{$index}' name='days[{$index}][type]'>";
-                            echo "<option value=''>Select workout</option>";
-                            echo "<option value='rest'>Rest Day</option>";
+                            echo "<option value=''>".t('select_workout')."</option>";
+                            echo "<option value='rest'>".t('rest_day')."</option>";
                             
                             try {
                                 $stmt = mysqli_prepare($conn, "SELECT id, name, category FROM workout_templates WHERE user_id = ? ORDER BY name");
@@ -946,7 +943,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 <div class="profile-split-actions">
                     <div class="profile-form-actions">
                         <div class="profile-form-field">
-                            <label for="targetMonth">Apply to:</label>
+                            <label for="targetMonth"><?php echo t('apply_to'); ?></label>
                             <select id="targetMonth" name="target_month" class="profile-form-select">
                                 <?php
                                     $nextFewMonths = [];
@@ -960,7 +957,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                                 ?>
                             </select>
                         </div>
-                        <button type="submit" class="profile-form-button primary">Apply to Month</button>
+                        <button type="submit" class="profile-form-button primary"><?php echo t('apply_to_month'); ?></button>
                     </div>
                 </div>
             </form>
@@ -999,7 +996,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     
                     const splitName = document.getElementById('splitName').value;
                     if (!splitName) {
-                        alert('Please enter a name for your split');
+                        alert('<?php echo t('enter_split_name'); ?>');
                         return;
                     }
                     
@@ -1010,7 +1007,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     });
                     
                     if (!hasWorkout) {
-                        alert('Please assign at least one workout to your weekly split');
+                        alert('<?php echo t('assign_workout_warning'); ?>');
                         return;
                     }
                     
@@ -1029,7 +1026,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Workout split applied successfully to ' + targetMonthSelect.options[targetMonthSelect.selectedIndex].text);
+                            alert('<?php echo t('split_plan_success'); ?> ' + targetMonthSelect.options[targetMonthSelect.selectedIndex].text);
                             const splitModal = document.getElementById('splitModal');
                             if (splitModal) {
                                 splitModal.style.display = 'none';
@@ -1041,7 +1038,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred while saving your workout split.');
+                        alert('<?php echo t('error_saving_split'); ?>');
                     });
                 });
             }
@@ -1065,7 +1062,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
             function saveMobileSplit(applyToCalendar) {
                 const splitName = document.getElementById('mobileSplitName').value;
                 if (!splitName) {
-                    alert('Please enter a name for your split');
+                    alert('<?php echo t('enter_split_name'); ?>');
                     return;
                 }
                 
@@ -1076,7 +1073,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                 });
                 
                 if (!hasWorkout) {
-                    alert('Please assign at least one workout to your weekly split');
+                    alert('<?php echo t('assign_workout_warning'); ?>');
                     return;
                 }
                 
@@ -1097,7 +1094,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Workout split applied to calendar successfully!');
+                            alert('<?php echo t('split_plan_success'); ?>');
                             window.location.href = `profile.php?month=${targetMonth}&year=${targetYear}`;
                         } else {
                             alert('Error: ' + data.message);
@@ -1105,7 +1102,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred while saving your workout split.');
+                        alert('<?php echo t('error_saving_split'); ?>');
                     });
                 } else {
                     fetch('save_workout_split.php', {
@@ -1115,7 +1112,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Workout split saved successfully!');
+                            alert('<?php echo t('split_save_success'); ?>');
                             document.getElementById('mobileSplitModal').style.display = 'none';
                         } else {
                             alert('Error: ' + data.message);
@@ -1123,7 +1120,7 @@ if ($today_workout && !empty($today_workout['template_id'])) {
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred while saving your workout split.');
+                        alert('<?php echo t('error_saving_split'); ?>');
                     });
                 }
             }

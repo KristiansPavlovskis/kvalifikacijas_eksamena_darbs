@@ -706,9 +706,8 @@
 
 @media (max-width: 480px) {
     .admin-topbar {
-        flex-direction: column;
+        flex-direction: row;
         gap: 1rem;
-        align-items: flex-start;
     }
     
     .stat-icon,
@@ -729,7 +728,6 @@
     }
 }
 
-/* Mobile Footer Navigation */
 .mobile-footer-nav {
     display: none;
     position: fixed;

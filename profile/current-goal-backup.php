@@ -1535,7 +1535,7 @@ try {
                                 <i class="fas fa-clock"></i> ${formatDeadline(goal.formatted_deadline)}
                             </div>
                         `;
-                        
+                    
                         const pagination = mobileGoalsContainer.querySelector('.goal-mobile-pagination');
                         if (pagination) {
                             mobileGoalsContainer.insertBefore(mobileCard, pagination);
@@ -2675,25 +2675,5 @@ try {
             }
         });
     </script> 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileTabs = document.querySelectorAll('.goal-mobile-tab');
-    mobileTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const filter = this.getAttribute('data-filter');
-
-            let status = 'all';
-            if (filter === 'active') status = 'active';
-            if (filter === 'completed') status = 'completed';
-            
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('status', status);
-            currentUrl.searchParams.set('page', '1');
-            
-            window.location.href = currentUrl.toString();
-        });
-    });
-}); 
-</script>
 </body>
 </html>

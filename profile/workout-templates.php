@@ -698,7 +698,7 @@ function updateWorkoutTemplate($templateId, $data) {
                 <div class="wt-mobile-tab" data-tab="view-exercises"><?php echo t('exercises'); ?></div>
             </div>
             
-            <div class="wt-modal-body">
+            <div class="wt-modal-body" style="height: 700px; overflow-y: auto;">
                 <div class="wt-template-details wt-mobile-section active" data-section="view-details">
                     <div class="wt-input-group">
                         <label><?php echo t('template_name'); ?></label>

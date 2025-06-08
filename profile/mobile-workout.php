@@ -139,6 +139,37 @@ function formatLastUsed($lastUsedDate) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/variables.css" rel="stylesheet">
     <link href="../assets/css/mobile-workout.css" rel="stylesheet">
+    <style>
+        .mw-end-workout-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        #mw-end-workout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #mw-end-workout-btn:hover {
+            background-color: #c82333;
+        }
+        
+        #mw-end-workout-btn:active {
+            transform: translateY(1px);
+        }
+    </style>
 </head>
 <body class="mw-body">
     <div class="mw-step-container" id="mw-step1">
@@ -285,8 +316,8 @@ function formatLastUsed($lastUsedDate) {
                     
                 </div>
                 
-                <div class="mw-exercise-image">
-                    <img id="exercise-image" src="https://cdn.pixabay.com/photo/2016/07/07/16/46/dice-1502706_640.jpg" alt="Exercise">
+                <div class="mw-end-workout-container">
+                    <button id="mw-end-workout-btn"><?php echo t('end_workout'); ?></button>
                 </div>
             </div>
             
@@ -677,16 +708,15 @@ function formatLastUsed($lastUsedDate) {
                             
                             workoutData.title = data.template.name;
                             workoutData.templateId = templateId;
-                            workoutData.exercises = data.exercises.map(ex => ({
-                                name: ex.exercise_name,
-                                sets: parseInt(ex.sets) || 3,
-                                restTime: parseInt(ex.rest_time) || 90,
-                                currentSetData: [],
-                                image: `../assets/images/exercises/${ex.exercise_name.toLowerCase().replace(/ /g, '-')}.jpg`,
-                                notes: ex.notes || '',
-                                lastWeight: 0,
-                                lastReps: 8
-                            }));
+                            workoutData.exercises = data.exercises.map(ex => {
+                                return {
+                                    name: ex.exercise_name,
+                                    sets: parseInt(ex.sets) || 3,
+                                    restTime: parseInt(ex.rest_time) || 90,
+                                    currentSetData: [],
+                                    notes: ex.notes || ''
+                                };
+                            });
                             
                             if (workoutData.exercises.length > 0) {
                                 workoutData.restTime = workoutData.exercises[0].restTime;
@@ -745,16 +775,15 @@ function formatLastUsed($lastUsedDate) {
                             
                             workoutData.title = data.template.name;
                             workoutData.templateId = templateId;
-                            workoutData.exercises = data.exercises.map(ex => ({
-                                name: ex.exercise_name,
-                                sets: parseInt(ex.sets) || 3,
-                                restTime: parseInt(ex.rest_time) || 90,
-                                currentSetData: [],
-                                image: `../assets/images/exercises/${ex.exercise_name.toLowerCase().replace(/ /g, '-')}.jpg`,
-                                notes: ex.notes || '',
-                                lastWeight: 0,
-                                lastReps: 8
-                            }));
+                            workoutData.exercises = data.exercises.map(ex => {
+                                return {
+                                    name: ex.exercise_name,
+                                    sets: parseInt(ex.sets) || 3,
+                                    restTime: parseInt(ex.rest_time) || 90,
+                                    currentSetData: [],
+                                    notes: ex.notes || ''
+                                };
+                            });
                             
                             if (workoutData.exercises.length > 0) {
                                 workoutData.restTime = workoutData.exercises[0].restTime;
@@ -872,7 +901,6 @@ function formatLastUsed($lastUsedDate) {
 
             const weightHint = document.getElementById('weight-hint');
             const repsHint = document.getElementById('reps-hint');
-            const exerciseImage = document.getElementById('exercise-image');
             const backToExercise = document.getElementById('back-to-exercise');
             const restTitle = document.getElementById('rest-title');
             const restWorkoutTimer = document.getElementById('rest-workout-timer');
@@ -1190,7 +1218,6 @@ document.body.addEventListener('click', function(e) {
                                     sets: parseInt(ex.sets) || 3,
                                     restTime: parseInt(ex.rest_time) || 90,
                                     currentSetData: [],
-                                    image: `../assets/images/exercises/${ex.exercise_name.toLowerCase().replace(/ /g, '-')}.jpg`,
                                     notes: ex.notes || ''
                                 };
                             });
@@ -1219,7 +1246,6 @@ document.body.addEventListener('click', function(e) {
                                 lastWeight: 75,
                                 lastReps: 12,
                                 currentSetData: [],
-                                image: '../assets/images/exercises/bench-press.jpg',
                                 restTime: 90
                             },
                             {
@@ -1228,7 +1254,6 @@ document.body.addEventListener('click', function(e) {
                                 lastWeight: 100,
                                 lastReps: 10,
                                 currentSetData: [],
-                                image: '../assets/images/exercises/squat.jpg',
                                 restTime: 90
                             }
                         ];
@@ -1294,11 +1319,6 @@ document.body.addEventListener('click', function(e) {
 
                 weightHint.textContent = `last time was ${exercise.lastWeight || 0}kg`;
                 repsHint.textContent = `last time was ${exercise.lastReps || 8} reps for ${exercise.lastWeight || 0}kg`;
-                
-                exerciseImage.src = exercise.image || 'https://cdn.pixabay.com/photo/2016/07/07/16/46/dice-1502706_640.jpg';
-                exerciseImage.onerror = function() {
-                    this.src = 'https://cdn.pixabay.com/photo/2016/07/07/16/46/dice-1502706_640.jpg';
-                };
                 
                 updateWeightInput();
                 updateRepsInput();
@@ -1738,6 +1758,14 @@ document.body.addEventListener('click', function(e) {
             }
             
             showStep(1);
+            
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'mw-end-workout-btn') {
+                    if (confirm('Are you sure you want to end this workout?')) {
+                        completeWorkout();
+                    }
+                }
+            });
         });
     </script>
 </body>

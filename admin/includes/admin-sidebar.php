@@ -89,7 +89,7 @@ function isActive($page, $current_file, $current_dir = '') {
         <h4 class="section-header"><?php echo t('settings'); ?></h4>
         <ul class="sidebar-nav">
             <li class="nav-item">
-                <a href="../pages/logout.php" class="nav-link">
+                <a href="/pages/logout.php" class="nav-link">
                     <i class="fas fa-sign-out-alt"></i>
                     <span><?php echo t('logout'); ?></span>
                 </a>
@@ -142,7 +142,7 @@ function isActive($page, $current_file, $current_dir = '') {
             </a>
         </li>
         <li class="more-menu-item">
-            <a href="../pages/logout.php" class="more-menu-link">
+            <a href="/pages/logout.php" class="more-menu-link <?php echo isActive('logout.php', $current_file); ?>">
                 <i class="fas fa-sign-out-alt"></i>
                 <span><?php echo t('logout'); ?></span>
             </a>

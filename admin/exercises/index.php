@@ -401,8 +401,8 @@ $bodyClass = "admin-page";
                             <th class="checkbox-column">
                                 <input type="checkbox" id="selectAll">
                             </th>
-                            <th>Exercise Name</th>
-                            <th class="action-column">Actions</th>
+                            <th><?php echo t('exercise_name'); ?></th>
+                            <th class="action-column"><?php echo t('actions'); ?></th>
                         </tr>
                     </thead>
                     <tbody>

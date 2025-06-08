@@ -102,7 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if (mysqli_stmt_execute($stmt)) {
             session_destroy();
-            header("location: ../login.php");
+            header("location: ../pages/login.php");
             exit;
         } else {
             $message = t("error_deleting_account") . " " . mysqli_error($conn);

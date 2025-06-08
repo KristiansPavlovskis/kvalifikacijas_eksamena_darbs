@@ -483,7 +483,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
     
-    <a href="index.php" class="home-button">
+    <a href="landing.html" class="home-button">
         <i class="fas fa-home"></i>
     </a>
     
