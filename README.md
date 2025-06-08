@@ -4,8 +4,6 @@
 
 GymVerse ir fitnesa sekošanas platforma, kas palīdz lietotājiem sasniegt savus fitnesa mērķus, izmantojot pašveidotus treniņu šablonus/veidnes, detalizētu progresa sekošanu un intuitīvu lietotāja pieredzi. Mana platforma ir pieejama gan mobilajās ierīcēs, gan datoros, nodrošinot ērtu pieeju jebkurā vietā un laikā.
 
-![Gymverse Logo]()
-
 ## Galvenās Funkcijas
 
 ### 🏠 Sākumlapa
@@ -144,75 +142,6 @@ Projekts izstrādāts, izmantojot:
    - http://localhost:8000/
 
 
-## Datubāzes Struktūra
-
-### users
-- id
-- username
-- password
-- email
-- first_name
-- last_name
-- date_of_birth
-- gender
-- weight
-- initial_weight
-- goal_weight
-- height
-- profile-image
-- fitness-level
-- created_at
-- last_login
-
-### workouts
-- id
-- user_id
-- name
-- workout_type
-- duration_minutes
-- calories_burned
-- notes
-- rating
-- template_id
-- created_at
-- total_volume
-
-### workout_templates
-- id
-- name
-- description
-- difficulty
-- estimated_time
-- category
-- user_id
-- created_at
-- updated_at
-
-### exercises
-- id
-- name
-- description
-- muscle_group
-- equipment
-- difficulty
-- created_by
-- is_public
-- created_at
-
-### goals
-- id
-- user_id
-- title
-- description
-- goal_type
-- target_value
-- current_value
-- start_date
-- deadline
-- created_at
-- completed
-- completed_at
-
 ## Lietotāja Saskarnes Plūsmas
 
 ### Mobilā Versija
@@ -222,7 +151,7 @@ Projekts izstrādāts, izmantojot:
 - Kalendāra skats ar dienas plānu
 - Ātras darbības pogas treniņu uzsākšanai
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/a1905ee7-9fcb-41c8-95e4-fc8969c5cb78" width="400" alt="Gymverse lapa"/>
 
 #### Aktīvs Treniņš
 - Pilnekrāna režīms ar pašreizējo vingrinājumu
@@ -231,28 +160,28 @@ Projekts izstrādāts, izmantojot:
 - Pilnekrāna atpūtas taimeris
 - Nākamā vingrinājuma priekšskatījums
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/6b901f04-153c-4277-b535-2a735cfce5e5" width="400" alt="Gymverse lapa"/>
 
 #### Šablonu Pārvalde
 - Vertikāls saraksts ar šabloniem
 - Vienkārša jaunu šablonu izveide
 - Vingrinājumu secības pārkārtošana ar vilkšanu
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/3121824f-b5b0-40cd-b1de-1a0096ad22d5" width="400" alt="Gymverse lapa"/>
 
 #### Vēsture
 - Hronoloģisks treniņu saraksts
 - Paplašināmi treniņu ieraksti ar detaļām
 - Filtrēšanas iespējas
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/bb6439e8-21bb-429b-b0ed-d3b79fd81805" width="400" alt="Gymverse lapa"/>
 
 #### Mērķi
 - Vizuālie progresa apļi
 - Ātras atjaunināšanas iespēja
 - Kategoriju filtri
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/b44359a1-57de-4216-90bd-5b7af52e155c" width="400" alt="Gymverse lapa"/>
 
 ### Datora Versija
 
@@ -261,7 +190,7 @@ Projekts izstrādāts, izmantojot:
 - Detalizēti statistikas rādītāji
 - Ātrās darbības labajā malā
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/9cf71306-a5fa-41a9-968c-2d03abbd3acc" width="800" alt="Gymverse lapa"/>
 
 #### Aktīvs Treniņš
 - Trīs paneļu dizains:
@@ -270,30 +199,32 @@ Projekts izstrādāts, izmantojot:
   - Statistika un taimeris labajā pusē
 - Tastatūras saīsnes ērtai pārvaldībai
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/fc1b1b7d-2e48-4e38-ac92-deb01c9f5dfb" width="800" alt="Gymverse lapa"/>
 
 #### Šablonu Pārvalde
 - Divpaneļu redaktors ar priekšskatījumu
 - Detalizētas vingrinājumu opcijas
 - Vilkt un nomest funkcionalitāte
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/84476a3a-d8b8-444f-b06d-c47f619961bc" width="800" alt="Gymverse lapa"/>
 
 #### Vēsture
 - Tabulas skats ar sortējamām kolonnām
 - Grafiskās statistikas vizualizācijas
 - Eksporta iespējas
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/050f93f2-b398-44b9-b553-801dcef51b79" width="800" alt="Gymverse lapa"/>
 
 #### Mērķi
 - Detalizēta progresa sekošana ar grafikiem
 - Mērķu savstarpējās saistības
 - Ieteikumu sistēma
 
+<img src="https://github.com/user-attachments/assets/4d44e6d2-9aa3-4692-a2a5-f4dde2f989f4" width="800" alt="Gymverse lapa"/>
+
 ## Administratora Funkcijas
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/889a6ae6-7d39-49a0-90c9-507c45672b7d" width="800" alt="Gymverse lapa"/>
 
 ### Lietotāju Pārvaldība
 - Lietotāju kontu pārskatīšana un rediģēšana
@@ -301,14 +232,14 @@ Projekts izstrādāts, izmantojot:
 - Paroles atiestatīšana
 - Aktivitātes monitorings
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/2f799a35-9019-44fa-bfd6-8d7e22cc7eb0" width="800" alt="Gymverse lapa"/>
 
 ### Globālie Šabloni
 - Visiem lietotājiem pieejamo šablonu izveide
 - Rediģēšana un publicēšanas kontrole
 - Izmantošanas statistikas pārskatīšana
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/20a4513e-2dda-4fc1-bd46-9a7830beb0d4" width="800" alt="Gymverse lapa"/>
 
 ### Vingrinājumu Bibliotēka
 - Jaunu vingrinājumu pievienošana datubāzei
@@ -316,7 +247,7 @@ Projekts izstrādāts, izmantojot:
 - Kategorizācija un muskuļu grupu piesaiste
 - Saistīto vingrinājumu iestatīšana
 
-![Gymverse lapa]()
+<img src="https://github.com/user-attachments/assets/336488e0-2fe7-4c1f-8093-a5219762a81d" width="800" alt="Gymverse lapa"/>
 
 ## Nākotnes plāni
 
@@ -333,3 +264,4 @@ Projekts izstrādāts, izmantojot:
 - E-pasts: kristianspavlovskis@gmail.com
 - GitHub: [https://github.com/KristiansPavlovskis/kvalifikacijas_eksamena_darbs](https://github.com/KristiansPavlovskis/kvalifikacijas_eksamena_darbs)
 - Tīmekļa vietne: Vēl nav izveidota domēna
+- dokuments: [Pavlovskis_Kristians_kvalifikacijas_eksamena_dokuments.docx](https://github.com/user-attachments/files/20646185/Pavlovskis.Kristians.4PT-2_1.1.3.github.docx)
