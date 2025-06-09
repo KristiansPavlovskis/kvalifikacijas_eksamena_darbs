@@ -1296,7 +1296,7 @@ document.body.addEventListener('click', function(e) {
                 
                 const totalExercises = workoutData.exercises.length;
                 const currentExerciseNumber = workoutData.currentExercise + 1;
-                workoutProgressText.textContent = `${currentExerciseNumber}/${totalExercises} Exercises`;
+                workoutProgressText.textContent = `${currentExerciseNumber}/${totalExercises} <?php echo t('exercises'); ?>`;
                 
                 if (workoutData.currentSet > 0 && exercise.currentSetData && exercise.currentSetData.length > 0) {
                     const prevSet = exercise.currentSetData[workoutData.currentSet - 1];
@@ -1317,8 +1317,8 @@ document.body.addEventListener('click', function(e) {
                     repsInput.value = exercise.lastReps || 8;
                 }
 
-                weightHint.textContent = `last time was ${exercise.lastWeight || 0}kg`;
-                repsHint.textContent = `last time was ${exercise.lastReps || 8} reps for ${exercise.lastWeight || 0}kg`;
+                weightHint.textContent = `<?php echo t('last_weight_was'); ?>`.replace('%s', exercise.lastWeight || 0);
+                repsHint.textContent = `<?php echo t('last_reps_was'); ?>`.replace('%s', exercise.lastReps || 8).replace('%s', exercise.lastWeight || 0);
                 
                 updateWeightInput();
                 updateRepsInput();

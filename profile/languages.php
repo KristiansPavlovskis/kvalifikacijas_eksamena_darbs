@@ -563,6 +563,8 @@ $translations = [
         'friday' => 'Friday',
         'saturday' => 'Saturday',
         'sunday' => 'Sunday',
+        'last_weight_was' => 'last time was %skg',
+        'last_reps_was' => 'last time was %s reps for %skg',
     ],
     
     'lv' => [
@@ -1127,6 +1129,8 @@ $translations = [
         'friday' => 'Piektdiena',
         'saturday' => 'Sestdiena',
         'sunday' => 'Svētdiena',
+        'last_weight_was' => 'pēdējo reizi bija %skg',
+        'last_reps_was' => 'pēdējo reizi bija %s atkārtojumi ar %skg',
     ]
 ];
 
